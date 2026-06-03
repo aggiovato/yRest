@@ -9,7 +9,7 @@ La idea principal es crear una herramienta similar conceptualmente a `json-serve
 El paquete debe permitir ejecutar un comando simple como:
 
 ```bash
-npx yaml-rest serve db.yml
+npx yrest serve db.yml
 ```
 
 Y obtener automáticamente un servidor REST funcional en:
@@ -92,7 +92,7 @@ DELETE  /posts/:id
 Si el usuario ejecuta el servidor con un `base path`, por ejemplo:
 
 ```bash
-npx yaml-rest serve db.yml --base /api
+npx yrest serve db.yml --base /api
 ```
 
 Los endpoints deberán quedar disponibles como:
@@ -253,17 +253,17 @@ Puede devolver el recurso eliminado o una respuesta `204 No Content`. Para la pr
 El comando principal de la Fase 1 será:
 
 ```bash
-npx yaml-rest serve db.yml
+npx yrest serve db.yml
 ```
 
 También debería funcionar si el paquete está instalado localmente:
 
 ```bash
-npm install -D yaml-rest
+npm install -D yrest
 ```
 
 ```bash
-npx yaml-rest serve db.yml
+npx yrest serve db.yml
 ```
 
 O mediante un script en `package.json`:
@@ -271,7 +271,7 @@ O mediante un script en `package.json`:
 ```json
 {
   "scripts": {
-    "mock:api": "yaml-rest serve db.yml"
+    "mock:api": "yrest serve db.yml"
   }
 }
 ```
@@ -287,7 +287,7 @@ La primera versión debería soportar pocas flags, pero bien definidas.
 Permite modificar el puerto del servidor.
 
 ```bash
-npx yaml-rest serve db.yml --port 3001
+npx yrest serve db.yml --port 3001
 ```
 
 Si no se define, se usará:
@@ -303,7 +303,7 @@ Si no se define, se usará:
 Permite definir el host de escucha.
 
 ```bash
-npx yaml-rest serve db.yml --host 0.0.0.0
+npx yrest serve db.yml --host 0.0.0.0
 ```
 
 Valor recomendado por defecto:
@@ -319,7 +319,7 @@ localhost
 Permite definir un prefijo base para todos los endpoints.
 
 ```bash
-npx yaml-rest serve db.yml --base /api
+npx yrest serve db.yml --base /api
 ```
 
 Resultado:
@@ -399,7 +399,7 @@ NestJS podría ser considerado en una fase posterior si el proyecto evoluciona h
 Una estructura simple para la Fase 1 podría ser:
 
 ```txt
-yaml-rest/
+yrest/
 ├─ src/
 │  ├─ cli/
 │  │  └─ index.ts
@@ -437,7 +437,7 @@ La carpeta `cli` se encargará de recibir y procesar los comandos del usuario.
 Ejemplo:
 
 ```bash
-yaml-rest serve db.yml --port 3070 --base /api
+yrest serve db.yml --port 3070 --base /api
 ```
 
 Responsabilidades:
@@ -752,19 +752,19 @@ Al finalizar esta etapa, el proyecto debería permitir publicar una primera vers
 Instalación:
 
 ```bash
-npm install -D yaml-rest
+npm install -D yrest
 ```
 
 Ejecución:
 
 ```bash
-npx yaml-rest serve db.yml
+npx yrest serve db.yml
 ```
 
 Resultado:
 
 ```txt
-YAML REST running at http://localhost:3070
+yrest running at http://localhost:3070
 ```
 
 Uso desde frontend:
@@ -808,7 +808,7 @@ Posibles funcionalidades:
 Ejemplo futuro:
 
 ```bash
-npx yaml-rest serve db.yml --watch --readonly
+npx yrest serve db.yml --watch --readonly
 ```
 
 ---
@@ -820,7 +820,7 @@ Objetivo: permitir trabajar con una API híbrida: algunas rutas mockeadas y otra
 Ejemplo:
 
 ```bash
-npx yaml-rest serve db.yml --base /api --proxy https://app.domain
+npx yrest serve db.yml --base /api --proxy https://app.domain
 ```
 
 Comportamiento esperado:
@@ -889,7 +889,7 @@ Objetivo: permitir lanzar un panel visual desde el propio paquete.
 Ejemplo:
 
 ```bash
-npx yaml-rest serve db.yml --panel
+npx yrest serve db.yml --panel
 ```
 
 Ruta del panel:
@@ -944,9 +944,9 @@ Objetivo: permitir usar el servidor directamente desde tests automatizados.
 Ejemplo:
 
 ```ts
-import { createYamlRestServer } from "yaml-rest";
+import { createYrestServer } from "yrest";
 
-const server = await createYamlRestServer({
+const server = await createYrestServer({
   file: "./tests/db.yml",
   port: 3070,
 });

@@ -1,5 +1,5 @@
 {
-  "name": "yaml-rest",
+  "name": "yrest",
   "version": "0.1.0",
   "description": "Zero-config REST API mock server powered by a YAML file",
   "keywords": [
@@ -21,13 +21,13 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
   "bin": {
-    "yaml-rest": "./dist/cli/index.js"
+    "yrest": "./dist/cli/index.js"
   },
   "files": [
     "dist"

@@ -1,0 +1,17 @@
+users:
+  - id: 1
+    name: Ana
+    email: ana@test.com
+  - id: 2
+    name: Luis
+    email: luis@test.com
+  - id: 3
+    name: Carlos
+    email: carlos@test.com
+posts:
+  - id: 1
+    title: Primer post
+    userId: 1
+  - id: 2
+    title: Segundo post
+    userId: 2
