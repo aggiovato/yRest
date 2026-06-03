@@ -5,8 +5,9 @@ import { serverOptionsSchema } from "../../config/loadOptions.js";
 
 export function registerServe(program: Command): void {
   program
-    .command("serve <file>")
+    .command("serve")
     .description("Start the mock server using a YAML file as database")
+    .argument("[file]", "Path to the YAML database file", "db.yml")
     .option("-p, --port <number>", "Port to listen on", "3070")
     .option("-H, --host <host>", "Host to bind", "localhost")
     .option("-b, --base <path>", "Base path prefix for all routes", "")

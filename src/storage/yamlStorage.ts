@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { resolve, dirname } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
 import type { DbData, Resource } from "./types.js";
@@ -31,7 +30,7 @@ export function createYamlStorage(filePath: string): YamlStorage {
     },
 
     persist() {
-      const tmp = resolve(dirname(absPath), `${tmpdir()}/.yaml-rest-${randomUUID()}.yml`);
+      const tmp = resolve(dirname(absPath), `.yrest-${randomUUID()}.tmp`);
       writeFileSync(tmp, stringify(data), "utf8");
       renameSync(tmp, absPath);
     },
