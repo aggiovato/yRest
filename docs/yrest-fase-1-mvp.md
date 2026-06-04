@@ -266,6 +266,7 @@ npx yrest init --file api.yml           # nombre de archivo personalizado
 | `--sample` | `basic` | Datos de ejemplo (`basic`, `relational`) |
 
 **Samples disponibles:**
+
 - `basic` — dos colecciones independientes: `users` y `products`
 - `relational` — tres colecciones con relaciones `_rel`: `users`, `posts` y `comments`
 
@@ -816,15 +817,17 @@ Posibles funcionalidades:
 
 ```txt
 - Query params.
-- Filtros simples.
-- Paginación.
-- Sorting.
-- Watch mode.
-- Readonly mode.
+- Filtros simples (?field=value).
+- Paginación (?_page=1&_limit=10).
+- Sorting (?_sort=name&_order=asc).
+- Watch mode (recarga db.yml si cambia en disco).
+- Readonly mode (bloquea escrituras).
 - Snapshot mode.
-- Delay global.
+- Delay global (simula latencia de red).
 - Mejor gestión de errores.
-- Archivo de configuración mock.config.yml.
+- Archivo de configuración yrest.config.yml.
+- ?_expand=relation (embedding de objetos relacionados en la respuesta).
+- Rutas anidadas nivel 2: GET /parent/:id/child/:childId.
 ```
 
 Ejemplo futuro:
@@ -1004,6 +1007,80 @@ Funcionalidades posibles:
 - Workspaces.
 - Múltiples archivos db.yml.
 - Estrategias de id configurables.
+```
+
+---
+
+## Fase 9 — Relaciones avanzadas y resolución de grafo
+
+Objetivo: llevar el sistema de relaciones `_rel` a su máxima expresión.
+
+### Features a valorar
+
+#### `_nested`
+
+Controla si los campos de relación se devuelven como ID o como objeto embebido completo.
+
+```yaml
+_nested: true   # global, por defecto false
+```
+
+Con `_nested: false` (actual):
+
+```json
+{ "id": 1, "title": "Post", "userId": 1 }
+```
+
+Con `_nested: true`:
+
+```json
+{ "id": 1, "title": "Post", "user": { "id": 1, "name": "Ana" } }
+```
+
+Consideraciones de implementación:
+
+```txt
+- El campo embebido adopta el nombre sin sufijo Id (userId → user).
+- Alternativa como query param: ?_expand=user (más flexible, sin tocar el YAML).
+- Puede convivir con ?_expand para control por petición.
+```
+
+#### `_depth`
+
+Controla cuántos niveles de relaciones se resuelven al hacer embedding.
+
+```yaml
+_depth: 1     # por defecto: un nivel de relación
+_depth: 3     # tres niveles de profundidad
+_depth: off   # sin límite (requiere detección de ciclos)
+```
+
+Consideraciones de implementación:
+
+```txt
+- _depth solo aplica si _nested está activo.
+- _depth: off requiere detección de dependencias circulares.
+- La detección de ciclos debe rastrear el path recorrido por branch,
+  no solo nodos visitados globalmente, para no cortar branches válidos.
+- Con datos grandes y _depth: off, las respuestas pueden ser muy pesadas.
+```
+
+Ejemplo de ciclo a manejar:
+
+```yaml
+_rel:
+  posts:
+    userId: users   # posts → users
+  # si users tuviera una relación de vuelta a posts → ciclo
+```
+
+Roadmap sugerido para esta fase:
+
+```txt
+1. ?_expand=relation como query param (sin config YAML).
+2. _nested: true como config global.
+3. _depth: n con valor finito.
+4. _depth: off con detección de ciclos.
 ```
 
 ---
