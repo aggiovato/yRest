@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import type { YamlStorage } from "../storage/yamlStorage.js";
 import type { ServerOptions } from "../config/loadOptions.js";
-import { registerResourceRoutes } from "../router/resourceRouter.js";
+import { registerResourceRoutes } from "../router/resource.router.js";
 
 export async function createServer(
   storage: YamlStorage,

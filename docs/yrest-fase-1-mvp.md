@@ -248,11 +248,33 @@ Puede devolver el recurso eliminado o una respuesta `204 No Content`. Para la pr
 
 ---
 
-## 6. Comando CLI mínimo
+## 6. Comandos CLI
 
-El comando principal de la Fase 1 será:
+### init
+
+Crea un archivo de base de datos de ejemplo en el directorio actual.
 
 ```bash
+npx yrest init                          # sample básico (por defecto)
+npx yrest init --sample relational      # con relaciones _rel
+npx yrest init --file api.yml           # nombre de archivo personalizado
+```
+
+| Flag | Default | Descripción |
+|------|---------|-------------|
+| `--file` | `db.yml` | Nombre del archivo a crear |
+| `--sample` | `basic` | Datos de ejemplo (`basic`, `relational`) |
+
+**Samples disponibles:**
+- `basic` — dos colecciones independientes: `users` y `products`
+- `relational` — tres colecciones con relaciones `_rel`: `users`, `posts` y `comments`
+
+### serve
+
+El comando principal para arrancar el servidor:
+
+```bash
+npx yrest serve
 npx yrest serve db.yml
 ```
 
@@ -263,7 +285,7 @@ npm install -D yrest
 ```
 
 ```bash
-npx yrest serve db.yml
+npx yrest serve
 ```
 
 O mediante un script en `package.json`:
@@ -271,7 +293,7 @@ O mediante un script en `package.json`:
 ```json
 {
   "scripts": {
-    "mock:api": "yrest serve db.yml"
+    "mock:api": "yrest serve"
   }
 }
 ```

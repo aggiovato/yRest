@@ -17,6 +17,23 @@ users:
     email: luis@test.com
 `;
 
+const SAMPLE_YAML_WITH_REL = `
+_rel:
+  posts:
+    userId: users
+users:
+  - id: 1
+    name: Ana
+    email: ana@test.com
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+  - id: 2
+    title: Second post
+    userId: 1
+`;
+
 const options = serverOptionsSchema.parse({ file: "db.yml" });
 
 describe("CRUD routes", () => {
@@ -136,6 +153,40 @@ describe("CRUD routes", () => {
         payload: { name: "X" },
       });
       expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe("GET /parent/:id/child (_rel)", () => {
+    let relServer: Awaited<ReturnType<typeof createServer>>;
+    let relFilePath: string;
+
+    beforeEach(async () => {
+      relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
+      const storage = createYamlStorage(relFilePath);
+      relServer = await createServer(storage, options);
+    });
+
+    afterEach(async () => {
+      await relServer.close();
+      unlinkSync(relFilePath);
+    });
+
+    it("returns children of a parent", async () => {
+      const res = await relServer.inject({ method: "GET", url: "/users/1/posts" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(2);
+    });
+
+    it("returns empty array when parent has no children", async () => {
+      const res = await relServer.inject({ method: "GET", url: "/users/99/posts" });
+      expect(res.statusCode).toBe(404);
+    });
+
+    it("children match the parent id", async () => {
+      const res = await relServer.inject({ method: "GET", url: "/users/1/posts" });
+      const posts = res.json();
+      expect(posts.every((p: { userId: number }) => p.userId === 1)).toBe(true);
     });
   });
 

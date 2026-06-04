@@ -41,9 +41,20 @@ Resources (base: /):
 Creates a sample `db.yml` in the current directory.
 
 ```bash
-yrest init
-yrest init --file api.yml   # custom filename
+yrest init                            # basic sample (default)
+yrest init --sample relational        # with _rel relations
+yrest init --file api.yml             # custom filename
+yrest init --sample relational --file api.yml
 ```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--file` | `db.yml` | Output filename |
+| `--sample` | `basic` | Sample data (`basic`, `relational`) |
+
+**Samples:**
+- `basic` — two independent collections: `users` and `products`
+- `relational` — three collections with `_rel` relationships: `users`, `posts` and `comments`
 
 ### `serve`
 
@@ -57,7 +68,6 @@ yrest serve db.yml --base /api
 ```
 
 | Flag | Default | Description |
-
 |------|---------|-------------|
 | `--port` | `3070` | Port to listen on |
 | `--host` | `localhost` | Host to bind |
@@ -100,7 +110,6 @@ With `--base /api` all routes are prefixed: `/api/users`, `/api/users/:id`, etc.
 ## HTTP responses
 
 | Status | When |
-
 |--------|------|
 | `200` | Successful GET, PUT, PATCH, DELETE |
 | `201` | Successful POST |

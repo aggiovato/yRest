@@ -1,4 +1,4 @@
-_rel:
+export const relationalTemplate = `_rel:
   posts:
     userId: users
   comments:
@@ -29,3 +29,4 @@ comments:
   - id: 2
     body: Thanks for sharing
     postId: 1
+`;

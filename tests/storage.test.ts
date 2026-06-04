@@ -19,6 +19,19 @@ posts:
     userId: 1
 `;
 
+const SAMPLE_YAML_WITH_REL = `
+_rel:
+  posts:
+    userId: users
+users:
+  - id: 1
+    name: Ana
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+`;
+
 describe("createYamlStorage", () => {
   let filePath: string;
 
@@ -62,6 +75,22 @@ describe("createYamlStorage", () => {
 
     const reloaded = createYamlStorage(filePath);
     expect(reloaded.getCollection("users")?.[0]).toMatchObject({ id: 99, name: "Persisted" });
+  });
+
+  it("getData does not expose _rel as a collection", () => {
+    const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+    writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
+    const storage = createYamlStorage(relFilePath);
+    expect(Object.keys(storage.getData())).not.toContain("_rel");
+    unlinkSync(relFilePath);
+  });
+
+  it("getRelations returns _rel content", () => {
+    const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+    writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
+    const storage = createYamlStorage(relFilePath);
+    expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
+    unlinkSync(relFilePath);
   });
 
   it("persist does not corrupt other collections", () => {
