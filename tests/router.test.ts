@@ -17,6 +17,25 @@ users:
     email: luis@test.com
 `;
 
+const SAMPLE_YAML_PAGINATION = `
+users:
+  - id: 1
+    name: Alice
+    role: admin
+  - id: 2
+    name: Bob
+    role: user
+  - id: 3
+    name: Carol
+    role: user
+  - id: 4
+    name: Dave
+    role: admin
+  - id: 5
+    name: Eve
+    role: user
+`;
+
 const SAMPLE_YAML_WITH_REL = `
 _rel:
   posts:
@@ -62,6 +81,123 @@ describe("CRUD routes", () => {
     it("returns 404 for unknown collection", async () => {
       const res = await server.inject({ method: "GET", url: "/unknown" });
       expect(res.statusCode).toBe(404);
+    });
+  });
+
+  describe("GET /collection?field=value (filtering)", () => {
+    it("filters by a string field", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?name=Ana" });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body).toHaveLength(1);
+      expect(body[0]).toMatchObject({ id: 1, name: "Ana" });
+    });
+
+    it("filters by a numeric field passed as string", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?id=2" });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body).toHaveLength(1);
+      expect(body[0]).toMatchObject({ id: 2, name: "Luis" });
+    });
+
+    it("returns empty array when no items match", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?name=Unknown" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(0);
+    });
+
+    it("applies multiple filters with AND logic", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?name=Ana&email=ana@test.com" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(1);
+    });
+
+    it("returns empty array when multiple filters conflict", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?name=Ana&email=luis@test.com" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(0);
+    });
+
+    it("ignores params starting with _ (reserved)", async () => {
+      const res = await server.inject({ method: "GET", url: "/users?_page=1" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(2);
+    });
+  });
+
+  describe("GET /collection?_page&_limit (pagination)", () => {
+    let pageServer: Awaited<ReturnType<typeof createServer>>;
+    let pageFilePath: string;
+
+    beforeEach(async () => {
+      pageFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(pageFilePath, SAMPLE_YAML_PAGINATION, "utf8");
+      const storage = createYamlStorage(pageFilePath);
+      pageServer = await createServer(storage, options);
+    });
+
+    afterEach(async () => {
+      await pageServer.close();
+      unlinkSync(pageFilePath);
+    });
+
+    it("returns first page", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=1&_limit=2" });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body).toHaveLength(2);
+      expect(body[0]).toMatchObject({ id: 1, name: "Alice" });
+      expect(body[1]).toMatchObject({ id: 2, name: "Bob" });
+    });
+
+    it("returns second page", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=2&_limit=2" });
+      expect(res.statusCode).toBe(200);
+      const body = res.json();
+      expect(body).toHaveLength(2);
+      expect(body[0]).toMatchObject({ id: 3, name: "Carol" });
+    });
+
+    it("returns partial last page", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=3&_limit=2" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(1);
+    });
+
+    it("returns empty array for out-of-range page", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=99&_limit=2" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(0);
+    });
+
+    it("sets X-Total-Count header with total filtered count", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=1&_limit=2" });
+      expect(res.headers["x-total-count"]).toBe("5");
+    });
+
+    it("_limit alone returns items from page 1", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_limit=3" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(3);
+    });
+
+    it("_page alone uses default limit of 10", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?_page=1" });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toHaveLength(5);
+    });
+
+    it("X-Total-Count reflects count after filtering", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users?role=admin&_page=1&_limit=1" });
+      expect(res.headers["x-total-count"]).toBe("2");
+      expect(res.json()).toHaveLength(1);
+    });
+
+    it("without pagination params returns all items without header", async () => {
+      const res = await pageServer.inject({ method: "GET", url: "/users" });
+      expect(res.json()).toHaveLength(5);
+      expect(res.headers["x-total-count"]).toBeUndefined();
     });
   });
 

@@ -94,6 +94,31 @@ export function patchItem(
 }
 
 /**
+ * Filters a collection by query params. Params starting with _ are reserved and ignored.
+ * Comparison converts each item field to string, so ?id=1 matches numeric id: 1.
+ * Returns the original array unchanged if no filterable params are present.
+ */
+export function filterByQuery(
+  items: Resource[],
+  query: Record<string, string>
+): Resource[] {
+  const filters = Object.entries(query).filter(([key]) => !key.startsWith("_"));
+  if (filters.length === 0) return items;
+  return items.filter((item) =>
+    filters.every(([key, value]) => item[key] !== undefined && String(item[key]) === value)
+  );
+}
+
+/**
+ * Returns a page of items from a (already filtered) collection.
+ * page and limit must be positive integers; no clamping is done here.
+ */
+export function paginate(items: Resource[], page: number, limit: number): Resource[] {
+  const start = (page - 1) * limit;
+  return items.slice(start, start + limit);
+}
+
+/**
  * Removes an item from a collection and persists the change.
  * Returns the deleted item so the caller can confirm what was removed,
  * or undefined if no item with the given id exists.
