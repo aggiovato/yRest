@@ -110,6 +110,23 @@ export function filterByQuery(
 }
 
 /**
+ * Sorts a collection by a field. Order defaults to ascending.
+ * Items missing the sort field are pushed to the end.
+ * String comparison is case-insensitive; numbers are compared numerically.
+ */
+export function sortBy(items: Resource[], field: string, order: "asc" | "desc"): Resource[] {
+  const direction = order === "desc" ? -1 : 1;
+  return [...items].sort((a, b) => {
+    const av = a[field];
+    const bv = b[field];
+    if (av === undefined) return 1;
+    if (bv === undefined) return -1;
+    if (typeof av === "number" && typeof bv === "number") return (av - bv) * direction;
+    return String(av).localeCompare(String(bv), undefined, { sensitivity: "base" }) * direction;
+  });
+}
+
+/**
  * Returns a page of items from a (already filtered) collection.
  * page and limit must be positive integers; no clamping is done here.
  */
