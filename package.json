@@ -11,10 +11,10 @@
     "fastify"
   ],
   "license": "MIT",
-  "author": "",
+  "author": "Aggiovato",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/aggiovato/yaml-rest.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

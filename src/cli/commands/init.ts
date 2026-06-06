@@ -35,6 +35,6 @@ export function registerInit(program: Command): void {
 
       writeFileSync(target, templates[flags.sample as Sample], "utf8");
       console.log(`Created ${flags.file} (sample: ${flags.sample})`);
-      console.log(`Run: yrest serve ${flags.file}`);
+      console.log(`Run: npx @aggiovato/yrest serve ${flags.file}`);
     });
 }
