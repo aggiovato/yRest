@@ -5,6 +5,8 @@ vars:
   PKG_NAME: "@aggiovato/yrest"
 
 tasks:
+  # ── Development ────────────────────────────────────────────────────────────
+
   test:
     desc: Run the test suite
     cmd: npx vitest run
@@ -17,11 +19,6 @@ tasks:
     desc: Build the package (dist/)
     cmd: npx tsup
 
-  serve:dist:
-    desc: Start the server from the local dist build
-    deps: [build]
-    cmd: node dist/cli/index.js serve {{.DB_FILE}}
-
   dev:
     desc: Watch-build and serve from dist (two parallel processes)
     deps: [build]
@@ -29,6 +26,29 @@ tasks:
       - npx tsup --watch &
       - node dist/cli/index.js serve {{.DB_FILE}}
 
+  serve:dist:
+    desc: Start the server from the local dist build
+    deps: [build]
+    cmd: node dist/cli/index.js serve {{.DB_FILE}}
+
   serve:npx:
     desc: Start the published npm version via npx (runs from /tmp to avoid self-reference)
     cmd: cd /tmp && npx {{.PKG_NAME}} serve {{.TASKFILE_DIR}}/{{.DB_FILE}}
+
+  # ── Release ────────────────────────────────────────────────────────────────
+
+  release:patch:
+    desc: Bump patch version (x.x.N), commit and tag
+    cmd: npm version patch
+
+  release:minor:
+    desc: Bump minor version (x.N.0), commit and tag
+    cmd: npm version minor
+
+  release:major:
+    desc: Bump major version (N.0.0), commit and tag
+    cmd: npm version major
+
+  publish:
+    desc: Run tests, build and publish to npm (requires npm login)
+    cmd: npm publish --access public
