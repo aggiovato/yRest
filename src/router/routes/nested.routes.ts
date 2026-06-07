@@ -21,19 +21,16 @@ export function registerNestedRoutes(
 ): void {
   for (const [child, fields] of Object.entries(relations)) {
     for (const [field, parent] of Object.entries(fields)) {
-      server.get<{ Params: { id: string } }>(
-        `${base}/${parent}/:id/${child}`,
-        (req, reply) => {
-          const parentCollection = storage.getCollection(parent) ?? [];
-          const parentItem = findById(parentCollection, req.params.id);
-          if (!parentItem) return reply.status(404).send({ error: "Not found" });
+      server.get<{ Params: { id: string } }>(`${base}/${parent}/:id/${child}`, (req, reply) => {
+        const parentCollection = storage.getCollection(parent) ?? [];
+        const parentItem = findById(parentCollection, req.params.id);
+        if (!parentItem) return reply.status(404).send({ error: "Not found" });
 
-          const children = (storage.getCollection(child) ?? []).filter(
-            (item) => String(item[field]) === req.params.id
-          );
-          return children;
-        }
-      );
+        const children = (storage.getCollection(child) ?? []).filter(
+          (item) => String(item[field]) === req.params.id
+        );
+        return children;
+      });
     }
   }
 }

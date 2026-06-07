@@ -47,12 +47,13 @@ npx @aggiovato/yrest init --file api.yml             # custom filename
 npx @aggiovato/yrest init --sample relational --file api.yml
 ```
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--file` | `db.yml` | Output filename |
-| `--sample` | `basic` | Sample data (`basic`, `relational`) |
+| Flag       | Default  | Description                         |
+| ---------- | -------- | ----------------------------------- |
+| `--file`   | `db.yml` | Output filename                     |
+| `--sample` | `basic`  | Sample data (`basic`, `relational`) |
 
 **Samples:**
+
 - `basic` — two independent collections: `users` and `products`
 - `relational` — three collections with `_rel` relationships: `users`, `posts` and `comments`
 
@@ -67,11 +68,11 @@ npx @aggiovato/yrest serve db.yml --host 0.0.0.0
 npx @aggiovato/yrest serve db.yml --base /api
 ```
 
-| Flag | Default | Description |
-|------|---------|-------------|
-| `--port` | `3070` | Port to listen on |
-| `--host` | `localhost` | Host to bind |
-| `--base` | _(none)_ | Prefix for all routes |
+| Flag     | Default     | Description           |
+| -------- | ----------- | --------------------- |
+| `--port` | `3070`      | Port to listen on     |
+| `--host` | `localhost` | Host to bind          |
+| `--base` | _(none)_    | Prefix for all routes |
 
 ## Database format
 
@@ -177,12 +178,12 @@ GET /users/1/posts    # all posts where userId === 1
 
 ## HTTP responses
 
-| Status | When |
-|--------|------|
-| `200` | Successful GET, PUT, PATCH, DELETE |
-| `201` | Successful POST |
-| `404` | Resource or id not found |
-| `500` | Error reading or writing the YAML file |
+| Status | When                                   |
+| ------ | -------------------------------------- |
+| `200`  | Successful GET, PUT, PATCH, DELETE     |
+| `201`  | Successful POST                        |
+| `404`  | Resource or id not found               |
+| `500`  | Error reading or writing the YAML file |
 
 DELETE returns the deleted item (useful for debugging).
 
@@ -202,7 +203,7 @@ CORS is enabled by default, so you can call the API from any frontend running on
 
 ```ts
 // List
-const users = await fetch("http://localhost:3070/users").then(r => r.json());
+const users = await fetch("http://localhost:3070/users").then((r) => r.json());
 
 // Filter + sort + paginate
 const res = await fetch("http://localhost:3070/users?role=admin&_sort=name&_page=1&_limit=10");
@@ -250,23 +251,23 @@ Run `task --list` to see all available commands.
 
 #### Development
 
-| Command | What it does |
-|---------|-------------|
-| `task test` | Runs the full test suite once |
-| `task test:watch` | Runs tests in watch mode — reruns on every file change |
-| `task build` | Compiles TypeScript to `dist/` via tsup |
-| `task dev` | Builds once, then starts watch-build + server from `dist/` in parallel |
-| `task serve:dist` | Builds and starts the server from the local `dist/` |
-| `task serve:npx` | Starts the version currently published on npm (useful to compare against local) |
+| Command           | What it does                                                                    |
+| ----------------- | ------------------------------------------------------------------------------- |
+| `task test`       | Runs the full test suite once                                                   |
+| `task test:watch` | Runs tests in watch mode — reruns on every file change                          |
+| `task build`      | Compiles TypeScript to `dist/` via tsup                                         |
+| `task dev`        | Builds once, then starts watch-build + server from `dist/` in parallel          |
+| `task serve:dist` | Builds and starts the server from the local `dist/`                             |
+| `task serve:npx`  | Starts the version currently published on npm (useful to compare against local) |
 
 #### Release
 
-| Command | What it does |
-|---------|-------------|
-| `task release:patch` | Bumps `x.x.N`, creates a git commit and tag |
-| `task release:minor` | Bumps `x.N.0`, creates a git commit and tag |
-| `task release:major` | Bumps `N.0.0`, creates a git commit and tag |
-| `task publish` | Runs tests + build and publishes to npm (requires `npm login`) |
+| Command              | What it does                                                   |
+| -------------------- | -------------------------------------------------------------- |
+| `task release:patch` | Bumps `x.x.N`, creates a git commit and tag                    |
+| `task release:minor` | Bumps `x.N.0`, creates a git commit and tag                    |
+| `task release:major` | Bumps `N.0.0`, creates a git commit and tag                    |
+| `task publish`       | Runs tests + build and publishes to npm (requires `npm login`) |
 
 ### Development workflow
 
@@ -333,6 +334,7 @@ push tag v*
     ├── tests + build  (via prepublishOnly)
     └── npm publish --provenance  (via Trusted Publishing / OIDC)
 ```
+
 ---
 
 ## License

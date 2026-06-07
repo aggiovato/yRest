@@ -14,16 +14,10 @@ export function registerInit(program: Command): void {
     .command("init")
     .description("Create a sample db.yml in the current directory")
     .option("-f, --file <name>", "Output filename", "db.yml")
-    .option(
-      "-s, --sample <name>",
-      `Sample data to use (${SAMPLES.join(", ")})`,
-      "basic"
-    )
+    .option("-s, --sample <name>", `Sample data to use (${SAMPLES.join(", ")})`, "basic")
     .action((flags: { file: string; sample: string }) => {
       if (!SAMPLES.includes(flags.sample as Sample)) {
-        console.error(
-          `Error: unknown sample "${flags.sample}". Available: ${SAMPLES.join(", ")}`
-        );
+        console.error(`Error: unknown sample "${flags.sample}". Available: ${SAMPLES.join(", ")}`);
         process.exit(1);
       }
 

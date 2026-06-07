@@ -114,7 +114,10 @@ describe("CRUD routes", () => {
     });
 
     it("returns empty array when multiple filters conflict", async () => {
-      const res = await server.inject({ method: "GET", url: "/users?name=Ana&email=luis@test.com" });
+      const res = await server.inject({
+        method: "GET",
+        url: "/users?name=Ana&email=luis@test.com",
+      });
       expect(res.statusCode).toBe(200);
       expect(res.json()).toHaveLength(0);
     });
@@ -153,7 +156,10 @@ describe("CRUD routes", () => {
     });
 
     it("combined with filter", async () => {
-      const res = await server.inject({ method: "GET", url: "/users?_sort=name&email=ana@test.com" });
+      const res = await server.inject({
+        method: "GET",
+        url: "/users?_sort=name&email=ana@test.com",
+      });
       expect(res.statusCode).toBe(200);
       expect(res.json()).toHaveLength(1);
       expect(res.json()[0]).toMatchObject({ name: "Ana" });
@@ -223,7 +229,10 @@ describe("CRUD routes", () => {
     });
 
     it("X-Total-Count reflects count after filtering", async () => {
-      const res = await pageServer.inject({ method: "GET", url: "/users?role=admin&_page=1&_limit=1" });
+      const res = await pageServer.inject({
+        method: "GET",
+        url: "/users?role=admin&_page=1&_limit=1",
+      });
       expect(res.headers["x-total-count"]).toBe("2");
       expect(res.json()).toHaveLength(1);
     });

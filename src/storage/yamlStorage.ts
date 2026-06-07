@@ -2,10 +2,10 @@ import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
-import type { DbData, Relations, Resource } from "./types.js";
+import type { Data, Relations, Resource } from "./types.js";
 
 export interface YamlStorage {
-  getData(): DbData;
+  getData(): Data;
   getRelations(): Relations;
   getCollection(name: string): Resource[] | undefined;
   setCollection(name: string, items: Resource[]): void;
@@ -18,9 +18,9 @@ export function createYamlStorage(filePath: string): YamlStorage {
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 
   const relations: Relations = (raw["_rel"] as Relations) ?? {};
-  const data: DbData = Object.fromEntries(
+  const data: Data = Object.fromEntries(
     Object.entries(raw).filter(([key]) => key !== "_rel")
-  ) as DbData;
+  ) as Data;
 
   return {
     getData() {
@@ -52,7 +52,7 @@ export function createYamlStorage(filePath: string): YamlStorage {
       const freshRelations = (fresh["_rel"] as Relations) ?? {};
       const freshData = Object.fromEntries(
         Object.entries(fresh).filter(([key]) => key !== "_rel")
-      ) as DbData;
+      ) as Data;
 
       for (const key of Object.keys(data)) delete data[key];
       Object.assign(data, freshData);

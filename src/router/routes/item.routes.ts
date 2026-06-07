@@ -1,12 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { YamlStorage } from "../../storage/yamlStorage.js";
 import type { Resource } from "../../storage/types.js";
-import {
-  findById,
-  replaceItem,
-  patchItem,
-  deleteItem,
-} from "../../services/resourceService.js";
+import { findById, replaceItem, patchItem, deleteItem } from "../../services/resourceService.js";
 
 /**
  * Registers item-level routes for a given resource.

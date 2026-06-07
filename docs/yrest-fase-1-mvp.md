@@ -260,10 +260,10 @@ npx yrest init --sample relational      # con relaciones _rel
 npx yrest init --file api.yml           # nombre de archivo personalizado
 ```
 
-| Flag | Default | Descripción |
-|------|---------|-------------|
-| `--file` | `db.yml` | Nombre del archivo a crear |
-| `--sample` | `basic` | Datos de ejemplo (`basic`, `relational`) |
+| Flag       | Default  | Descripción                              |
+| ---------- | -------- | ---------------------------------------- |
+| `--file`   | `db.yml` | Nombre del archivo a crear               |
+| `--sample` | `basic`  | Datos de ejemplo (`basic`, `relational`) |
 
 **Samples disponibles:**
 
@@ -1022,7 +1022,7 @@ Objetivo: llevar el sistema de relaciones `_rel` a su máxima expresión.
 Controla si los campos de relación se devuelven como ID o como objeto embebido completo.
 
 ```yaml
-_nested: true   # global, por defecto false
+_nested: true # global, por defecto false
 ```
 
 Con `_nested: false` (actual):
@@ -1070,7 +1070,7 @@ Ejemplo de ciclo a manejar:
 ```yaml
 _rel:
   posts:
-    userId: users   # posts → users
+    userId: users # posts → users
   # si users tuviera una relación de vuelta a posts → ciclo
 ```
 

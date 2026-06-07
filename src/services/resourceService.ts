@@ -7,9 +7,7 @@ import type { Resource } from "../storage/types.js";
  * Returns 1 if the collection is empty or no numeric ids are found.
  */
 export function nextId(items: Resource[]): number {
-  const ids = items
-    .map((i) => i["id"])
-    .filter((id): id is number => typeof id === "number");
+  const ids = items.map((i) => i["id"]).filter((id): id is number => typeof id === "number");
   return ids.length > 0 ? Math.max(...ids) + 1 : 1;
 }
 
@@ -36,11 +34,7 @@ export function findIndexById(items: Resource[], id: string): number {
  * If the body includes an id it is respected; otherwise a new incremental id is assigned.
  * The id is always placed as the first field of the created item.
  */
-export function createItem(
-  storage: YamlStorage,
-  resource: string,
-  body: Resource
-): Resource {
+export function createItem(storage: YamlStorage, resource: string, body: Resource): Resource {
   const collection = storage.getCollection(resource) ?? [];
   const item: Resource = {
     id: body["id"] !== undefined ? body["id"] : nextId(collection),
@@ -98,10 +92,7 @@ export function patchItem(
  * Comparison converts each item field to string, so ?id=1 matches numeric id: 1.
  * Returns the original array unchanged if no filterable params are present.
  */
-export function filterByQuery(
-  items: Resource[],
-  query: Record<string, string>
-): Resource[] {
+export function filterByQuery(items: Resource[], query: Record<string, string>): Resource[] {
   const filters = Object.entries(query).filter(([key]) => !key.startsWith("_"));
   if (filters.length === 0) return items;
   return items.filter((item) =>
