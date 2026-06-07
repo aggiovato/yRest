@@ -31,9 +31,18 @@ tasks:
     deps: [build]
     cmd: node dist/cli/index.js serve {{.DB_FILE}}
 
+  serve:dist:watch:
+    desc: Start the server from dist with --watch (reloads db.yml on change)
+    deps: [build]
+    cmd: node dist/cli/index.js serve {{.DB_FILE}} --watch
+
   serve:npx:
     desc: Start the published npm version via npx (runs from /tmp to avoid self-reference)
     cmd: cd /tmp && npx {{.PKG_NAME}} serve {{.TASKFILE_DIR}}/{{.DB_FILE}}
+
+  serve:npx:watch:
+    desc: Start the published npm version via npx with --watch
+    cmd: cd /tmp && npx {{.PKG_NAME}} serve {{.TASKFILE_DIR}}/{{.DB_FILE}} --watch
 
   lint:
     desc: Check code with ESLint

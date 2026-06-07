@@ -72,7 +72,7 @@ export function registerServe(program: Command): void {
       }
       console.log("");
 
-      if (flags["watch"]) {
+      if (options.watch) {
         const absFile = resolve(options.file);
         let debounce: ReturnType<typeof setTimeout> | undefined;
 
