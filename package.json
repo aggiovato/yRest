@@ -14,7 +14,7 @@
   "author": "Aggiovato",
   "repository": {
     "type": "git",
-    "url": "https://github.com/aggiovato/yaml-rest.git"
+    "url": "git+https://github.com/aggiovato/yaml-rest.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
