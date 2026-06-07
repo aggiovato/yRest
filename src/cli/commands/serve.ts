@@ -15,6 +15,7 @@ export function registerServe(program: Command): void {
     .option("-b, --base <path>", "Base path prefix for all routes", "")
     .option("-w, --watch", "Reload db.yml automatically when it changes on disk")
     .option("-r, --readonly", "Reject all write operations (POST, PUT, PATCH, DELETE) with 405")
+    .option("-d, --delay <ms>", "Add a fixed delay (ms) to all responses to simulate network latency", "0")
     .action(async (file: string, flags: Record<string, string | boolean>) => {
       const options = serverOptionsSchema.parse({
         file,
@@ -22,6 +23,7 @@ export function registerServe(program: Command): void {
         host: flags["host"],
         base: flags["base"],
         readonly: flags["readonly"] ?? false,
+        delay: flags["delay"] ?? 0,
       });
 
       const storage = createYamlStorage(options.file);
@@ -34,6 +36,7 @@ export function registerServe(program: Command): void {
 
       console.log(`\nyrest running at http://${options.host}:${options.port}`);
       if (options.readonly) console.log("[readonly] write operations are disabled");
+      if (options.delay > 0) console.log(`[delay] ${options.delay}ms added to all responses`);
       console.log(`\nResources (base: ${baseLabel}):`);
       for (const name of collections) {
         console.log(`  /${name}`);

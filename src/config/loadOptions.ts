@@ -9,6 +9,7 @@ export const serverOptionsSchema = z.object({
     .default("")
     .transform((v) => (v && !v.startsWith("/") ? `/${v}` : v)),
   readonly: z.boolean().default(false),
+  delay: z.coerce.number().int().min(0).default(0),
 });
 
 export type ServerOptions = z.infer<typeof serverOptionsSchema>;

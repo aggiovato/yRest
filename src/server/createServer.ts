@@ -23,6 +23,12 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
     });
   }
 
+  if (options.delay > 0) {
+    server.addHook("onSend", (_req, _reply, payload, done) => {
+      setTimeout(() => done(null, payload), options.delay);
+    });
+  }
+
   registerResourceRoutes(server, storage, options.base);
 
   return server;
