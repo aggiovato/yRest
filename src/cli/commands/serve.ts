@@ -6,6 +6,15 @@ import { createServer } from "../../server/createServer.js";
 import { serverOptionsSchema } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
 
+/**
+ * Registers the `serve` command with the CLI program.
+ *
+ * Loads options from three sources in ascending priority:
+ * schema defaults → `yrest.config.yml` → explicit CLI flags.
+ * Only flags the user explicitly provided override the config file.
+ *
+ * @param program - The root Commander program instance.
+ */
 export function registerServe(program: Command): void {
   program
     .command("serve")
@@ -24,7 +33,7 @@ export function registerServe(program: Command): void {
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 
-      // Only apply CLI values that were explicitly set by the user (not defaults)
+      // Only apply CLI values explicitly set by the user; defaults must not shadow the config file.
       const cliOverrides = Object.fromEntries(
         Object.entries(flags).filter(([key]) => cmd.getOptionValueSource(key) === "cli")
       );

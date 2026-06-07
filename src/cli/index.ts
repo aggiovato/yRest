@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// CLI entrypoint — wired by the "bin" field in package.json.
 import { program } from "commander";
 import { registerInit } from "./commands/init.js";
 import { registerServe } from "./commands/serve.js";

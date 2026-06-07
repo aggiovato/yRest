@@ -4,6 +4,7 @@ import type { Command } from "commander";
 import { SAMPLES, templates } from "./templates/index.js";
 import type { Sample } from "./templates/index.js";
 
+/** Default content for a generated `yrest.config.yml`. */
 const CONFIG_TEMPLATE = `# yrest configuration
 # All options can be overridden with CLI flags
 
@@ -16,6 +17,15 @@ host: localhost     # Host to bind
 # delay: 0          # Simulated network latency in milliseconds
 `;
 
+/**
+ * Registers the `init` command with the CLI program.
+ *
+ * Creates a `db.yml` sample database and a `yrest.config.yml` template in the
+ * current working directory. Exits with an error if `db.yml` already exists.
+ * If `yrest.config.yml` already exists it is left untouched.
+ *
+ * @param program - The root Commander program instance.
+ */
 export function registerInit(program: Command): void {
   program
     .command("init")

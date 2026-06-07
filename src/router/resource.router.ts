@@ -5,11 +5,15 @@ import { registerItemRoutes } from "./routes/item.routes.js";
 import { registerNestedRoutes } from "./routes/nested.routes.js";
 
 /**
- * Registers all REST routes for every collection defined in the YAML file,
- * plus any nested routes declared via `_rel`.
+ * Registers all REST routes for every collection defined in the YAML storage.
  *
- * For each collection: collection-level (GET all, POST) and item-level
- * (GET one, PUT, PATCH, DELETE) routes are registered under the given base path.
+ * For each collection, mounts collection-level routes (GET all, POST) and
+ * item-level routes (GET one, PUT, PATCH, DELETE) under `{base}/{collection}`.
+ * Nested routes from `_rel` declarations are mounted under `base`.
+ *
+ * @param server  - The Fastify instance to register routes on.
+ * @param storage - Live YAML storage to read collections and relations from.
+ * @param base    - URL prefix for all routes (e.g. `/api` or `""`).
  */
 export function registerResourceRoutes(
   server: FastifyInstance,

@@ -1,3 +1,4 @@
+/** YAML template for the `relational` sample — three collections with `_rel` declarations. */
 export const relationalTemplate = `_rel:
   posts:
     userId: users

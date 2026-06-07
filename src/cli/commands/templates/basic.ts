@@ -1,3 +1,4 @@
+/** YAML template for the `basic` sample — two simple collections (users, products). */
 export const basicTemplate = `users:
   - id: 1
     name: Ana

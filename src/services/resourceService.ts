@@ -3,8 +3,12 @@ import type { Resource } from "../storage/types.js";
 
 /**
  * Returns the next available incremental integer id for a collection.
- * Finds the highest existing numeric id and returns max + 1.
- * Returns 1 if the collection is empty or no numeric ids are found.
+ *
+ * Finds the highest existing numeric id and returns `max + 1`.
+ * Returns `1` if the collection is empty or contains no numeric ids.
+ *
+ * @param items - Current items in the collection.
+ * @returns Next available integer id.
  */
 export function nextId(items: Resource[]): number {
   const ids = items.map((i) => i["id"]).filter((id): id is number => typeof id === "number");
@@ -12,27 +16,43 @@ export function nextId(items: Resource[]): number {
 }
 
 /**
- * Finds and returns the first item in a collection whose id matches the given string.
- * Comparison is done by converting each item's id to string.
- * Returns undefined if no match is found.
+ * Returns the first item whose `id` matches the given string.
+ *
+ * Comparison is done by converting each item's `id` to string,
+ * so `"1"` matches a numeric `id: 1`.
+ *
+ * @param items - Collection to search.
+ * @param id    - Id to look up, as a string.
+ * @returns The matched item, or `undefined` if not found.
  */
 export function findById(items: Resource[], id: string): Resource | undefined {
   return items.find((i) => String(i["id"]) === id);
 }
 
 /**
- * Returns the index of the first item in a collection whose id matches the given string.
- * Comparison is done by converting each item's id to string.
- * Returns -1 if no match is found.
+ * Returns the index of the first item whose `id` matches the given string.
+ *
+ * Comparison is done by converting each item's `id` to string,
+ * so `"1"` matches a numeric `id: 1`.
+ *
+ * @param items - Collection to search.
+ * @param id    - Id to look up, as a string.
+ * @returns Zero-based index of the matched item, or `-1` if not found.
  */
 export function findIndexById(items: Resource[], id: string): number {
   return items.findIndex((i) => String(i["id"]) === id);
 }
 
 /**
- * Adds a new item to a collection and persists the change to the YAML file.
- * If the body includes an id it is respected; otherwise a new incremental id is assigned.
- * The id is always placed as the first field of the created item.
+ * Adds a new item to a collection and persists the change to disk.
+ *
+ * If the body includes an `id` it is used as-is; otherwise a new incremental
+ * integer id is assigned. The `id` field is always placed first in the created item.
+ *
+ * @param storage  - Storage instance to read from and write to.
+ * @param resource - Collection name.
+ * @param body     - Fields for the new item.
+ * @returns The created item including its assigned id.
  */
 export function createItem(storage: YamlStorage, resource: string, body: Resource): Resource {
   const collection = storage.getCollection(resource) ?? [];
@@ -46,9 +66,15 @@ export function createItem(storage: YamlStorage, resource: string, body: Resourc
 }
 
 /**
- * Fully replaces an existing item in a collection and persists the change.
- * The original id is always preserved regardless of what the body contains.
- * Returns the replaced item, or undefined if no item with the given id exists.
+ * Fully replaces an existing item and persists the change to disk.
+ *
+ * The original `id` is always preserved regardless of what the body contains.
+ *
+ * @param storage  - Storage instance to read from and write to.
+ * @param resource - Collection name.
+ * @param id       - Id of the item to replace.
+ * @param body     - New field values (`id` is ignored and taken from the existing item).
+ * @returns The replaced item, or `undefined` if no item with the given id exists.
  */
 export function replaceItem(
   storage: YamlStorage,
@@ -67,9 +93,15 @@ export function replaceItem(
 }
 
 /**
- * Partially updates an existing item by merging only the provided fields and persists the change.
- * Fields not included in the body are left unchanged.
- * Returns the updated item, or undefined if no item with the given id exists.
+ * Partially updates an existing item by merging the provided fields and persists the change.
+ *
+ * Fields not present in the body are left unchanged.
+ *
+ * @param storage  - Storage instance to read from and write to.
+ * @param resource - Collection name.
+ * @param id       - Id of the item to update.
+ * @param body     - Fields to merge into the existing item.
+ * @returns The updated item, or `undefined` if no item with the given id exists.
  */
 export function patchItem(
   storage: YamlStorage,
@@ -88,9 +120,14 @@ export function patchItem(
 }
 
 /**
- * Filters a collection by query params. Params starting with _ are reserved and ignored.
- * Comparison converts each item field to string, so ?id=1 matches numeric id: 1.
- * Returns the original array unchanged if no filterable params are present.
+ * Filters a collection by query params.
+ *
+ * Params prefixed with `_` are reserved for pagination/sorting and are ignored here.
+ * Comparison converts each item field to string, so `?id=1` matches a numeric `id: 1`.
+ *
+ * @param items - Collection to filter.
+ * @param query - Raw query string params from the request.
+ * @returns Filtered array, or the original array if no filterable params are present.
  */
 export function filterByQuery(items: Resource[], query: Record<string, string>): Resource[] {
   const filters = Object.entries(query).filter(([key]) => !key.startsWith("_"));
@@ -101,9 +138,15 @@ export function filterByQuery(items: Resource[], query: Record<string, string>):
 }
 
 /**
- * Sorts a collection by a field. Order defaults to ascending.
+ * Returns a sorted copy of the collection.
+ *
  * Items missing the sort field are pushed to the end.
  * String comparison is case-insensitive; numbers are compared numerically.
+ *
+ * @param items - Collection to sort.
+ * @param field - Field name to sort by.
+ * @param order - Sort direction: `"asc"` (default) or `"desc"`.
+ * @returns A new sorted array; the original is not mutated.
  */
 export function sortBy(items: Resource[], field: string, order: "asc" | "desc"): Resource[] {
   const direction = order === "desc" ? -1 : 1;
@@ -118,8 +161,12 @@ export function sortBy(items: Resource[], field: string, order: "asc" | "desc"):
 }
 
 /**
- * Returns a page of items from a (already filtered) collection.
- * page and limit must be positive integers; no clamping is done here.
+ * Returns a single page of items from an already-filtered collection.
+ *
+ * @param items - Pre-filtered (and optionally sorted) collection.
+ * @param page  - 1-based page number.
+ * @param limit - Maximum number of items per page.
+ * @returns Slice of the collection for the requested page.
  */
 export function paginate(items: Resource[], page: number, limit: number): Resource[] {
   const start = (page - 1) * limit;
@@ -127,9 +174,12 @@ export function paginate(items: Resource[], page: number, limit: number): Resour
 }
 
 /**
- * Removes an item from a collection and persists the change.
- * Returns the deleted item so the caller can confirm what was removed,
- * or undefined if no item with the given id exists.
+ * Removes an item from a collection and persists the change to disk.
+ *
+ * @param storage  - Storage instance to read from and write to.
+ * @param resource - Collection name.
+ * @param id       - Id of the item to remove.
+ * @returns The deleted item, or `undefined` if no item with the given id exists.
  */
 export function deleteItem(
   storage: YamlStorage,

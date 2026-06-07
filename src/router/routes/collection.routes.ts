@@ -11,18 +11,13 @@ import { createItem, filterByQuery, sortBy, paginate } from "../../services/reso
  */
 export const registerCollectionRoutes: RoutePlugin = (server, storage, resource, base) => {
   server.get<{ Querystring: Record<string, string> }>(base, (req, reply) => {
-    // Retrieve the collection from storage, or use an empty array if it doesn't exist
     const collection = storage.getCollection(resource) ?? [];
-
-    // Filter the collection by query params
     const filtered = filterByQuery(collection, req.query);
 
-    // Sort the filtered collection by query params
     const sortField = req.query["_sort"];
     const sortOrder = req.query["_order"] === "desc" ? "desc" : "asc";
     const sorted = sortField ? sortBy(filtered, sortField, sortOrder) : filtered;
 
-    // Paginate the sorted collection by query params
     const rawPage = req.query["_page"];
     const rawLimit = req.query["_limit"];
     if (!rawPage && !rawLimit) return sorted;
@@ -30,10 +25,9 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     const page = Math.max(1, parseInt(rawPage ?? "1", 10) || 1);
     const limit = Math.max(1, parseInt(rawLimit ?? "10", 10) || 10);
 
-    // Add X-Total-Count header with the filtered count before pagination
+    // Reflects the filtered total before pagination so clients can compute page counts.
     reply.header("X-Total-Count", String(sorted.length));
 
-    // Return the paginated collection
     return paginate(sorted, page, limit);
   });
 
