@@ -3,7 +3,7 @@ import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../type
 import { firstParam } from "../../utils/params.js";
 import { filterByQuery, fullTextSearch, sortBy, paginate } from "../../services/query.service.js";
 import { createItem } from "../../services/resource.service.js";
-import { expandItems } from "../../services/expand.service.js";
+import { expandItems, embedItems } from "../../services/expand.service.js";
 
 /**
  * Registers collection-level routes for a given resource.
@@ -38,7 +38,12 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / limit) || 1;
 
-      const data = expandItems(paginate(sorted, page, limit), req.query, resource, storage);
+      const data = embedItems(
+        expandItems(paginate(sorted, page, limit), req.query, resource, storage),
+        req.query,
+        resource,
+        storage
+      );
 
       const pagination: Pagination = {
         page,
@@ -67,7 +72,12 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
       result = paginate(sorted, page, limit);
     }
 
-    return expandItems(result, req.query, resource, storage);
+    return embedItems(
+      expandItems(result, req.query, resource, storage),
+      req.query,
+      resource,
+      storage
+    );
   });
 
   // POST /{resource}

@@ -113,6 +113,16 @@ function examplesBlock(
     examples.push(`# Pageable envelope\ncurl "${host}${base}/${firstCol}?_page=2"`);
   }
 
+  const firstParentRel = Object.entries(relations).find(([, fields]) =>
+    Object.values(fields).includes(firstCol ?? "")
+  );
+  if (firstParentRel && firstCol) {
+    const [childName] = firstParentRel;
+    examples.push(
+      `# Embed child collection with ?_embed\ncurl "${host}${base}/${firstCol}/1?_embed=${childName}"`
+    );
+  }
+
   if (options.snapshot) {
     examples.push(
       `# Snapshot endpoints\ncurl ${host}/_snapshot\ncurl -X POST ${host}/_snapshot/save\ncurl -X POST ${host}/_snapshot/reset`
@@ -363,6 +373,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
           <tr><td><code>?_sort &amp; ?_order</code></td><td><code>?_sort=name&amp;_order=desc</code></td><td>Sort by field. <code>_order</code>: <code>asc</code> (default) or <code>desc</code>.</td></tr>
           <tr><td><code>?_page &amp; ?_limit</code></td><td><code>?_page=2&amp;_limit=10</code></td><td>${paginationDesc}</td></tr>
           <tr><td><code>?_expand</code></td><td><code>?_expand=user</code></td><td>Embed a related parent object inline. Requires <code>_rel</code> in the YAML file.</td></tr>
+          <tr><td><code>?_embed</code></td><td><code>?_embed=posts</code></td><td>Embed child collections into each parent item. Requires <code>_rel</code> in the YAML file.</td></tr>
         </tbody>
       </table>
     </div>

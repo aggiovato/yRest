@@ -93,3 +93,87 @@ export function expandItems(
 
   return isArray ? expanded : expanded[0]!;
 }
+
+/**
+ * Embeds child collections into a single item based on `?_embed`.
+ *
+ * The inverse of {@link expandItems}: instead of embedding the parent into the child,
+ * it embeds an array of children into the parent. Requires `_rel` declarations in the
+ * YAML file that reference the current resource as the parent collection.
+ *
+ * @param item     - The parent item to embed children into.
+ * @param query    - Raw query string params from the request.
+ * @param resource - Name of the parent collection being queried.
+ * @param storage  - Live YAML storage to read child collections from.
+ */
+export function embedItems(
+  item: Resource,
+  query: Record<string, string | string[]>,
+  resource: string,
+  storage: YamlStorage
+): Resource;
+
+/**
+ * Embeds child collections into each item in a collection based on `?_embed`.
+ *
+ * Accepts both `?_embed=posts,comments` (comma-separated) and
+ * `?_embed=posts&_embed=comments` (repeated param).
+ *
+ * @param items    - Parent items to embed children into.
+ * @param query    - Raw query string params from the request.
+ * @param resource - Name of the parent collection being queried.
+ * @param storage  - Live YAML storage to read child collections from.
+ */
+export function embedItems(
+  items: Resource[],
+  query: Record<string, string | string[]>,
+  resource: string,
+  storage: YamlStorage
+): Resource[];
+
+export function embedItems(
+  input: Resource | Resource[],
+  query: Record<string, string | string[]>,
+  resource: string,
+  storage: YamlStorage
+): Resource | Resource[] {
+  const isArray = Array.isArray(input);
+  const items = isArray ? input : [input];
+
+  const embedParam = query["_embed"];
+  if (!embedParam) return isArray ? items : input;
+
+  const keys = (Array.isArray(embedParam) ? embedParam : [embedParam])
+    .flatMap((v) => v.split(","))
+    .map((k) => k.trim())
+    .filter(Boolean);
+
+  const relations = storage.getRelations();
+
+  // For each embed key, find the relation where this resource is the parent collection.
+  const embeds = new Map<string, { childCollection: string; fkField: string }>();
+  for (const embedKey of keys) {
+    outer: for (const [childCollection, fields] of Object.entries(relations)) {
+      for (const [fkField, parentCollection] of Object.entries(fields)) {
+        if (parentCollection === resource && childCollection === embedKey) {
+          embeds.set(embedKey, { childCollection, fkField });
+          break outer;
+        }
+      }
+    }
+  }
+
+  if (embeds.size === 0) return isArray ? items : input;
+
+  const result = items.map((item) => {
+    const out: Resource = { ...item };
+    for (const [embedKey, { childCollection, fkField }] of embeds) {
+      out[embedKey] = (storage.getCollection(childCollection) ?? []).filter(
+        (child) => String(child[fkField]) === String(item["id"])
+      );
+    }
+    return out;
+  });
+
+  return isArray ? result : result[0]!;
+}
