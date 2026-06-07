@@ -34,6 +34,10 @@ export function registerServe(program: Command): void {
       "--pageable [limit]",
       "Wrap GET collection responses in { data, pagination } envelope. Optionally set default page size (default: 10)"
     )
+    .option(
+      "--snapshot",
+      "Save a snapshot of the initial database state and expose /_snapshot endpoints"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 
@@ -66,6 +70,8 @@ export function registerServe(program: Command): void {
         console.log(
           `[pageable] responses wrapped in { data, pagination } (limit: ${options.pageable.limit})`
         );
+      if (options.snapshot)
+        console.log("[snapshot] /_snapshot endpoints enabled — GET / POST save / POST reset");
       console.log(`\nResources (base: ${baseLabel}):`);
       for (const name of collections) {
         console.log(`  /${name}`);

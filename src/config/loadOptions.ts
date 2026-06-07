@@ -23,6 +23,11 @@ export const serverOptionsSchema = z.object({
     .transform((v) => (v && !v.startsWith("/") ? `/${v}` : v)),
   /** When `true`, the server reloads the YAML file automatically on disk changes. */
   watch: z.boolean().default(false),
+  /**
+   * When `true`, saves a snapshot of the initial database state on startup.
+   * Exposes `/_snapshot` endpoints to inspect, restore or update the snapshot.
+   */
+  snapshot: z.boolean().default(false),
   /** When `true`, all mutating requests (POST, PUT, PATCH, DELETE) are rejected with 405. */
   readonly: z.boolean().default(false),
   /** Milliseconds to delay every response, simulating network latency. `0` = disabled. */

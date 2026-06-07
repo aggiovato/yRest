@@ -113,6 +113,12 @@ function examplesBlock(
     examples.push(`# Pageable envelope\ncurl "${host}${base}/${firstCol}?_page=2"`);
   }
 
+  if (options.snapshot) {
+    examples.push(
+      `# Snapshot endpoints\ncurl ${host}/_snapshot\ncurl -X POST ${host}/_snapshot/save\ncurl -X POST ${host}/_snapshot/reset`
+    );
+  }
+
   const highlighted = examples
     .map((e) => e.replace(/^(#.+)$/gm, '<span class="cm">$1</span>'))
     .join("\n\n");
@@ -143,6 +149,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
   if (options.delay > 0) modes.push(badge(`delay · ${options.delay}ms`, "#fb923c", "#fb923c18"));
   if (options.pageable.enabled)
     modes.push(badge(`pageable · limit ${options.pageable.limit}`, "#34d399", "#34d39918"));
+  if (options.snapshot) modes.push(badge("snapshot", "#c084fc", "#c084fc18"));
 
   // ── Resource accordions ──────────────────────────────────────────────────────
   const accordions = collections.map((col, i) => resourceAccordion(col, base, i === 0)).join("");
@@ -167,6 +174,22 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       <span class="route-count">${nestedRows.length} route${nestedRows.length !== 1 ? "s" : ""}</span>
     </summary>
     <table><tbody>${nestedRows.join("")}</tbody></table>
+  </details>`
+    : "";
+
+  // ── Snapshot accordion ───────────────────────────────────────────────────────
+  const snapshotAccordion = options.snapshot
+    ? `
+  <details class="resource-card nested-card">
+    <summary>
+      <span class="resource-name">/_snapshot</span>
+      <span class="route-count">3 routes</span>
+    </summary>
+    <table><tbody>
+      ${endpointRow("GET", "/_snapshot", "Returns metadata of the current snapshot: <code>savedAt</code> and item counts per collection.")}
+      ${endpointRow("POST", "/_snapshot/save", "Replaces the stored snapshot with the current database state.")}
+      ${endpointRow("POST", "/_snapshot/reset", "Restores the database to the last saved snapshot and persists to disk.")}
+    </tbody></table>
   </details>`
     : "";
 
@@ -322,6 +345,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
     <div class="endpoints-grid">
       ${accordions}
       ${nestedAccordion}
+      ${snapshotAccordion}
     </div>
 
     <h2>Query Parameters</h2>

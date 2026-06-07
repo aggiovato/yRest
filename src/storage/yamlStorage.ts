@@ -54,6 +54,26 @@ export interface YamlStorage {
    * @throws {Error} If the file cannot be read or the YAML is malformed.
    */
   reload(): void;
+
+  /**
+   * Returns the saved snapshot: a frozen copy of `data` and `relations` taken
+   * at the last call to {@link saveSnapshot} (or at construction time).
+   */
+  getSnapshot(): { data: Data; relations: Relations; savedAt: Date };
+
+  /**
+   * Replaces the stored snapshot with a deep copy of the current in-memory state.
+   * Future calls to {@link resetToSnapshot} will restore to this point.
+   */
+  saveSnapshot(): void;
+
+  /**
+   * Restores the in-memory state to the last saved snapshot and persists to disk.
+   * Mutates `data` and `relations` in place so existing references stay valid.
+   *
+   * @throws {Error} If the filesystem write fails.
+   */
+  resetToSnapshot(): void;
 }
 
 /**
@@ -65,6 +85,12 @@ export interface YamlStorage {
  * @param filePath - Relative or absolute path to the YAML database file.
  * @throws {Error} If the file cannot be read or its YAML is invalid.
  */
+function deepCopyData(source: Data): Data {
+  return Object.fromEntries(
+    Object.entries(source).map(([k, v]) => [k, v.map((item) => ({ ...item }))])
+  ) as Data;
+}
+
 export function createYamlStorage(filePath: string): YamlStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
@@ -73,6 +99,12 @@ export function createYamlStorage(filePath: string): YamlStorage {
   const data: Data = Object.fromEntries(
     Object.entries(raw).filter(([key]) => key !== "_rel")
   ) as Data;
+
+  let snapshot = {
+    data: deepCopyData(data),
+    relations: { ...relations },
+    savedAt: new Date(),
+  };
 
   return {
     getData() {
@@ -110,6 +142,27 @@ export function createYamlStorage(filePath: string): YamlStorage {
       Object.assign(data, freshData);
       for (const key of Object.keys(relations)) delete relations[key];
       Object.assign(relations, freshRelations);
+    },
+
+    getSnapshot() {
+      return snapshot;
+    },
+
+    saveSnapshot() {
+      snapshot = {
+        data: deepCopyData(data),
+        relations: { ...relations },
+        savedAt: new Date(),
+      };
+    },
+
+    resetToSnapshot() {
+      const snap = deepCopyData(snapshot.data);
+      for (const key of Object.keys(data)) delete data[key];
+      Object.assign(data, snap);
+      for (const key of Object.keys(relations)) delete relations[key];
+      Object.assign(relations, { ...snapshot.relations });
+      this.persist();
     },
   };
 }

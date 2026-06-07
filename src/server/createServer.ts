@@ -4,6 +4,7 @@ import type { YamlStorage } from "../storage/yamlStorage.js";
 import type { ServerOptions } from "../config/loadOptions.js";
 import { registerResourceRoutes } from "../router/resource.router.js";
 import { registerAboutRoute } from "../router/routes/about.routes.js";
+import { registerSnapshotRoutes } from "../router/routes/snapshot.routes.js";
 
 /** HTTP methods that modify server state. Used by the readonly guard hook. */
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -48,6 +49,7 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
   }
 
   registerAboutRoute(server, storage, options);
+  if (options.snapshot) registerSnapshotRoutes(server, storage);
   registerResourceRoutes(server, storage, options);
 
   return server;

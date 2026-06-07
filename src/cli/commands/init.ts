@@ -16,6 +16,7 @@ host: localhost     # Host to bind
 # readonly: false   # Block write operations (POST, PUT, PATCH, DELETE)
 # delay: 0          # Simulated network latency in milliseconds
 # pageable: false   # Wrap GET collections in { data, pagination }. Use true (limit 10) or a number
+# snapshot: false   # Save initial db state and expose /_snapshot endpoints (GET / POST save / POST reset)
 `;
 
 /**
