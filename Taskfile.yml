@@ -60,6 +60,28 @@ tasks:
     desc: Check formatting without writing
     cmd: npm run format:check
 
+  preflight:
+    desc: Full pre-push check — format, lint, typecheck and tests in order
+    cmds:
+      - task: format:check
+      - task: format
+      - task: lint
+      - task: lint:fix
+      - npm run typecheck
+      - task: test
+      - cmd: |
+          printf "\n\033[1;34m┌──────────────────────────────────────────┐\033[0m\n"
+          printf "\033[1;34m│\033[0m   \033[1;36m✦  yrest · preflight results  ✦\033[0m   \033[1;34m│\033[0m\n"
+          printf "\033[1;34m└──────────────────────────────────────────┘\033[0m\n\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mformat:check\033[0m    \033[2mcode style verified\033[0m\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mformat\033[0m          \033[2mfiles formatted\033[0m\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mlint\033[0m            \033[2mno ESLint issues\033[0m\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mlint:fix\033[0m        \033[2mauto-fixes applied\033[0m\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mtypecheck\033[0m       \033[2mTypeScript clean\033[0m\n"
+          printf "  \033[1;32m✓\033[0m  \033[1mtests\033[0m           \033[2mall passed\033[0m\n"
+          printf "\n  \033[1;32m→  All checks passed — safe to push\033[0m\n\n"
+        silent: true
+
   # ── Release ────────────────────────────────────────────────────────────────
 
   release:patch:
