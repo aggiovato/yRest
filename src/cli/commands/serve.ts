@@ -1,3 +1,5 @@
+import { watchFile } from "node:fs";
+import { resolve } from "node:path";
 import type { Command } from "commander";
 import { createYamlStorage } from "../../storage/yamlStorage.js";
 import { createServer } from "../../server/createServer.js";
@@ -11,7 +13,8 @@ export function registerServe(program: Command): void {
     .option("-p, --port <number>", "Port to listen on", "3070")
     .option("-H, --host <host>", "Host to bind", "localhost")
     .option("-b, --base <path>", "Base path prefix for all routes", "")
-    .action(async (file: string, flags: Record<string, string>) => {
+    .option("-w, --watch", "Reload db.yml automatically when it changes on disk")
+    .action(async (file: string, flags: Record<string, string | boolean>) => {
       const options = serverOptionsSchema.parse({
         file,
         port: flags["port"],
@@ -33,5 +36,25 @@ export function registerServe(program: Command): void {
         console.log(`  /${name}`);
       }
       console.log("");
+
+      if (flags["watch"]) {
+        const absFile = resolve(options.file);
+        let debounce: ReturnType<typeof setTimeout> | undefined;
+
+        watchFile(absFile, { interval: 300 }, (curr, prev) => {
+          if (curr.mtimeMs === prev.mtimeMs) return;
+          clearTimeout(debounce);
+          debounce = setTimeout(() => {
+            try {
+              storage.reload();
+              console.log(`[watch] reloaded ${options.file}`);
+            } catch {
+              console.error(`[watch] failed to reload ${options.file} — check YAML syntax`);
+            }
+          }, 100);
+        });
+
+        console.log(`[watch] watching ${options.file} for changes\n`);
+      }
     });
 }

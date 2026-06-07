@@ -10,6 +10,7 @@ export interface YamlStorage {
   getCollection(name: string): Resource[] | undefined;
   setCollection(name: string, items: Resource[]): void;
   persist(): void;
+  reload(): void;
 }
 
 export function createYamlStorage(filePath: string): YamlStorage {
@@ -39,12 +40,24 @@ export function createYamlStorage(filePath: string): YamlStorage {
     },
 
     persist() {
-      const payload = Object.keys(relations).length > 0
-        ? { _rel: relations, ...data }
-        : { ...data };
+      const payload =
+        Object.keys(relations).length > 0 ? { _rel: relations, ...data } : { ...data };
       const tmp = resolve(dirname(absPath), `.yrest-${randomUUID()}.tmp`);
       writeFileSync(tmp, stringify(payload), "utf8");
       renameSync(tmp, absPath);
+    },
+
+    reload() {
+      const fresh = parse(readFileSync(absPath, "utf8")) ?? {};
+      const freshRelations = (fresh["_rel"] as Relations) ?? {};
+      const freshData = Object.fromEntries(
+        Object.entries(fresh).filter(([key]) => key !== "_rel")
+      ) as DbData;
+
+      for (const key of Object.keys(data)) delete data[key];
+      Object.assign(data, freshData);
+      for (const key of Object.keys(relations)) delete relations[key];
+      Object.assign(relations, freshRelations);
     },
   };
 }

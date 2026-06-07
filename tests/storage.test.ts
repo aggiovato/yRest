@@ -101,4 +101,93 @@ describe("createYamlStorage", () => {
     const reloaded = createYamlStorage(filePath);
     expect(reloaded.getCollection("posts")).toHaveLength(1);
   });
+
+  describe("reload", () => {
+    it("picks up new data written to disk by an external process", () => {
+      const storage = createYamlStorage(filePath);
+      expect(storage.getCollection("users")).toHaveLength(2);
+
+      writeFileSync(
+        filePath,
+        `
+users:
+  - id: 1
+    name: Ana
+  - id: 2
+    name: Luis
+  - id: 3
+    name: Carlos
+`,
+        "utf8"
+      );
+
+      storage.reload();
+      expect(storage.getCollection("users")).toHaveLength(3);
+      expect(storage.getCollection("users")?.[2]).toMatchObject({ id: 3, name: "Carlos" });
+    });
+
+    it("picks up a new collection added externally", () => {
+      const storage = createYamlStorage(filePath);
+      expect(storage.getCollection("tags")).toBeUndefined();
+
+      writeFileSync(
+        filePath,
+        `
+users:
+  - id: 1
+    name: Ana
+tags:
+  - id: 1
+    label: news
+`,
+        "utf8"
+      );
+
+      storage.reload();
+      expect(storage.getCollection("tags")).toHaveLength(1);
+    });
+
+    it("picks up a removed collection", () => {
+      const storage = createYamlStorage(filePath);
+      expect(storage.getCollection("posts")).toBeDefined();
+
+      writeFileSync(
+        filePath,
+        `
+users:
+  - id: 1
+    name: Ana
+`,
+        "utf8"
+      );
+
+      storage.reload();
+      expect(storage.getCollection("posts")).toBeUndefined();
+    });
+
+    it("updates _rel relations on reload", () => {
+      const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
+      const storage = createYamlStorage(relFilePath);
+      expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
+
+      writeFileSync(
+        relFilePath,
+        `
+users:
+  - id: 1
+    name: Ana
+posts:
+  - id: 1
+    title: First
+    userId: 1
+`,
+        "utf8"
+      );
+
+      storage.reload();
+      expect(storage.getRelations()).toEqual({});
+      unlinkSync(relFilePath);
+    });
+  });
 });
