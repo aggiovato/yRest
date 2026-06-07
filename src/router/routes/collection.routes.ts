@@ -72,6 +72,9 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
   });
 
   server.post<RouteQuery & { Body: Resource }>(base, (req, reply) => {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+      return reply.status(400).send({ error: "Request body must be a JSON object" });
+    }
     const item = createItem(storage, resource, req.body as Resource);
     return reply.status(201).send(expandItems(item, req.query, resource, storage));
   });

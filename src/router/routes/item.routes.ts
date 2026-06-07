@@ -29,12 +29,18 @@ export const registerItemRoutes: RoutePlugin = (server, storage, resource, base)
   });
 
   server.put<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+      return reply.status(400).send({ error: "Request body must be a JSON object" });
+    }
     const item = replaceItem(storage, resource, req.params.id, req.body as Resource);
     if (!item) return reply.status(404).send({ error: "Not found" });
     return expandItems(item, req.query, resource, storage);
   });
 
   server.patch<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+      return reply.status(400).send({ error: "Request body must be a JSON object" });
+    }
     const item = patchItem(storage, resource, req.params.id, req.body as Resource);
     if (!item) return reply.status(404).send({ error: "Not found" });
     return expandItems(item, req.query, resource, storage);

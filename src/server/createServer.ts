@@ -29,6 +29,12 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
 
   await server.register(cors);
 
+  server.setErrorHandler((err: { statusCode?: number; message?: string }, _req, reply) => {
+    const status = err.statusCode ?? 500;
+    const message = status < 500 ? err.message || "Request error" : "Internal server error";
+    reply.status(status).send({ error: message });
+  });
+
   if (options.readonly) {
     server.addHook("onRequest", (_req, reply, done) => {
       if (MUTATING_METHODS.has(_req.method)) {

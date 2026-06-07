@@ -55,7 +55,15 @@ export function registerServe(program: Command): void {
 
       const options = serverOptionsSchema.parse(merged);
 
-      const storage = createYamlStorage(options.file);
+      let storage;
+      try {
+        storage = createYamlStorage(options.file);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`Error: cannot load "${options.file}" — ${msg}`);
+        process.exit(1);
+      }
+
       const server = await createServer(storage, options);
 
       await server.listen({ port: options.port, host: options.host });
@@ -89,8 +97,9 @@ export function registerServe(program: Command): void {
             try {
               storage.reload();
               console.log(`[watch] reloaded ${options.file}`);
-            } catch {
-              console.error(`[watch] failed to reload ${options.file} — check YAML syntax`);
+            } catch (err) {
+              const msg = err instanceof Error ? err.message : String(err);
+              console.error(`[watch] failed to reload ${options.file} — ${msg}`);
             }
           }, 100);
         });
