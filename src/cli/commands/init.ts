@@ -4,15 +4,22 @@ import type { Command } from "commander";
 import { SAMPLES, templates } from "./templates/index.js";
 import type { Sample } from "./templates/index.js";
 
-/**
- * Registers the `init` command.
- * Creates a sample db.yml file in the current working directory.
- * Exits with an error if the file already exists or an unknown sample is requested.
- */
+const CONFIG_TEMPLATE = `# yrest configuration
+# All options can be overridden with CLI flags
+
+file: db.yml        # YAML database file
+port: 3070          # Port to listen on
+host: localhost     # Host to bind
+# base: /api        # Base path prefix for all routes
+# watch: false      # Reload db file on change
+# readonly: false   # Block write operations (POST, PUT, PATCH, DELETE)
+# delay: 0          # Simulated network latency in milliseconds
+`;
+
 export function registerInit(program: Command): void {
   program
     .command("init")
-    .description("Create a sample db.yml in the current directory")
+    .description("Create a sample db.yml and yrest.config.yml in the current directory")
     .option("-f, --file <name>", "Output filename", "db.yml")
     .option("-s, --sample <name>", `Sample data to use (${SAMPLES.join(", ")})`, "basic")
     .action((flags: { file: string; sample: string }) => {
@@ -29,6 +36,13 @@ export function registerInit(program: Command): void {
 
       writeFileSync(target, templates[flags.sample as Sample], "utf8");
       console.log(`Created ${flags.file} (sample: ${flags.sample})`);
-      console.log(`Run: npx @aggiovato/yrest serve ${flags.file}`);
+
+      const configTarget = resolve(process.cwd(), "yrest.config.yml");
+      if (!existsSync(configTarget)) {
+        writeFileSync(configTarget, CONFIG_TEMPLATE, "utf8");
+        console.log("Created yrest.config.yml");
+      }
+
+      console.log(`Run: npx @aggiovato/yrest serve`);
     });
 }

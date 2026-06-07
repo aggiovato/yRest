@@ -1,9 +1,10 @@
 import { watchFile } from "node:fs";
-import { resolve } from "node:path";
+import { join, resolve } from "node:path";
 import type { Command } from "commander";
 import { createYamlStorage } from "../../storage/yamlStorage.js";
 import { createServer } from "../../server/createServer.js";
 import { serverOptionsSchema } from "../../config/loadOptions.js";
+import { loadConfigFile } from "../../config/loadConfigFile.js";
 
 export function registerServe(program: Command): void {
   program
@@ -20,15 +21,22 @@ export function registerServe(program: Command): void {
       "Add a fixed delay (ms) to all responses to simulate network latency",
       "0"
     )
-    .action(async (file: string, flags: Record<string, string | boolean>) => {
-      const options = serverOptionsSchema.parse({
+    .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
+      const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
+
+      // Only apply CLI values that were explicitly set by the user (not defaults)
+      const cliOverrides = Object.fromEntries(
+        Object.entries(flags).filter(([key]) => cmd.getOptionValueSource(key) === "cli")
+      );
+
+      const merged = {
         file,
-        port: flags["port"],
-        host: flags["host"],
-        base: flags["base"],
-        readonly: flags["readonly"] ?? false,
-        delay: flags["delay"] ?? 0,
-      });
+        ...fileConfig,
+        ...(cmd.args.length > 0 ? { file } : {}),
+        ...cliOverrides,
+      };
+
+      const options = serverOptionsSchema.parse(merged);
 
       const storage = createYamlStorage(options.file);
       const server = await createServer(storage, options);
