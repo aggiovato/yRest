@@ -35,6 +35,22 @@ tasks:
     desc: Start the published npm version via npx (runs from /tmp to avoid self-reference)
     cmd: cd /tmp && npx {{.PKG_NAME}} serve {{.TASKFILE_DIR}}/{{.DB_FILE}}
 
+  lint:
+    desc: Check code with ESLint
+    cmd: npm run lint
+
+  lint:fix:
+    desc: Auto-fix ESLint errors
+    cmd: npm run lint:fix
+
+  format:
+    desc: Format all files with Prettier
+    cmd: npm run format
+
+  format:check:
+    desc: Check formatting without writing
+    cmd: npm run format:check
+
   # ── Release ────────────────────────────────────────────────────────────────
 
   release:patch:
