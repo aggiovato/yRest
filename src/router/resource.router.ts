@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { YamlStorage } from "../storage/yamlStorage.js";
+import type { ServerOptions } from "../config/loadOptions.js";
 import { registerCollectionRoutes } from "./routes/collection.routes.js";
 import { registerItemRoutes } from "./routes/item.routes.js";
 import { registerNestedRoutes } from "./routes/nested.routes.js";
@@ -13,18 +14,18 @@ import { registerNestedRoutes } from "./routes/nested.routes.js";
  *
  * @param server  - The Fastify instance to register routes on.
  * @param storage - Live YAML storage to read collections and relations from.
- * @param base    - URL prefix for all routes (e.g. `/api` or `""`).
+ * @param options - Resolved server options; `options.base` is used as the URL prefix.
  */
 export function registerResourceRoutes(
   server: FastifyInstance,
   storage: YamlStorage,
-  base: string
+  options: ServerOptions
 ): void {
   for (const resource of Object.keys(storage.getData())) {
-    const resourceBase = `${base}/${resource}`;
-    registerCollectionRoutes(server, storage, resource, resourceBase);
-    registerItemRoutes(server, storage, resource, resourceBase);
+    const resourceBase = `${options.base}/${resource}`;
+    registerCollectionRoutes(server, storage, resource, resourceBase, options);
+    registerItemRoutes(server, storage, resource, resourceBase, options);
   }
 
-  registerNestedRoutes(server, storage, storage.getRelations(), base);
+  registerNestedRoutes(server, storage, storage.getRelations(), options.base);
 }

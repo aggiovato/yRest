@@ -15,6 +15,7 @@ host: localhost     # Host to bind
 # watch: false      # Reload db file on change
 # readonly: false   # Block write operations (POST, PUT, PATCH, DELETE)
 # delay: 0          # Simulated network latency in milliseconds
+# pageable: false   # Wrap GET collections in { data, pagination }. Use true (limit 10) or a number
 `;
 
 /**

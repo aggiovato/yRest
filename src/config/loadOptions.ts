@@ -25,6 +25,17 @@ export const serverOptionsSchema = z.object({
   readonly: z.boolean().default(false),
   /** Milliseconds to delay every response, simulating network latency. `0` = disabled. */
   delay: z.coerce.number().int().min(0).default(0),
+  /**
+   * Wraps GET collection responses in a `{ data, pagination }` envelope.
+   * Accepts `true` (default limit 10), `false` (disabled), or a positive integer (custom limit).
+   */
+  pageable: z
+    .union([z.boolean(), z.coerce.number().int().positive()])
+    .default(false)
+    .transform((v) => ({
+      enabled: v !== false,
+      limit: v === false || v === true ? 10 : (v as number),
+    })),
 });
 
 /**

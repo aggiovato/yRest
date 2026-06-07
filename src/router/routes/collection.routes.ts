@@ -1,5 +1,5 @@
 import type { Resource } from "../../storage/types.js";
-import type { RoutePlugin, RouteQuery } from "../types.js";
+import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../types.js";
 import {
   createItem,
   filterByQuery,
@@ -11,11 +11,15 @@ import {
 /**
  * Registers collection-level routes for a given resource.
  *
- * GET  /{resource}   — Returns all items in the collection.
+ * GET  /{resource}   — Returns all items. Supports `?_sort`, `?_order`, `?_page`, `?_limit`,
+ *                      `?_expand`, and field filters. When `pageable` mode is enabled the response
+ *                      is wrapped in `{ data, pagination }` and `?_page`/`?_limit` query params
+ *                      use the server default limit. Without `pageable`, raw arrays are returned
+ *                      and `X-Total-Count` is set when `?_page` or `?_limit` are present.
  * POST /{resource}   — Creates a new item. Auto-assigns an incremental id if none is provided.
  *                      Persists the change to the YAML file. Returns 201 with the created item.
  */
-export const registerCollectionRoutes: RoutePlugin = (server, storage, resource, base) => {
+export const registerCollectionRoutes: RoutePlugin = (server, storage, resource, base, options) => {
   server.get<RouteQuery>(base, (req, reply) => {
     const collection = storage.getCollection(resource) ?? [];
     const filtered = filterByQuery(collection, req.query);
@@ -23,6 +27,32 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     const sortField = req.query["_sort"];
     const sortOrder = req.query["_order"] === "desc" ? "desc" : "asc";
     const sorted = sortField ? sortBy(filtered, sortField, sortOrder) : filtered;
+
+    if (options.pageable.enabled) {
+      const defaultLimit = options.pageable.limit;
+      const page = Math.max(1, parseInt(req.query["_page"] ?? "1", 10) || 1);
+      const limit = Math.max(
+        1,
+        parseInt(req.query["_limit"] ?? String(defaultLimit), 10) || defaultLimit
+      );
+      const totalItems = sorted.length;
+      const totalPages = Math.ceil(totalItems / limit) || 1;
+
+      const data = expandItems(paginate(sorted, page, limit), req.query, resource, storage);
+
+      const pagination: Pagination = {
+        page,
+        limit,
+        totalItems,
+        totalPages,
+        isFirst: page === 1,
+        isLast: page >= totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      };
+
+      return reply.send({ data, pagination } satisfies PagedResponse);
+    }
 
     const rawPage = req.query["_page"];
     const rawLimit = req.query["_limit"];
@@ -33,7 +63,6 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     } else {
       const page = Math.max(1, parseInt(rawPage ?? "1", 10) || 1);
       const limit = Math.max(1, parseInt(rawLimit ?? "10", 10) || 10);
-      // Reflects the filtered total before pagination so clients can compute page counts.
       reply.header("X-Total-Count", String(sorted.length));
       result = paginate(sorted, page, limit);
     }

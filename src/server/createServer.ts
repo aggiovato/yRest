@@ -46,7 +46,7 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
     });
   }
 
-  registerResourceRoutes(server, storage, options.base);
+  registerResourceRoutes(server, storage, options);
 
   return server;
 }

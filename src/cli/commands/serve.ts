@@ -30,6 +30,10 @@ export function registerServe(program: Command): void {
       "Add a fixed delay (ms) to all responses to simulate network latency",
       "0"
     )
+    .option(
+      "--pageable [limit]",
+      "Wrap GET collection responses in { data, pagination } envelope. Optionally set default page size (default: 10)"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 
@@ -58,6 +62,10 @@ export function registerServe(program: Command): void {
       console.log(`\nyrest running at http://${options.host}:${options.port}`);
       if (options.readonly) console.log("[readonly] write operations are disabled");
       if (options.delay > 0) console.log(`[delay] ${options.delay}ms added to all responses`);
+      if (options.pageable.enabled)
+        console.log(
+          `[pageable] responses wrapped in { data, pagination } (limit: ${options.pageable.limit})`
+        );
       console.log(`\nResources (base: ${baseLabel}):`);
       for (const name of collections) {
         console.log(`  /${name}`);

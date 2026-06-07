@@ -11,6 +11,9 @@ users:
   - id: 2
     name: Luis
     email: luis@test.com
+  - id: 3
+    name: Maria
+    email: maria@test.com
 
 posts:
   - id: 1

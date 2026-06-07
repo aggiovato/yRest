@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import type { YamlStorage } from "../storage/yamlStorage.js";
-import type { Relations } from "../storage/types.js";
+import type { Resource, Relations } from "../storage/types.js";
+import type { ServerOptions } from "../config/loadOptions.js";
 
 /** Fastify route params for item-level routes that include an `:id` segment. */
 export type ItemParams = { Params: { id: string } };
@@ -15,12 +16,14 @@ export type RouteQuery = { Querystring: Record<string, string> };
  * @param storage  - Live YAML storage shared across all route handlers.
  * @param resource - Collection name as declared in the YAML file (e.g. `"users"`).
  * @param base     - Full URL prefix for this resource (e.g. `/api/users`).
+ * @param options  - Resolved server options (pagination config, readonly, delay, etc.).
  */
 export type RoutePlugin = (
   server: FastifyInstance,
   storage: YamlStorage,
   resource: string,
-  base: string
+  base: string,
+  options: ServerOptions
 ) => void;
 
 /**
@@ -37,3 +40,38 @@ export type NestedRoutePlugin = (
   relations: Relations,
   base: string
 ) => void;
+
+/** Pagination metadata included in a {@link PagedResponse}. */
+export interface Pagination {
+  /** Current page number (1-based). */
+  page: number;
+  /** Maximum items per page. */
+  limit: number;
+  /** Total items in the filtered collection before pagination. */
+  totalItems: number;
+  /** Total number of pages: `Math.ceil(totalItems / limit)`. */
+  totalPages: number;
+  /** Whether the current page is the first page. */
+  isFirst: boolean;
+  /** Whether the current page is the last page. */
+  isLast: boolean;
+  /** Whether there is a page after the current one. */
+  hasNext: boolean;
+  /** Whether there is a page before the current one. */
+  hasPrev: boolean;
+}
+
+/**
+ * Envelope returned by GET collection routes when `pageable` mode is enabled.
+ *
+ * @example
+ * // GET /users?_page=2
+ * {
+ *   "data": [{ "id": 11, "name": "..." }, ...],
+ *   "pagination": { "page": 2, "limit": 10, "totalItems": 23, ... }
+ * }
+ */
+export interface PagedResponse {
+  data: Resource[];
+  pagination: Pagination;
+}
