@@ -15,7 +15,11 @@ export function registerServe(program: Command): void {
     .option("-b, --base <path>", "Base path prefix for all routes", "")
     .option("-w, --watch", "Reload db.yml automatically when it changes on disk")
     .option("-r, --readonly", "Reject all write operations (POST, PUT, PATCH, DELETE) with 405")
-    .option("-d, --delay <ms>", "Add a fixed delay (ms) to all responses to simulate network latency", "0")
+    .option(
+      "-d, --delay <ms>",
+      "Add a fixed delay (ms) to all responses to simulate network latency",
+      "0"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>) => {
       const options = serverOptionsSchema.parse({
         file,
