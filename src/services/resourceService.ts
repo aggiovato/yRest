@@ -120,20 +120,43 @@ export function patchItem(
 }
 
 /**
+ * Returns the first string value of a query param, handling both `string` and `string[]`.
+ *
+ * When the same query key appears more than once Fastify parses it as `string[]`.
+ * This helper normalises both cases to a single string for single-value params
+ * like `?_sort`, `?_page`, `?_limit`, and `?_order`.
+ *
+ * @param value - Raw query param value.
+ * @returns The first string, or `undefined` if the value is absent.
+ */
+export function firstParam(value: string | string[] | undefined): string | undefined {
+  if (value === undefined) return undefined;
+  return Array.isArray(value) ? value[0] : value;
+}
+
+/**
  * Filters a collection by query params.
  *
  * Params prefixed with `_` are reserved for pagination/sorting and are ignored here.
  * Comparison converts each item field to string, so `?id=1` matches a numeric `id: 1`.
+ * Repeated params (e.g. `?role=admin&role=user`) are treated as OR — any match passes.
  *
  * @param items - Collection to filter.
  * @param query - Raw query string params from the request.
  * @returns Filtered array, or the original array if no filterable params are present.
  */
-export function filterByQuery(items: Resource[], query: Record<string, string>): Resource[] {
+export function filterByQuery(
+  items: Resource[],
+  query: Record<string, string | string[]>
+): Resource[] {
   const filters = Object.entries(query).filter(([key]) => !key.startsWith("_"));
   if (filters.length === 0) return items;
   return items.filter((item) =>
-    filters.every(([key, value]) => item[key] !== undefined && String(item[key]) === value)
+    filters.every(([key, value]) => {
+      if (item[key] === undefined) return false;
+      const itemStr = String(item[key]);
+      return Array.isArray(value) ? value.includes(itemStr) : itemStr === value;
+    })
   );
 }
 
@@ -186,13 +209,17 @@ export function paginate(items: Resource[], page: number, limit: number): Resour
  */
 export function expandItems(
   item: Resource,
-  query: Record<string, string>,
+  query: Record<string, string | string[]>,
   resource: string,
   storage: YamlStorage
 ): Resource;
 
 /**
  * Embeds related parent objects into each item in a collection based on `?_expand`.
+ *
+ * Accepts both `?_expand=author,category` (comma-separated) and
+ * `?_expand=author&_expand=category` (repeated param, parsed as array by Fastify).
+ * Mixed forms like `?_expand=author,category&_expand=tags` also work.
  *
  * Resolves relations from `_rel[resource]`. Matching rules for each expand key:
  * - Foreign key field without `Id` suffix equals the key (`userId` → `user`).
@@ -209,14 +236,14 @@ export function expandItems(
  */
 export function expandItems(
   items: Resource[],
-  query: Record<string, string>,
+  query: Record<string, string | string[]>,
   resource: string,
   storage: YamlStorage
 ): Resource[];
 
 export function expandItems(
   input: Resource | Resource[],
-  query: Record<string, string>,
+  query: Record<string, string | string[]>,
   resource: string,
   storage: YamlStorage
 ): Resource | Resource[] {
@@ -226,8 +253,9 @@ export function expandItems(
   const expandParam = query["_expand"];
   if (!expandParam) return isArray ? items : input;
 
-  const keys = expandParam
-    .split(",")
+  // Normalise: "a,b" → ["a","b"], ["a","b"] → ["a","b"], ["a,b","c"] → ["a","b","c"]
+  const keys = (Array.isArray(expandParam) ? expandParam : [expandParam])
+    .flatMap((v) => v.split(","))
     .map((k) => k.trim())
     .filter(Boolean);
   const resourceRelations = storage.getRelations()[resource] ?? {};

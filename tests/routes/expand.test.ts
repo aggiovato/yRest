@@ -69,6 +69,34 @@ describe("?_expand (embed parent objects)", () => {
     expect(res.statusCode).toBe(404);
   });
 
+  it("accepts repeated param syntax: ?_expand=a&_expand=b", async () => {
+    const res = await server.inject({
+      method: "GET",
+      url: "/posts?_expand=user&_expand=users",
+    });
+    expect(res.statusCode).toBe(200);
+    const posts = res.json();
+    expect(posts[0]).toHaveProperty("user");
+  });
+
+  it("accepts comma-separated syntax: ?_expand=a,b", async () => {
+    const res = await server.inject({ method: "GET", url: "/posts?_expand=user,users" });
+    expect(res.statusCode).toBe(200);
+    const posts = res.json();
+    expect(posts[0]).toHaveProperty("user");
+  });
+
+  it("accepts mixed syntax: ?_expand=a,b&_expand=c", async () => {
+    const res = await server.inject({
+      method: "GET",
+      url: "/posts?_expand=user,users&_expand=unknown",
+    });
+    expect(res.statusCode).toBe(200);
+    const posts = res.json();
+    expect(posts[0]).toHaveProperty("user");
+    expect(posts[0]).not.toHaveProperty("unknown");
+  });
+
   it("expand works combined with pagination", async () => {
     const res = await server.inject({
       method: "GET",

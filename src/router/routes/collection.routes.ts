@@ -3,6 +3,7 @@ import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../type
 import {
   createItem,
   filterByQuery,
+  firstParam,
   sortBy,
   paginate,
   expandItems,
@@ -24,16 +25,16 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     const collection = storage.getCollection(resource) ?? [];
     const filtered = filterByQuery(collection, req.query);
 
-    const sortField = req.query["_sort"];
-    const sortOrder = req.query["_order"] === "desc" ? "desc" : "asc";
+    const sortField = firstParam(req.query["_sort"]);
+    const sortOrder = firstParam(req.query["_order"]) === "desc" ? "desc" : "asc";
     const sorted = sortField ? sortBy(filtered, sortField, sortOrder) : filtered;
 
     if (options.pageable.enabled) {
       const defaultLimit = options.pageable.limit;
-      const page = Math.max(1, parseInt(req.query["_page"] ?? "1", 10) || 1);
+      const page = Math.max(1, parseInt(firstParam(req.query["_page"]) ?? "1", 10) || 1);
       const limit = Math.max(
         1,
-        parseInt(req.query["_limit"] ?? String(defaultLimit), 10) || defaultLimit
+        parseInt(firstParam(req.query["_limit"]) ?? String(defaultLimit), 10) || defaultLimit
       );
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / limit) || 1;
@@ -54,8 +55,8 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
       return reply.send({ data, pagination } satisfies PagedResponse);
     }
 
-    const rawPage = req.query["_page"];
-    const rawLimit = req.query["_limit"];
+    const rawPage = firstParam(req.query["_page"]);
+    const rawLimit = firstParam(req.query["_limit"]);
 
     let result: Resource[];
     if (!rawPage && !rawLimit) {

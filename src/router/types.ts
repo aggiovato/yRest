@@ -6,8 +6,12 @@ import type { ServerOptions } from "../config/loadOptions.js";
 /** Fastify route params for item-level routes that include an `:id` segment. */
 export type ItemParams = { Params: { id: string } };
 
-/** Fastify querystring type shared across all route handlers. */
-export type RouteQuery = { Querystring: Record<string, string> };
+/**
+ * Fastify querystring type shared across all route handlers.
+ * Values are `string` for single params and `string[]` when the same key is repeated
+ * (e.g. `?_expand=author&_expand=category`).
+ */
+export type RouteQuery = { Querystring: Record<string, string | string[]> };
 
 /**
  * A function that registers collection- or item-level routes for a single resource.
