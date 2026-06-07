@@ -17,9 +17,9 @@ export function registerResourceRoutes(
   base: string
 ): void {
   for (const resource of Object.keys(storage.getData())) {
-    const prefix = `${base}/${resource}`;
-    registerCollectionRoutes(server, storage, resource, prefix);
-    registerItemRoutes(server, storage, resource, prefix);
+    const resourceBase = `${base}/${resource}`;
+    registerCollectionRoutes(server, storage, resource, resourceBase);
+    registerItemRoutes(server, storage, resource, resourceBase);
   }
 
   registerNestedRoutes(server, storage, storage.getRelations(), base);

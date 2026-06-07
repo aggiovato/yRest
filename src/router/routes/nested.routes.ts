@@ -1,6 +1,4 @@
-import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/yamlStorage.js";
-import type { Relations } from "../../storage/types.js";
+import type { NestedRoutePlugin } from "../types.js";
 import { findById } from "../../services/resourceService.js";
 
 /**
@@ -13,12 +11,7 @@ import { findById } from "../../services/resourceService.js";
  * Example — given `_rel: { posts: { userId: users } }`:
  *   GET /users/1/posts → all posts where userId === "1"
  */
-export function registerNestedRoutes(
-  server: FastifyInstance,
-  storage: YamlStorage,
-  relations: Relations,
-  base: string
-): void {
+export const registerNestedRoutes: NestedRoutePlugin = (server, storage, relations, base) => {
   for (const [child, fields] of Object.entries(relations)) {
     for (const [field, parent] of Object.entries(fields)) {
       server.get<{ Params: { id: string } }>(`${base}/${parent}/:id/${child}`, (req, reply) => {
@@ -33,4 +26,4 @@ export function registerNestedRoutes(
       });
     }
   }
-}
+};
