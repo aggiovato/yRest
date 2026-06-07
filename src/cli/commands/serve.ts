@@ -14,12 +14,14 @@ export function registerServe(program: Command): void {
     .option("-H, --host <host>", "Host to bind", "localhost")
     .option("-b, --base <path>", "Base path prefix for all routes", "")
     .option("-w, --watch", "Reload db.yml automatically when it changes on disk")
+    .option("-r, --readonly", "Reject all write operations (POST, PUT, PATCH, DELETE) with 405")
     .action(async (file: string, flags: Record<string, string | boolean>) => {
       const options = serverOptionsSchema.parse({
         file,
         port: flags["port"],
         host: flags["host"],
         base: flags["base"],
+        readonly: flags["readonly"] ?? false,
       });
 
       const storage = createYamlStorage(options.file);
@@ -31,6 +33,7 @@ export function registerServe(program: Command): void {
       const baseLabel = options.base || "/";
 
       console.log(`\nyrest running at http://${options.host}:${options.port}`);
+      if (options.readonly) console.log("[readonly] write operations are disabled");
       console.log(`\nResources (base: ${baseLabel}):`);
       for (const name of collections) {
         console.log(`  /${name}`);

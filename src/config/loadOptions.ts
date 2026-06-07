@@ -8,6 +8,7 @@ export const serverOptionsSchema = z.object({
     .string()
     .default("")
     .transform((v) => (v && !v.startsWith("/") ? `/${v}` : v)),
+  readonly: z.boolean().default(false),
 });
 
 export type ServerOptions = z.infer<typeof serverOptionsSchema>;
