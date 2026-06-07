@@ -6,6 +6,9 @@ import type { ServerOptions } from "../config/loadOptions.js";
 /** Fastify route params for item-level routes that include an `:id` segment. */
 export type ItemParams = { Params: { id: string } };
 
+/** Fastify route params for nested item routes — parent `:id` and child `:childId`. */
+export type NestedItemParams = { Params: { id: string; childId: string } };
+
 /**
  * Fastify querystring type shared across all route handlers.
  * Values are `string` for single params and `string[]` when the same key is repeated

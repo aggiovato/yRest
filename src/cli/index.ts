@@ -1,13 +1,16 @@
 #!/usr/bin/env node
-// CLI entrypoint — wired by the "bin" field in package.json.
 import { program } from "commander";
+import { createRequire } from "module";
 import { registerInit } from "./commands/init.js";
 import { registerServe } from "./commands/serve.js";
+
+const require = createRequire(import.meta.url);
+const { version } = require("../../package.json");
 
 program
   .name("yrest")
   .description("Zero-config REST API mock server powered by a YAML file")
-  .version("0.1.0");
+  .version(version);
 
 registerInit(program);
 registerServe(program);
