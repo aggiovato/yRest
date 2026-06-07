@@ -1,4 +1,4 @@
-import type { NestedRoutePlugin } from "../types.js";
+import type { NestedRoutePlugin, ItemParams } from "../types.js";
 import { findById } from "../../services/resourceService.js";
 
 /**
@@ -14,7 +14,7 @@ import { findById } from "../../services/resourceService.js";
 export const registerNestedRoutes: NestedRoutePlugin = (server, storage, relations, base) => {
   for (const [child, fields] of Object.entries(relations)) {
     for (const [field, parent] of Object.entries(fields)) {
-      server.get<{ Params: { id: string } }>(`${base}/${parent}/:id/${child}`, (req, reply) => {
+      server.get<ItemParams>(`${base}/${parent}/:id/${child}`, (req, reply) => {
         const parentCollection = storage.getCollection(parent) ?? [];
         const parentItem = findById(parentCollection, req.params.id);
         if (!parentItem) return reply.status(404).send({ error: "Not found" });

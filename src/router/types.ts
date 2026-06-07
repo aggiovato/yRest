@@ -2,6 +2,12 @@ import type { FastifyInstance } from "fastify";
 import type { YamlStorage } from "../storage/yamlStorage.js";
 import type { Relations } from "../storage/types.js";
 
+/** Fastify route params for item-level routes that include an `:id` segment. */
+export type ItemParams = { Params: { id: string } };
+
+/** Fastify querystring type shared across all route handlers. */
+export type RouteQuery = { Querystring: Record<string, string> };
+
 /**
  * A function that registers collection- or item-level routes for a single resource.
  *

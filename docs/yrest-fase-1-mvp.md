@@ -1077,11 +1077,91 @@ _rel:
 Roadmap sugerido para esta fase:
 
 ```txt
-1. ?_expand=relation como query param (sin config YAML).
-2. _nested: true como config global.
-3. _depth: n con valor finito.
-4. _depth: off con detección de ciclos.
+1. ?_expand=relation como query param, dirección hijo→padre (many-to-one). ← Fase 2
+2. Tipos de relación en _rel (one2one, one2many, many2many) con _expand bidireccional.
+3. _nested: true como config global.
+4. _depth: n con valor finito.
+5. _depth: off con detección de ciclos.
 ```
+
+---
+
+#### Tipos de relación en `_rel`
+
+**Estado actual:** el bloque `_rel` es implícitamente many-to-one (el hijo declara la clave
+foránea que apunta al padre). La dirección es fija y `?_expand` solo puede trabajar en ese
+sentido (hijo incrusta objeto padre).
+
+**Propuesta:** añadir un campo `type` opcional dentro de cada declaración de relación.
+Si se omite, el comportamiento es idéntico al actual (backwards compatible).
+
+```yaml
+_rel:
+  # Many-to-one implícito (comportamiento actual, sin cambios)
+  posts:
+    userId: users
+
+  # One-to-one explícito: un usuario tiene exactamente un perfil
+  profile:
+    type: one2one
+    userId: users
+
+  # Many-to-many: requiere colección de unión con dos claves foráneas
+  post_tags:
+    type: many2many
+    postId: posts
+    tagId: tags
+```
+
+**Qué desbloquea cada tipo:**
+
+| Tipo                           | Ruta anidada                                                                  | `?_expand` en hijo                    | `?_expand` en padre                           |
+| ------------------------------ | ----------------------------------------------------------------------------- | ------------------------------------- | --------------------------------------------- |
+| `many2one` (actual implícito)  | `GET /users/1/posts` → array                                                  | `posts?_expand=user` → objeto único   | —                                             |
+| `one2one`                      | `GET /users/1/profile` → **objeto único**                                     | `profile?_expand=user` → objeto único | `users?_expand=profile` → objeto único        |
+| `one2many` (inverso explícito) | `GET /users/1/posts` → array                                                  | —                                     | `users?_expand=posts` → **array de hijos**    |
+| `many2many`                    | `GET /posts/1/tags` → array + `GET /tags/1/posts` → array (ambas direcciones) | `post_tags?_expand=tag` → objeto      | `posts?_expand=tags` → **array via junction** |
+
+**Impacto en `?_expand` según el tipo:**
+
+Sin tipos declarados, `?_expand` solo puede ir en la dirección hijo→padre: el hijo
+tiene la clave foránea y puede buscar el objeto padre directamente. Es el caso más simple.
+
+Con tipos declarados, `?_expand` puede operar en cualquier dirección porque sabe:
+
+- **Qué forma tiene la respuesta** — objeto único (`one2one`) o array (`one2many`, `many2many`).
+- **En qué colección buscar y por qué campo filtrar** — la relación inversa se deduce del grafo.
+- **Si hay una junction table** — `many2many` requiere resolver en dos pasos.
+
+**Diferencia clave entre `one2one` y `many2one` en la respuesta:**
+
+```http
+# many2one — cada post embebe su usuario (objeto único, busca por clave foránea propia)
+GET /posts?_expand=user
+→ [{ "id": 1, "title": "...", "userId": 1, "user": { "id": 1, "name": "Ana" } }]
+
+# one2many — cada usuario embebe sus posts (array, requiere filtrar la colección hija)
+GET /users?_expand=posts
+→ [{ "id": 1, "name": "Ana", "posts": [{ "id": 1, "title": "..." }] }]
+
+# one2one — cada usuario embebe su perfil (objeto único, misma búsqueda pero devuelve item[0])
+GET /users?_expand=profile
+→ [{ "id": 1, "name": "Ana", "profile": { "bio": "..." } }]
+
+# many2many — cada post embebe sus tags (array via junction post_tags)
+GET /posts?_expand=tags
+→ [{ "id": 1, "title": "...", "tags": [{ "id": 1, "name": "typescript" }] }]
+```
+
+**Peso de implementación:**
+
+- `one2one` — Medio. Cambio quirúrgico en `nested.routes.ts` (devolver objeto vs array)
+  y en la lógica de `_expand` (detectar el tipo y no envolver en array).
+- `one2many` — Medio. `_expand` en sentido inverso: iterar la colección hija y filtrar
+  por clave foránea para cada item padre.
+- `many2many` — Alto. Requiere: detección de junction tables (colecciones con dos claves
+  foráneas hacia otras colecciones), generación de rutas en ambas direcciones, y resolución
+  de `_expand` en dos pasos a través de la junction.
 
 ---
 
