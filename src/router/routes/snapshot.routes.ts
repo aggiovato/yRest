@@ -15,6 +15,7 @@ import type { YamlStorage } from "../../storage/yamlStorage.js";
  * @param storage - Live YAML storage that owns the snapshot state.
  */
 export function registerSnapshotRoutes(server: FastifyInstance, storage: YamlStorage): void {
+  // GET /_snapshot
   server.get("/_snapshot", (_req, reply) => {
     const { data, savedAt } = storage.getSnapshot();
     return reply.send({
@@ -25,6 +26,7 @@ export function registerSnapshotRoutes(server: FastifyInstance, storage: YamlSto
     });
   });
 
+  // POST /_snapshot/save
   server.post("/_snapshot/save", (_req, reply) => {
     storage.saveSnapshot();
     const { data, savedAt } = storage.getSnapshot();
@@ -37,6 +39,7 @@ export function registerSnapshotRoutes(server: FastifyInstance, storage: YamlSto
     });
   });
 
+  // POST /_snapshot/reset
   server.post("/_snapshot/reset", (_req, reply) => {
     storage.resetToSnapshot();
     const { data, savedAt } = storage.getSnapshot();

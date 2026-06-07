@@ -1,13 +1,9 @@
 import type { Resource } from "../../storage/types.js";
 import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../types.js";
-import {
-  createItem,
-  filterByQuery,
-  firstParam,
-  sortBy,
-  paginate,
-  expandItems,
-} from "../../services/resourceService.js";
+import { firstParam } from "../../utils/params.js";
+import { filterByQuery, sortBy, paginate } from "../../services/query.service.js";
+import { createItem } from "../../services/resource.service.js";
+import { expandItems } from "../../services/expand.service.js";
 
 /**
  * Registers collection-level routes for a given resource.
@@ -21,6 +17,7 @@ import {
  *                      Persists the change to the YAML file. Returns 201 with the created item.
  */
 export const registerCollectionRoutes: RoutePlugin = (server, storage, resource, base, options) => {
+  // GET /{resource}
   server.get<RouteQuery>(base, (req, reply) => {
     const collection = storage.getCollection(resource) ?? [];
     const filtered = filterByQuery(collection, req.query);
@@ -71,6 +68,7 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     return expandItems(result, req.query, resource, storage);
   });
 
+  // POST /{resource}
   server.post<RouteQuery & { Body: Resource }>(base, (req, reply) => {
     if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
       return reply.status(400).send({ error: "Request body must be a JSON object" });

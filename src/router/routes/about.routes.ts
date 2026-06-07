@@ -22,6 +22,7 @@ export function registerAboutRoute(
   storage: YamlStorage,
   options: ServerOptions
 ): void {
+  // GET /_about
   server.get("/_about", (_req, reply) => {
     reply.header("Content-Type", "text/html; charset=utf-8");
     return reply.send(generateAboutHtml(storage, options));

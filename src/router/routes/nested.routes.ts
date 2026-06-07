@@ -1,5 +1,5 @@
 import type { NestedRoutePlugin, ItemParams, NestedItemParams } from "../types.js";
-import { findById } from "../../services/resourceService.js";
+import { findById } from "../../services/resource.service.js";
 
 /**
  * Registers nested routes derived from the `_rel` block in the YAML file.
@@ -21,6 +21,7 @@ export const registerNestedRoutes: NestedRoutePlugin = (server, storage, relatio
       const collectionPath = `${base}/${parent}/:id/${child}`;
       const itemPath = `${base}/${parent}/:id/${child}/:childId`;
 
+      // GET /{parent}/:id/{child}
       server.get<ItemParams>(collectionPath, (req, reply) => {
         const parentCollection = storage.getCollection(parent) ?? [];
         const parentItem = findById(parentCollection, req.params.id);
@@ -32,6 +33,7 @@ export const registerNestedRoutes: NestedRoutePlugin = (server, storage, relatio
         return children;
       });
 
+      // GET /{parent}/:id/{child}/:childId
       server.get<NestedItemParams>(itemPath, (req, reply) => {
         const parentCollection = storage.getCollection(parent) ?? [];
         const parentItem = findById(parentCollection, req.params.id);

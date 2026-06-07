@@ -1,12 +1,7 @@
 import type { Resource } from "../../storage/types.js";
 import type { RoutePlugin, ItemParams, RouteQuery } from "../types.js";
-import {
-  findById,
-  replaceItem,
-  patchItem,
-  deleteItem,
-  expandItems,
-} from "../../services/resourceService.js";
+import { findById, replaceItem, patchItem, deleteItem } from "../../services/resource.service.js";
+import { expandItems } from "../../services/expand.service.js";
 
 /**
  * Registers item-level routes for a given resource.
@@ -22,12 +17,14 @@ import {
  *                          Persists the change. Returns 404 if the id does not exist.
  */
 export const registerItemRoutes: RoutePlugin = (server, storage, resource, base) => {
+  // GET /{resource}/:id
   server.get<ItemParams & RouteQuery>(`${base}/:id`, (req, reply) => {
     const item = findById(storage.getCollection(resource) ?? [], req.params.id);
     if (!item) return reply.status(404).send({ error: "Not found" });
     return expandItems(item, req.query, resource, storage);
   });
 
+  // PUT /{resource}/:id
   server.put<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
     if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
       return reply.status(400).send({ error: "Request body must be a JSON object" });
@@ -37,6 +34,7 @@ export const registerItemRoutes: RoutePlugin = (server, storage, resource, base)
     return expandItems(item, req.query, resource, storage);
   });
 
+  // PATCH /{resource}/:id
   server.patch<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
     if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
       return reply.status(400).send({ error: "Request body must be a JSON object" });
@@ -46,6 +44,7 @@ export const registerItemRoutes: RoutePlugin = (server, storage, resource, base)
     return expandItems(item, req.query, resource, storage);
   });
 
+  // DELETE /{resource}/:id
   server.delete<ItemParams & RouteQuery>(`${base}/:id`, (req, reply) => {
     const item = deleteItem(storage, resource, req.params.id);
     if (!item) return reply.status(404).send({ error: "Not found" });

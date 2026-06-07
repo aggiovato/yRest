@@ -354,6 +354,11 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
         <thead><tr><th>Param</th><th>Example</th><th>Description</th></tr></thead>
         <tbody>
           <tr><td><code>?field=value</code></td><td><code>?name=Ana&amp;role=admin</code></td><td>Filter by any field. Multiple params are ANDed.</td></tr>
+          <tr><td><code>?field_gte / _lte</code></td><td><code>?price_gte=10&amp;price_lte=50</code></td><td>Numeric or lexicographic range. Works with any comparable field.</td></tr>
+          <tr><td><code>?field_ne</code></td><td><code>?status_ne=inactive</code></td><td>Exclude items where the field equals the value.</td></tr>
+          <tr><td><code>?field_like</code></td><td><code>?name_like=ana</code></td><td>Case-insensitive substring match.</td></tr>
+          <tr><td><code>?field_start</code></td><td><code>?name_start=A</code></td><td>Case-insensitive prefix match.</td></tr>
+          <tr><td><code>?field_regex</code></td><td><code>?email_regex=gmail</code></td><td>Case-insensitive regular expression match.</td></tr>
           <tr><td><code>?_sort &amp; ?_order</code></td><td><code>?_sort=name&amp;_order=desc</code></td><td>Sort by field. <code>_order</code>: <code>asc</code> (default) or <code>desc</code>.</td></tr>
           <tr><td><code>?_page &amp; ?_limit</code></td><td><code>?_page=2&amp;_limit=10</code></td><td>${paginationDesc}</td></tr>
           <tr><td><code>?_expand</code></td><td><code>?_expand=user</code></td><td>Embed a related parent object inline. Requires <code>_rel</code> in the YAML file.</td></tr>
