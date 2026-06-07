@@ -2,6 +2,7 @@ import type { Resource } from "../../storage/types.js";
 import type { RoutePlugin, ItemParams, RouteQuery } from "../types.js";
 import { findById, replaceItem, patchItem, deleteItem } from "../../services/resource.service.js";
 import { expandItems, embedItems } from "../../services/expand.service.js";
+import { projectFields } from "../../services/query.service.js";
 
 /**
  * Registers item-level routes for a given resource.
@@ -21,11 +22,13 @@ export const registerItemRoutes: RoutePlugin = (server, storage, resource, base)
   server.get<ItemParams & RouteQuery>(`${base}/:id`, (req, reply) => {
     const item = findById(storage.getCollection(resource) ?? [], req.params.id);
     if (!item) return reply.status(404).send({ error: "Not found" });
-    return embedItems(
-      expandItems(item, req.query, resource, storage),
-      req.query,
-      resource,
-      storage
+    const fields = ((req.query["_fields"] as string | undefined) ?? "")
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
+    return projectFields(
+      embedItems(expandItems(item, req.query, resource, storage), req.query, resource, storage),
+      fields
     );
   });
 

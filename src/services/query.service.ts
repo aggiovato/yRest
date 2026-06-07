@@ -110,6 +110,35 @@ export function sortBy(items: Resource[], field: string, order: "asc" | "desc"):
 }
 
 /**
+ * Projects a subset of fields from a single item.
+ *
+ * @param item   - The source item.
+ * @param fields - Field names to keep. Fields absent in the item are silently ignored.
+ */
+export function projectFields(item: Resource, fields: string[]): Resource;
+
+/**
+ * Projects a subset of fields from each item in a collection.
+ *
+ * Applied last in the pipeline — after `_expand` and `_embed` — so projected
+ * fields can include embedded/expanded keys.
+ *
+ * @param items  - Collection to project.
+ * @param fields - Field names to keep. Fields absent in an item are silently ignored.
+ */
+export function projectFields(items: Resource[], fields: string[]): Resource[];
+
+export function projectFields(
+  input: Resource | Resource[],
+  fields: string[]
+): Resource | Resource[] {
+  if (fields.length === 0) return input;
+  const project = (item: Resource): Resource =>
+    Object.fromEntries(fields.filter((f) => f in item).map((f) => [f, item[f]])) as Resource;
+  return Array.isArray(input) ? input.map(project) : project(input);
+}
+
+/**
  * Returns a single page of items from an already-filtered collection.
  *
  * @param items - Pre-filtered (and optionally sorted) collection.

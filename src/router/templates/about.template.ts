@@ -116,6 +116,12 @@ function examplesBlock(
   const firstParentRel = Object.entries(relations).find(([, fields]) =>
     Object.values(fields).includes(firstCol ?? "")
   );
+  if (firstCol) {
+    examples.push(
+      `# Project fields with ?_fields\ncurl "${host}${base}/${firstCol}?_fields=id,name"`
+    );
+  }
+
   if (firstParentRel && firstCol) {
     const [childName] = firstParentRel;
     examples.push(
@@ -374,6 +380,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
           <tr><td><code>?_page &amp; ?_limit</code></td><td><code>?_page=2&amp;_limit=10</code></td><td>${paginationDesc}</td></tr>
           <tr><td><code>?_expand</code></td><td><code>?_expand=user</code></td><td>Embed a related parent object inline. Requires <code>_rel</code> in the YAML file.</td></tr>
           <tr><td><code>?_embed</code></td><td><code>?_embed=posts</code></td><td>Embed child collections into each parent item. Requires <code>_rel</code> in the YAML file.</td></tr>
+          <tr><td><code>?_fields</code></td><td><code>?_fields=id,name</code></td><td>Return only the specified fields. Applied last — can include embedded/expanded keys.</td></tr>
         </tbody>
       </table>
     </div>

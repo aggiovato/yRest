@@ -1,7 +1,13 @@
 import type { Resource } from "../../storage/types.js";
 import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../types.js";
 import { firstParam } from "../../utils/params.js";
-import { filterByQuery, fullTextSearch, sortBy, paginate } from "../../services/query.service.js";
+import {
+  filterByQuery,
+  fullTextSearch,
+  sortBy,
+  paginate,
+  projectFields,
+} from "../../services/query.service.js";
 import { createItem } from "../../services/resource.service.js";
 import { expandItems, embedItems } from "../../services/expand.service.js";
 
@@ -23,6 +29,10 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
     const filtered = filterByQuery(collection, req.query);
     const searchTerm = firstParam(req.query["_q"]);
     const searched = searchTerm ? fullTextSearch(filtered, searchTerm) : filtered;
+    const fields = (firstParam(req.query["_fields"]) ?? "")
+      .split(",")
+      .map((f) => f.trim())
+      .filter(Boolean);
 
     const sortField = firstParam(req.query["_sort"]);
     const sortOrder = firstParam(req.query["_order"]) === "desc" ? "desc" : "asc";
@@ -38,11 +48,14 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
       const totalItems = sorted.length;
       const totalPages = Math.ceil(totalItems / limit) || 1;
 
-      const data = embedItems(
-        expandItems(paginate(sorted, page, limit), req.query, resource, storage),
-        req.query,
-        resource,
-        storage
+      const data = projectFields(
+        embedItems(
+          expandItems(paginate(sorted, page, limit), req.query, resource, storage),
+          req.query,
+          resource,
+          storage
+        ),
+        fields
       );
 
       const pagination: Pagination = {
@@ -72,11 +85,9 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
       result = paginate(sorted, page, limit);
     }
 
-    return embedItems(
-      expandItems(result, req.query, resource, storage),
-      req.query,
-      resource,
-      storage
+    return projectFields(
+      embedItems(expandItems(result, req.query, resource, storage), req.query, resource, storage),
+      fields
     );
   });
 
