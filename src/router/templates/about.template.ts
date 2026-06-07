@@ -359,6 +359,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
           <tr><td><code>?field_like</code></td><td><code>?name_like=ana</code></td><td>Case-insensitive substring match.</td></tr>
           <tr><td><code>?field_start</code></td><td><code>?name_start=A</code></td><td>Case-insensitive prefix match.</td></tr>
           <tr><td><code>?field_regex</code></td><td><code>?email_regex=gmail</code></td><td>Case-insensitive regular expression match.</td></tr>
+          <tr><td><code>?_q</code></td><td><code>?_q=ana</code></td><td>Full-text search across all scalar fields (case-insensitive substring).</td></tr>
           <tr><td><code>?_sort &amp; ?_order</code></td><td><code>?_sort=name&amp;_order=desc</code></td><td>Sort by field. <code>_order</code>: <code>asc</code> (default) or <code>desc</code>.</td></tr>
           <tr><td><code>?_page &amp; ?_limit</code></td><td><code>?_page=2&amp;_limit=10</code></td><td>${paginationDesc}</td></tr>
           <tr><td><code>?_expand</code></td><td><code>?_expand=user</code></td><td>Embed a related parent object inline. Requires <code>_rel</code> in the YAML file.</td></tr>

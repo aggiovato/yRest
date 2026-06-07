@@ -69,6 +69,25 @@ export function filterByQuery(
 }
 
 /**
+ * Filters a collection by a full-text search term across all scalar fields.
+ *
+ * Searches every string and number field of each item (case-insensitive substring match).
+ * Object and array values are skipped. An item passes if any field contains the term.
+ *
+ * @param items - Collection to search.
+ * @param term  - Search term from `?_q=`.
+ */
+export function fullTextSearch(items: Resource[], term: string): Resource[] {
+  const lower = term.toLowerCase();
+  return items.filter((item) =>
+    Object.values(item).some((val) => {
+      if (val === null || val === undefined || typeof val === "object") return false;
+      return String(val).toLowerCase().includes(lower);
+    })
+  );
+}
+
+/**
  * Returns a sorted copy of the collection.
  *
  * Items missing the sort field are pushed to the end.

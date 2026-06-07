@@ -1,7 +1,7 @@
 import type { Resource } from "../../storage/types.js";
 import type { RoutePlugin, RouteQuery, Pagination, PagedResponse } from "../types.js";
 import { firstParam } from "../../utils/params.js";
-import { filterByQuery, sortBy, paginate } from "../../services/query.service.js";
+import { filterByQuery, fullTextSearch, sortBy, paginate } from "../../services/query.service.js";
 import { createItem } from "../../services/resource.service.js";
 import { expandItems } from "../../services/expand.service.js";
 
@@ -21,10 +21,12 @@ export const registerCollectionRoutes: RoutePlugin = (server, storage, resource,
   server.get<RouteQuery>(base, (req, reply) => {
     const collection = storage.getCollection(resource) ?? [];
     const filtered = filterByQuery(collection, req.query);
+    const searchTerm = firstParam(req.query["_q"]);
+    const searched = searchTerm ? fullTextSearch(filtered, searchTerm) : filtered;
 
     const sortField = firstParam(req.query["_sort"]);
     const sortOrder = firstParam(req.query["_order"]) === "desc" ? "desc" : "asc";
-    const sorted = sortField ? sortBy(filtered, sortField, sortOrder) : filtered;
+    const sorted = sortField ? sortBy(searched, sortField, sortOrder) : searched;
 
     if (options.pageable.enabled) {
       const defaultLimit = options.pageable.limit;
