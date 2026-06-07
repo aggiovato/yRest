@@ -1,6 +1,6 @@
 {
   "name": "@aggiovato/yrest",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Zero-config REST API mock server powered by a YAML file",
   "keywords": [
     "yaml",
