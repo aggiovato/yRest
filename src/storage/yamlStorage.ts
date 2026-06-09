@@ -55,8 +55,11 @@ export function createYamlStorage(filePath: string): YamlStorage {
     },
 
     persist() {
-      const payload =
-        Object.keys(relations).length > 0 ? { _rel: relations, ...data } : { ...data };
+      const payload: Record<string, unknown> = {};
+      if (Object.keys(relations).length > 0) payload._rel = relations;
+      // _routes is static config — never modified at runtime, always round-tripped as-is.
+      if (routes.length > 0) payload._routes = routes;
+      Object.assign(payload, data);
       const tmp = resolve(dirname(absPath), `.yrest-${randomUUID()}.tmp`);
       writeFileSync(tmp, stringify(payload), "utf8");
       renameSync(tmp, absPath);
@@ -66,7 +69,7 @@ export function createYamlStorage(filePath: string): YamlStorage {
       const fresh = parse(readFileSync(absPath, "utf8")) ?? {};
       const freshRelations = (fresh["_rel"] as Relations) ?? {};
       const freshData = Object.fromEntries(
-        Object.entries(fresh).filter(([key]) => key !== "_rel")
+        Object.entries(fresh).filter(([key]) => key !== "_rel" && key !== "_routes")
       ) as Data;
 
       for (const key of Object.keys(data)) delete data[key];
