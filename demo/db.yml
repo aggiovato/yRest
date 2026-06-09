@@ -1,6 +1,48 @@
 _rel:
   todos:
     userId: users
+
+_routes:
+  - method: GET
+    path: /health
+    response:
+      status: 200
+      body:
+        status: ok
+        server: yrest
+        version: "0.5.0"
+
+  - method: POST
+    path: /auth/logout
+    response:
+      status: 204
+
+  - method: GET
+    path: /todos/:id/share
+    response:
+      status: 200
+      body:
+        todoId: "{{params.id}}"
+        sharedAt: "{{now}}"
+        shareToken: "{{uuid}}"
+        url: "https://app.example.com/shared/{{params.id}}"
+
+  - method: POST
+    path: /auth/login
+    handler: login
+    response:
+      status: 200
+      body:
+        token: fallback-token
+
+  - method: GET
+    path: /stats
+    handler: stats
+    response:
+      status: 200
+      body:
+        message: handler not loaded
+
 users:
   - id: 1
     name: Ana García
@@ -12,6 +54,7 @@ users:
     email: luis@demo.com
     avatar: LM
     role: user
+
 todos:
   - id: 1
     title: Configure yrest as mock API server
@@ -45,7 +88,7 @@ todos:
     createdAt: 2026-06-05
   - id: 6
     title: Deploy to staging environment
-    done: false
+    done: true
     priority: high
     userId: 1
     createdAt: 2026-06-06
@@ -61,9 +104,3 @@ todos:
     priority: high
     userId: 1
     createdAt: 2026-06-08
-  - id: 9
-    title: hola mundo
-    done: false
-    priority: medium
-    userId: 1
-    createdAt: 2026-06-09

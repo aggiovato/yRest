@@ -36,7 +36,9 @@ export async function createServer(
 ) {
   const server = Fastify();
 
-  await server.register(cors);
+  await server.register(cors, {
+    exposedHeaders: ["X-Total-Count"],
+  });
 
   server.setErrorHandler((err: { statusCode?: number; message?: string }, _req, reply) => {
     const status = err.statusCode ?? 500;

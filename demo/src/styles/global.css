@@ -36,13 +36,57 @@ body {
 
 /* ── Page layout ────────────────────────────────────── */
 .app-main {
-  max-width: 1100px;
+  max-width: 1440px;
   margin: 0 auto;
   padding: 24px 16px 60px;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
 }
+
+@media (max-width: 960px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── App header ─────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-logo {
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+.app-logo span { color: var(--blue); }
+
+.header-sep { color: var(--border); }
+
+.app-subtitle { color: var(--muted); font-size: 13px; }
+
+.server-status {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.server-status.connected    { color: var(--green); }
+.server-status.disconnected { color: var(--red); }
 
 /* ── Buttons ────────────────────────────────────────── */
 .btn {
@@ -205,7 +249,7 @@ body {
 }
 
 .feature-desc code {
-  font-family: var(--mono);
+  font-family: var(--mono), sans-serif;
   font-size: 11px;
   background: var(--surface2);
   border: 1px solid var(--border);
@@ -218,7 +262,7 @@ body {
 .hint {
   font-size: 11px;
   color: var(--muted);
-  font-family: var(--mono);
+  font-family: var(--mono), sans-serif;
   background: var(--surface2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -227,18 +271,15 @@ body {
 
 /* ── Tab panel ──────────────────────────────────────── */
 .tab-panel {
-  display: none;
-  padding: 16px;
-  gap: 14px;
-  flex-direction: column;
-}
-.tab-panel.active {
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
 }
 
 /* ── Priority badges ────────────────────────────────── */
 .priority-badge {
-  font-family: var(--mono);
+  font-family: var(--mono), sans-serif;
   font-size: 10px;
   padding: 2px 6px;
   border-radius: 10px;
@@ -262,7 +303,7 @@ body {
   background: transparent;
 }
 
-/* ── Todo list items (dynamically generated via innerHTML) ── */
+/* ── To-do list items (dynamically generated via innerHTML) ── */
 /*    Scoped <style> no aplica a innerHTML — deben ir aquí.   */
 .todo-item {
   display: flex;

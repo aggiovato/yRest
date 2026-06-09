@@ -12,10 +12,15 @@
     "start": "concurrently -n \"api,web\" -c \"cyan,magenta\" \"npm run api\" \"npm run dev\""
   },
   "dependencies": {
-    "astro": "^4.16.0"
+    "@astrojs/react": "^3.6.3",
+    "astro": "^4.16.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
     "@aggiovato/yrest": "file:../",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "concurrently": "^9.0.0"
   }
 }
