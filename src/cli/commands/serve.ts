@@ -5,6 +5,7 @@ import { createYamlStorage } from "../../storage/yamlStorage.js";
 import { createServer } from "../../server/createServer.js";
 import { serverOptionsSchema } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
+import { loadHandlers } from "../../utils/handlers.js";
 
 /**
  * Registers the `serve` command with the CLI program.
@@ -38,6 +39,10 @@ export function registerServe(program: Command): void {
       "--snapshot",
       "Save a snapshot of the initial database state and expose /_snapshot endpoints"
     )
+    .option(
+      "--handlers <file>",
+      "Path to a JavaScript file exporting custom route handler functions"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 
@@ -64,7 +69,9 @@ export function registerServe(program: Command): void {
         process.exit(1);
       }
 
-      const server = await createServer(storage, options);
+      const handlers = options.handlers ? await loadHandlers(resolve(options.handlers)) : new Map();
+
+      const server = await createServer(storage, options, handlers);
 
       await server.listen({ port: options.port, host: options.host });
 
@@ -108,7 +115,15 @@ export function registerServe(program: Command): void {
         console.log(`\n  ${b("Custom routes")}:`);
         for (const route of customRoutes) {
           const method = (route.method ?? "GET").toUpperCase();
-          console.log(`    ${methodStr(method)}${options.base}${route.path}`);
+          const label = route.handler ? dim(`→ ${route.handler}()`) : "";
+          console.log(`    ${methodStr(method)}${options.base}${route.path}  ${label}`);
+        }
+      }
+
+      if (handlers.size > 0) {
+        console.log(`\n  ${b("Handlers")} ${dim(`(${options.handlers})`)}:`);
+        for (const name of handlers.keys()) {
+          console.log(`    ${dim("fn")}     ${name}`);
         }
       }
 

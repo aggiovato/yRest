@@ -17,6 +17,7 @@ host: localhost     # Host to bind
 # delay: 0          # Simulated network latency in milliseconds
 # pageable: false   # Wrap GET collections in { data, pagination }. Use true (limit 10) or a number
 # snapshot: false   # Save initial db state and expose /_snapshot endpoints (GET / POST save / POST reset)
+# handlers: ./yrest.handlers.js  # JS file exporting handler functions for custom routes
 `;
 
 /**

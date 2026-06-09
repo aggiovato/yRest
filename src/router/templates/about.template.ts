@@ -1,5 +1,7 @@
 import type { YamlStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
+import type { HandlerMap } from "../../utils/handlers.js";
+import { hasTemplates } from "../../utils/interpolate.js";
 
 const METHOD_COLOR: Record<string, string> = {
   GET: "#3fb950",
@@ -7,6 +9,7 @@ const METHOD_COLOR: Record<string, string> = {
   PUT: "#d29922",
   PATCH: "#a371f7",
   DELETE: "#f85149",
+  fn: "#f0883e",
 };
 
 function badge(label: string, color: string, bg: string): string {
@@ -160,7 +163,11 @@ function examplesBlock(
  * @param options - Resolved server options for mode display and config info.
  * @returns Complete HTML document as a string.
  */
-export function generateAboutHtml(storage: YamlStorage, options: ServerOptions): string {
+export function generateAboutHtml(
+  storage: YamlStorage,
+  options: ServerOptions,
+  handlers: HandlerMap = new Map()
+): string {
   const collections = Object.keys(storage.getData());
   const relations = storage.getRelations();
   const base = options.base;
@@ -174,6 +181,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
   if (options.pageable.enabled)
     modes.push(badge(`pageable · limit ${options.pageable.limit}`, "#34d399", "#34d39918"));
   if (options.snapshot) modes.push(badge("snapshot", "#c084fc", "#c084fc18"));
+  if (handlers.size > 0) modes.push(badge(`handlers · ${handlers.size}`, "#f0883e", "#f0883e18"));
 
   // ── Resource accordions ──────────────────────────────────────────────────────
   const accordions = collections.map((col, i) => resourceAccordion(col, base, i === 0)).join("");
@@ -230,17 +238,55 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       ${customRoutes
         .map((r) => {
           const fullPath = `${base}${r.path}`;
-          const status = r.response?.status ?? 200;
-          return endpointRow(
-            r.method?.toUpperCase() ?? "GET",
-            fullPath,
-            `Static response — <code>${status}</code>${r.response?.headers ? ` + custom headers` : ""}`
-          );
+          let desc: string;
+          if (r.handler) {
+            const found = handlers.has(r.handler);
+            desc = found
+              ? `Handler — <code>${r.handler}()</code>`
+              : `Handler — <code>${r.handler}()</code> <span style="color:#f85149">(not loaded)</span>`;
+          } else if (r.response?.body != null && hasTemplates(r.response.body)) {
+            desc = `Dynamic body — <code>{{…}}</code>`;
+          } else {
+            const status = r.response?.status ?? 200;
+            desc = `Static — <code>${status}</code>${r.response?.headers ? ` + custom headers` : ""}`;
+          }
+          return endpointRow(r.method?.toUpperCase() ?? "GET", fullPath, desc);
         })
         .join("")}
     </tbody></table>
   </details>`
     : "";
+
+  // ── Handlers accordion ───────────────────────────────────────────────────────
+  const routesByHandler = new Map<string, { method: string; path: string }[]>();
+  for (const r of customRoutes) {
+    if (r.handler) {
+      const list = routesByHandler.get(r.handler) ?? [];
+      list.push({ method: (r.method ?? "GET").toUpperCase(), path: `${base}${r.path}` });
+      routesByHandler.set(r.handler, list);
+    }
+  }
+  const handlersAccordion =
+    handlers.size > 0
+      ? `
+  <details class="resource-card nested-card">
+    <summary>
+      <span class="resource-name">Handlers</span>
+      <span class="route-count">${handlers.size} function${handlers.size !== 1 ? "s" : ""}</span>
+    </summary>
+    <table><tbody>
+      ${[...handlers.keys()]
+        .map((name) => {
+          const routes = routesByHandler.get(name);
+          const routeDesc = routes
+            ? routes.map((r) => `<code>${r.method} ${r.path}</code>`).join(", ")
+            : `<span style="color:var(--text-muted)">not referenced in _routes</span>`;
+          return endpointRow("fn" as string, name + "()", routeDesc);
+        })
+        .join("")}
+    </tbody></table>
+  </details>`
+      : "";
 
   // ── Pagination description ───────────────────────────────────────────────────
   const paginationDesc = options.pageable.enabled
@@ -396,6 +442,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       ${nestedAccordion}
       ${snapshotAccordion}
       ${customRoutesAccordion}
+      ${handlersAccordion}
     </div>
 
     <h2>Query Parameters</h2>

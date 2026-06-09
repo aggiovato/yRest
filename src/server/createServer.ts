@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import type { YamlStorage } from "../storage/types.js";
 import type { ServerOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "../router/types.js";
+import type { HandlerMap } from "../utils/handlers.js";
 import { buildResourceRouteCommands } from "../router/resource.router.js";
 import {
   AboutRouteCommand,
@@ -28,7 +29,11 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
  * @param storage - Initialised YAML storage instance.
  * @param options - Validated server options.
  */
-export async function createServer(storage: YamlStorage, options: ServerOptions) {
+export async function createServer(
+  storage: YamlStorage,
+  options: ServerOptions,
+  handlers: HandlerMap = new Map()
+) {
   const server = Fastify();
 
   await server.register(cors);
@@ -59,9 +64,9 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
   }
 
   const commands: RouteCommand[] = [
-    new AboutRouteCommand(storage, options),
+    new AboutRouteCommand(storage, options, handlers),
     ...(options.snapshot ? [new SnapshotRouteCommand(storage)] : []),
-    new CustomRouteCommand(storage, options.base),
+    new CustomRouteCommand(storage, options.base, handlers),
     ...buildResourceRouteCommands(storage, options),
   ];
 

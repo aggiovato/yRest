@@ -33,6 +33,11 @@ export const serverOptionsSchema = z.object({
   /** Milliseconds to delay every response, simulating network latency. `0` = disabled. */
   delay: z.coerce.number().int().min(0).default(0),
   /**
+   * Path to a JavaScript file exporting handler functions for custom routes.
+   * When set, functions are loaded at startup and referenced by name via `handler:` in `_routes`.
+   */
+  handlers: z.string().optional(),
+  /**
    * Wraps GET collection responses in a `{ data, pagination }` envelope.
    * Accepts `true` (default limit 10), `false` (disabled), or a positive integer (custom limit).
    */

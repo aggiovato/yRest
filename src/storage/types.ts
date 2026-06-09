@@ -39,7 +39,13 @@ export type CustomRoute = {
   method: string;
   /** URL path. May include Fastify path params (e.g. `/users/:id`). Must start with `/`. */
   path: string;
-  /** Static response to return for every matching request. */
+  /**
+   * Name of an exported function in the handlers file (`handlers:` in config).
+   * When set, the function is called on every request and its return value is used as the response.
+   * Takes priority over `response:`. Falls back to `response:` if the name is not found.
+   */
+  handler?: string;
+  /** Static or template response. Used when `handler` is absent or not found in the handlers file. */
   response?: {
     /** HTTP status code. Defaults to `200` if omitted. */
     status?: number;

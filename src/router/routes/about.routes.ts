@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import type { YamlStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
 import type { RouteCommand } from "../types.js";
+import type { HandlerMap } from "../../utils/handlers.js";
 import { generateAboutHtml } from "../templates/about.template.js";
 
 /**
@@ -17,13 +18,14 @@ import { generateAboutHtml } from "../templates/about.template.js";
 export class AboutRouteCommand implements RouteCommand {
   constructor(
     private readonly storage: YamlStorage,
-    private readonly options: ServerOptions
+    private readonly options: ServerOptions,
+    private readonly handlers: HandlerMap = new Map()
   ) {}
 
   register(server: FastifyInstance): void {
     server.get("/_about", (_req, reply) => {
       reply.header("Content-Type", "text/html; charset=utf-8");
-      return reply.send(generateAboutHtml(this.storage, this.options));
+      return reply.send(generateAboutHtml(this.storage, this.options, this.handlers));
     });
   }
 }

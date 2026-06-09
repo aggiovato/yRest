@@ -17,3 +17,4 @@ export { createServer } from "./server/createServer.js";
 export { serverOptionsSchema } from "./config/loadOptions.js";
 export type { ServerOptions } from "./config/loadOptions.js";
 export type { Data, Resource, Relations, CustomRoute, YamlStorage } from "./storage/types.js";
+export type { HandlerRequest, HandlerResponse, Handler, HandlerMap } from "./utils/handlers.js";
