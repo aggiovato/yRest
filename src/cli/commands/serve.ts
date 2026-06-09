@@ -69,21 +69,51 @@ export function registerServe(program: Command): void {
       await server.listen({ port: options.port, host: options.host });
 
       const collections = Object.keys(storage.getData());
-      const baseLabel = options.base || "/";
+      const customRoutes = storage.getRoutes();
+      const base = options.base || "/";
 
-      console.log(`\nyrest running at http://${options.host}:${options.port}`);
-      if (options.readonly) console.log("[readonly] write operations are disabled");
-      if (options.delay > 0) console.log(`[delay] ${options.delay}ms added to all responses`);
-      if (options.pageable.enabled)
-        console.log(
-          `[pageable] responses wrapped in { data, pagination } (limit: ${options.pageable.limit})`
-        );
-      if (options.snapshot)
-        console.log("[snapshot] /_snapshot endpoints enabled — GET / POST save / POST reset");
-      console.log(`\nResources (base: ${baseLabel}):`);
+      const b = (s: string) => `\x1b[1m${s}\x1b[0m`;
+      const dim = (s: string) => `\x1b[2m${s}\x1b[0m`;
+      const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
+      const methodStr = (m: string) => {
+        const colors: Record<string, string> = {
+          GET: "\x1b[32m", POST: "\x1b[33m", PUT: "\x1b[34m",
+          PATCH: "\x1b[36m", DELETE: "\x1b[31m",
+        };
+        const u = m.toUpperCase();
+        return `${colors[u] ?? ""}${u.padEnd(7)}\x1b[0m`;
+      };
+
+      console.log(`\n  ${b("yrest")}  ${dim("·")}  ${green(`http://${options.host}:${options.port}`)}\n`);
+
+      console.log(`  ${b("Collections")} ${dim(`(base: ${base})`)}:`);
       for (const name of collections) {
-        console.log(`  /${name}`);
+        console.log(`    ${dim("CRUD")}  ${options.base}/${name}`);
       }
+
+      console.log(`\n  ${b("Meta")}:`);
+      console.log(`    ${methodStr("GET")}${dim("/_about")}`);
+      if (options.snapshot) {
+        console.log(`    ${methodStr("GET")}${dim("/_snapshot")}`);
+        console.log(`    ${methodStr("POST")}${dim("/_snapshot/save")}`);
+        console.log(`    ${methodStr("POST")}${dim("/_snapshot/reset")}`);
+      }
+
+      if (customRoutes.length > 0) {
+        console.log(`\n  ${b("Custom routes")}:`);
+        for (const route of customRoutes) {
+          const method = (route.method ?? "GET").toUpperCase();
+          console.log(`    ${methodStr(method)}${options.base}${route.path}`);
+        }
+      }
+
+      const modes: string[] = [];
+      if (options.readonly) modes.push("readonly");
+      if (options.delay > 0) modes.push(`delay ${options.delay}ms`);
+      if (options.pageable.enabled) modes.push(`pageable (limit ${options.pageable.limit})`);
+      if (options.snapshot) modes.push("snapshot");
+      if (modes.length > 0) console.log(`\n  ${dim(modes.map((m) => `[${m}]`).join("  "))}`);
+
       console.log("");
 
       if (options.watch) {
@@ -96,15 +126,15 @@ export function registerServe(program: Command): void {
           debounce = setTimeout(() => {
             try {
               storage.reload();
-              console.log(`[watch] reloaded ${options.file}`);
+              console.log(`  \x1b[2m[watch] reloaded ${options.file}\x1b[0m`);
             } catch (err) {
               const msg = err instanceof Error ? err.message : String(err);
-              console.error(`[watch] failed to reload ${options.file} — ${msg}`);
+              console.error(`  \x1b[31m[watch] failed to reload ${options.file} — ${msg}\x1b[0m`);
             }
           }, 100);
         });
 
-        console.log(`[watch] watching ${options.file} for changes\n`);
+        console.log(`  \x1b[2m[watch] watching ${options.file} for changes\x1b[0m\n`);
       }
     });
 }

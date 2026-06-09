@@ -1,4 +1,7 @@
-import type { NestedRoutePlugin, ItemParams, NestedItemParams } from "../types.js";
+import type { FastifyInstance } from "fastify";
+import type { YamlStorage } from "../../storage/types.js";
+import type { Relations } from "../../storage/types.js";
+import type { RouteCommand, ItemParams, NestedItemParams } from "../types.js";
 import { findById } from "../../services/resource.service.js";
 
 /**
@@ -15,38 +18,46 @@ import { findById } from "../../services/resource.service.js";
  *   GET /users/1/posts   → all posts where userId === "1"
  *   GET /users/1/posts/2 → post with id 2 only if userId === "1"
  */
-export const registerNestedRoutes: NestedRoutePlugin = (server, storage, relations, base) => {
-  for (const [child, fields] of Object.entries(relations)) {
-    for (const [field, parent] of Object.entries(fields)) {
-      const collectionPath = `${base}/${parent}/:id/${child}`;
-      const itemPath = `${base}/${parent}/:id/${child}/:childId`;
+export class NestedRouteCommand implements RouteCommand {
+  constructor(
+    private readonly storage: YamlStorage,
+    private readonly relations: Relations,
+    private readonly base: string
+  ) {}
 
-      // GET /{parent}/:id/{child}
-      server.get<ItemParams>(collectionPath, (req, reply) => {
-        const parentCollection = storage.getCollection(parent) ?? [];
-        const parentItem = findById(parentCollection, req.params.id);
-        if (!parentItem) return reply.status(404).send({ error: "Not found" });
+  register(server: FastifyInstance): void {
+    for (const [child, fields] of Object.entries(this.relations)) {
+      for (const [field, parent] of Object.entries(fields)) {
+        const collectionPath = `${this.base}/${parent}/:id/${child}`;
+        const itemPath = `${this.base}/${parent}/:id/${child}/:childId`;
 
-        const children = (storage.getCollection(child) ?? []).filter(
-          (item) => String(item[field]) === req.params.id
-        );
-        return children;
-      });
+        // GET /{parent}/:id/{child}
+        server.get<ItemParams>(collectionPath, (req, reply) => {
+          const parentCollection = this.storage.getCollection(parent) ?? [];
+          const parentItem = findById(parentCollection, req.params.id);
+          if (!parentItem) return reply.status(404).send({ error: "Not found" });
 
-      // GET /{parent}/:id/{child}/:childId
-      server.get<NestedItemParams>(itemPath, (req, reply) => {
-        const parentCollection = storage.getCollection(parent) ?? [];
-        const parentItem = findById(parentCollection, req.params.id);
-        if (!parentItem) return reply.status(404).send({ error: "Not found" });
+          const children = (this.storage.getCollection(child) ?? []).filter(
+            (item) => String(item[field]) === req.params.id
+          );
+          return children;
+        });
 
-        const childItem = (storage.getCollection(child) ?? []).find(
-          (item) =>
-            String(item[field]) === req.params.id && String(item["id"]) === req.params.childId
-        );
-        if (!childItem) return reply.status(404).send({ error: "Not found" });
+        // GET /{parent}/:id/{child}/:childId
+        server.get<NestedItemParams>(itemPath, (req, reply) => {
+          const parentCollection = this.storage.getCollection(parent) ?? [];
+          const parentItem = findById(parentCollection, req.params.id);
+          if (!parentItem) return reply.status(404).send({ error: "Not found" });
 
-        return childItem;
-      });
+          const childItem = (this.storage.getCollection(child) ?? []).find(
+            (item) =>
+              String(item[field]) === req.params.id && String(item["id"]) === req.params.childId
+          );
+          if (!childItem) return reply.status(404).send({ error: "Not found" });
+
+          return childItem;
+        });
+      }
     }
   }
-};
+}

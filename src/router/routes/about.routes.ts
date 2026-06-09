@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/yamlStorage.js";
+import type { YamlStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
+import type { RouteCommand } from "../types.js";
 import { generateAboutHtml } from "../templates/about.template.js";
 
 /**
@@ -12,19 +13,17 @@ import { generateAboutHtml } from "../templates/about.template.js";
  *
  * The HTML is generated on every request so it always reflects the current
  * in-memory state (relevant in watch mode when data changes).
- *
- * @param server  - The Fastify instance to register the route on.
- * @param storage - Live YAML storage to derive collections and relations from.
- * @param options - Resolved server options for mode display and config info.
  */
-export function registerAboutRoute(
-  server: FastifyInstance,
-  storage: YamlStorage,
-  options: ServerOptions
-): void {
-  // GET /_about
-  server.get("/_about", (_req, reply) => {
-    reply.header("Content-Type", "text/html; charset=utf-8");
-    return reply.send(generateAboutHtml(storage, options));
-  });
+export class AboutRouteCommand implements RouteCommand {
+  constructor(
+    private readonly storage: YamlStorage,
+    private readonly options: ServerOptions
+  ) {}
+
+  register(server: FastifyInstance): void {
+    server.get("/_about", (_req, reply) => {
+      reply.header("Content-Type", "text/html; charset=utf-8");
+      return reply.send(generateAboutHtml(this.storage, this.options));
+    });
+  }
 }

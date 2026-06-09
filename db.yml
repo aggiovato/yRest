@@ -3,7 +3,6 @@ _rel:
     userId: users
   comments:
     postId: posts
-
 users:
   - id: 1
     name: Ana
@@ -14,7 +13,8 @@ users:
   - id: 3
     name: Maria
     email: maria@test.com
-
+  - id: 4
+    name: example
 posts:
   - id: 1
     title: First post
@@ -24,7 +24,6 @@ posts:
     title: Second post
     body: Content of the second post
     userId: 1
-
 comments:
   - id: 1
     body: Great post!

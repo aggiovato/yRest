@@ -11,6 +11,13 @@ yarn-error.log*
 .env
 .env.local
 .env.*.local
+.claude/
+
+wiki/
+
+
+documentation-plan.md
+
 
 .DS_Store
 Thumbs.db

@@ -1,5 +1,4 @@
-import type { YamlStorage } from "../storage/yamlStorage.js";
-import type { Resource } from "../storage/types.js";
+import type { YamlStorage, Resource } from "../storage/types.js";
 
 /**
  * Embeds a related parent object into a single item based on `?_expand`.

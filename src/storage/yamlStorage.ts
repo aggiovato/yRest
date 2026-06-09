@@ -2,102 +2,29 @@ import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
-import type { Data, Relations, Resource } from "./types.js";
-
-/**
- * In-memory store backed by a YAML file.
- *
- * All reads operate on a live in-memory snapshot. Writes must be explicitly
- * flushed to disk by calling {@link persist}. Use {@link reload} to pull in
- * changes made to the file externally (e.g. in watch mode).
- */
-export interface YamlStorage {
-  /** Returns the full in-memory dataset (all collections). */
-  getData(): Data;
-
-  /** Returns the relational mappings declared under `_rel`. */
-  getRelations(): Relations;
-
-  /**
-   * Returns the items in a named collection, or `undefined` if it does not exist.
-   *
-   * @param name - Collection name as declared in the YAML file (e.g. `"users"`).
-   */
-  getCollection(name: string): Resource[] | undefined;
-
-  /**
-   * Replaces the items of a named collection in memory.
-   * Call {@link persist} afterwards to flush the change to disk.
-   *
-   * @param name  - Collection name.
-   * @param items - New array of items to store.
-   */
-  setCollection(name: string, items: Resource[]): void;
-
-  /**
-   * Atomically writes the current in-memory state to the YAML file.
-   *
-   * Uses a write-to-temp-then-rename strategy so a crash during the write
-   * never leaves the file in a partially written state.
-   *
-   * @throws {Error} If the filesystem write or rename fails.
-   */
-  persist(): void;
-
-  /**
-   * Reloads the YAML file from disk and updates the in-memory state in place.
-   *
-   * Mutates the existing `data` and `relations` objects rather than replacing them,
-   * so any code holding a reference to the storage instance sees the updated values
-   * without needing to re-fetch.
-   *
-   * @throws {Error} If the file cannot be read or the YAML is malformed.
-   */
-  reload(): void;
-
-  /**
-   * Returns the saved snapshot: a frozen copy of `data` and `relations` taken
-   * at the last call to {@link saveSnapshot} (or at construction time).
-   */
-  getSnapshot(): { data: Data; relations: Relations; savedAt: Date };
-
-  /**
-   * Replaces the stored snapshot with a deep copy of the current in-memory state.
-   * Future calls to {@link resetToSnapshot} will restore to this point.
-   */
-  saveSnapshot(): void;
-
-  /**
-   * Restores the in-memory state to the last saved snapshot and persists to disk.
-   * Mutates `data` and `relations` in place so existing references stay valid.
-   *
-   * @throws {Error} If the filesystem write fails.
-   */
-  resetToSnapshot(): void;
-}
+import type { CustomRoute, Data, Relations, YamlStorage } from "./types.js";
+import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
  * Creates a {@link YamlStorage} instance backed by the given YAML file.
  *
  * The file is read and parsed eagerly on construction. The `_rel` key is
- * extracted as relational metadata; all other top-level keys become collections.
+ * extracted as relational metadata; `_routes` as custom route declarations;
+ * all other top-level keys become collections.
  *
  * @param filePath - Relative or absolute path to the YAML database file.
  * @throws {Error} If the file cannot be read or its YAML is invalid.
  */
-function deepCopyData(source: Data): Data {
-  return Object.fromEntries(
-    Object.entries(source).map(([k, v]) => [k, v.map((item) => ({ ...item }))])
-  ) as Data;
-}
-
 export function createYamlStorage(filePath: string): YamlStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 
   const relations: Relations = (raw["_rel"] as Relations) ?? {};
+  const routes: CustomRoute[] = Array.isArray(raw["_routes"])
+    ? (raw["_routes"] as CustomRoute[])
+    : [];
   const data: Data = Object.fromEntries(
-    Object.entries(raw).filter(([key]) => key !== "_rel")
+    Object.entries(raw).filter(([key]) => key !== "_rel" && key !== "_routes")
   ) as Data;
 
   let snapshot = {
@@ -113,6 +40,10 @@ export function createYamlStorage(filePath: string): YamlStorage {
 
     getRelations() {
       return relations;
+    },
+
+    getRoutes() {
+      return routes;
     },
 
     getCollection(name) {

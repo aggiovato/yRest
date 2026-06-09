@@ -1,4 +1,4 @@
-import type { YamlStorage } from "../../storage/yamlStorage.js";
+import type { YamlStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
 
 const METHOD_COLOR: Record<string, string> = {
@@ -72,7 +72,8 @@ function examplesBlock(
   relations: Record<string, Record<string, string>>,
   base: string,
   host: string,
-  options: ServerOptions
+  options: ServerOptions,
+  firstCustomRoute?: { method?: string; path?: string } | undefined
 ): string {
   const examples: string[] = [];
   const firstCol = collections[0];
@@ -133,6 +134,13 @@ function examplesBlock(
     examples.push(
       `# Snapshot endpoints\ncurl ${host}/_snapshot\ncurl -X POST ${host}/_snapshot/save\ncurl -X POST ${host}/_snapshot/reset`
     );
+  }
+
+  if (firstCustomRoute) {
+    const method = firstCustomRoute.method?.toUpperCase() ?? "GET";
+    const fullPath = `${host}${base}${firstCustomRoute.path}`;
+    const curlFlag = method === "GET" ? "" : `-X ${method} `;
+    examples.push(`# Custom route\ncurl ${curlFlag}${fullPath}`);
   }
 
   const highlighted = examples
@@ -205,6 +213,31 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       ${endpointRow("GET", "/_snapshot", "Returns metadata of the current snapshot: <code>savedAt</code> and item counts per collection.")}
       ${endpointRow("POST", "/_snapshot/save", "Replaces the stored snapshot with the current database state.")}
       ${endpointRow("POST", "/_snapshot/reset", "Restores the database to the last saved snapshot and persists to disk.")}
+    </tbody></table>
+  </details>`
+    : "";
+
+  // ── Custom routes accordion ──────────────────────────────────────────────────
+  const customRoutes = storage.getRoutes();
+  const customRoutesAccordion = customRoutes.length
+    ? `
+  <details class="resource-card nested-card">
+    <summary>
+      <span class="resource-name">Custom routes</span>
+      <span class="route-count">${customRoutes.length} route${customRoutes.length !== 1 ? "s" : ""}</span>
+    </summary>
+    <table><tbody>
+      ${customRoutes
+        .map((r) => {
+          const fullPath = `${base}${r.path}`;
+          const status = r.response?.status ?? 200;
+          return endpointRow(
+            r.method?.toUpperCase() ?? "GET",
+            fullPath,
+            `Static response — <code>${status}</code>${r.response?.headers ? ` + custom headers` : ""}`
+          );
+        })
+        .join("")}
     </tbody></table>
   </details>`
     : "";
@@ -362,6 +395,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       ${accordions}
       ${nestedAccordion}
       ${snapshotAccordion}
+      ${customRoutesAccordion}
     </div>
 
     <h2>Query Parameters</h2>
@@ -385,7 +419,7 @@ export function generateAboutHtml(storage: YamlStorage, options: ServerOptions):
       </table>
     </div>
 
-    ${collections.length ? `<h2>Examples</h2><div class="card">${examplesBlock(collections, relations, base, host, options)}</div>` : ""}
+    ${collections.length ? `<h2>Examples</h2><div class="card">${examplesBlock(collections, relations, base, host, options, customRoutes[0])}</div>` : ""}
 
     <footer>
       Powered by <a href="https://github.com/aggiovato/yaml-rest" target="_blank">@aggiovato/yrest</a> &nbsp;·&nbsp; <a href="/_about">/_about</a>

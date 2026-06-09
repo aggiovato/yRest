@@ -1,10 +1,14 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import type { YamlStorage } from "../storage/yamlStorage.js";
+import type { YamlStorage } from "../storage/types.js";
 import type { ServerOptions } from "../config/loadOptions.js";
-import { registerResourceRoutes } from "../router/resource.router.js";
-import { registerAboutRoute } from "../router/routes/about.routes.js";
-import { registerSnapshotRoutes } from "../router/routes/snapshot.routes.js";
+import type { RouteCommand } from "../router/types.js";
+import { buildResourceRouteCommands } from "../router/resource.router.js";
+import {
+  AboutRouteCommand,
+  CustomRouteCommand,
+  SnapshotRouteCommand,
+} from "../router/routes/index.js";
 
 /** HTTP methods that modify server state. Used by the readonly guard hook. */
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -16,7 +20,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
  * 1. CORS (all origins, permissive defaults).
  * 2. Readonly guard hook — rejects mutating requests with 405 when enabled.
  * 3. Delay hook — defers `onSend` by N ms when enabled.
- * 4. All resource routes derived from the storage collections.
+ * 4. All route commands: about, snapshot (optional), custom routes, resource routes.
  *
  * The server is returned before `listen()` is called so tests can inject
  * requests without binding a real port.
@@ -54,9 +58,16 @@ export async function createServer(storage: YamlStorage, options: ServerOptions)
     });
   }
 
-  registerAboutRoute(server, storage, options);
-  if (options.snapshot) registerSnapshotRoutes(server, storage);
-  registerResourceRoutes(server, storage, options);
+  const commands: RouteCommand[] = [
+    new AboutRouteCommand(storage, options),
+    ...(options.snapshot ? [new SnapshotRouteCommand(storage)] : []),
+    new CustomRouteCommand(storage, options.base),
+    ...buildResourceRouteCommands(storage, options),
+  ];
+
+  for (const command of commands) {
+    command.register(server);
+  }
 
   return server;
 }

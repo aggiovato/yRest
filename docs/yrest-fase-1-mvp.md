@@ -809,91 +809,103 @@ La Fase 1 debe entregar un paquete npm CLI, ligero y funcional, capaz de levanta
 
 Aunque este documento se centra en la Fase 1, el proyecto puede evolucionar en varias fases posteriores.
 
-## Fase 2 — Mejoras REST y experiencia CLI
+---
 
-Objetivo: hacer que el mock server sea más cómodo y potente para desarrollo diario.
+## Estado de implementación
 
-Posibles funcionalidades:
+| Fase | Tema                                           | Estado                 |
+| ---- | ---------------------------------------------- | ---------------------- |
+| 1    | MVP — CRUD desde YAML                          | ✅ Completada (v0.1.0) |
+| 2    | Query Power, modes, relaciones, error handling | ✅ Completada (v0.4.0) |
+| 3    | Proxy fallback                                 | ⏸ Aplazada             |
+| 4    | Custom routes (`_routes`)                      | 🚧 En progreso         |
+| 5    | Panel local (`/_panel`)                        | —                      |
+| 6    | Web pública y documentación                    | —                      |
+| 7    | API programática para testing                  | —                      |
+| 8    | Validaciones, escenarios, extensibilidad       | —                      |
+| 9    | Relaciones avanzadas (`_nested`, `_depth`)     | —                      |
+
+---
+
+## Fase 2 — Query Power, modes y relaciones ✅
+
+Entregado en v0.4.0. Funcionalidades implementadas:
 
 ```txt
-- Query params.
-- Filtros simples (?field=value).
-- Paginación (?_page=1&_limit=10).
-- Sorting (?_sort=name&_order=asc).
+- Query params: ?field=value (filtros exactos y OR).
+- Field operators: field_gte, field_lte, field_ne, field_like, field_start, field_regex.
+- Full-text search: ?_q=término.
+- Paginación: ?_page=1&_limit=10.
+- Pageable mode: respuesta envuelta en { data, pagination }.
+- Sorting: ?_sort=name&_order=asc.
 - Watch mode (recarga db.yml si cambia en disco).
-- Readonly mode (bloquea escrituras).
-- Snapshot mode.
+- Readonly mode (bloquea escrituras con 405).
+- Snapshot mode (/_snapshot endpoints).
 - Delay global (simula latencia de red).
-- Mejor gestión de errores.
 - Archivo de configuración yrest.config.yml.
-- ?_expand=relation (embedding de objetos relacionados en la respuesta).
+- ?_expand=relation (hijo → padre, embedding via _rel).
+- ?_embed=collection (padre → hijos, embedding inverso via _rel).
+- ?_fields=id,name (proyección de campos, aplicada al final del pipeline).
 - Rutas anidadas nivel 2: GET /parent/:id/child/:childId.
-```
-
-Ejemplo futuro:
-
-```bash
-npx yrest serve db.yml --watch --readonly
+- Error handling global (setErrorHandler + guards de body).
+- Startup YAML guard (process.exit si el archivo es inválido).
+- Refactoring en servicios: query.service, resource.service, expand.service.
 ```
 
 ---
 
-## Fase 3 — Proxy fallback
+## Fase 3 — Proxy fallback ⏸ (aplazada)
 
 Objetivo: permitir trabajar con una API híbrida: algunas rutas mockeadas y otras reales.
 
-Ejemplo:
+**Aplazada** para después de Phase 4. La implementación de custom routes primero resuelve el
+caso de uso más común (endpoints que no son CRUD) sin necesidad de un proxy real.
+
+Ejemplo de uso futuro:
 
 ```bash
 npx yrest serve db.yml --base /api --proxy https://app.domain
 ```
 
-Comportamiento esperado:
+Comportamiento esperado cuando se implemente:
 
 ```txt
-1. Buscar la ruta en custom routes.
-2. Buscar el recurso en db.yml.
+1. Buscar la ruta en _routes (custom routes).
+2. Buscar el recurso en db.yml (colecciones).
 3. Si no existe, reenviar la petición al proxy.
 4. Si no hay proxy, devolver 404.
 ```
 
-Esto permitiría:
+Dependencias de implementación:
 
 ```txt
-http://localhost:3070/api/users
-```
-
-Responder desde YAML, y:
-
-```txt
-http://localhost:3070/api/orders
-```
-
-Reenviar a:
-
-```txt
-https://app.domain/api/orders
+- Requiere una librería de proxy HTTP (e.g. @fastify/http-proxy o undici).
+- El proxy debe pasar los headers originales y el body al destino.
+- Debe manejar errores de conexión al proxy (503 si el destino no responde).
+- TLS/certificados del destino pueden requerir configuración adicional.
 ```
 
 ---
 
-## Fase 4 — Custom routes
+## Fase 4 — Custom routes 🚧
 
-Objetivo: permitir definir endpoints que no encajan en CRUD.
+Objetivo: permitir definir endpoints que no encajan en CRUD directamente en el YAML.
 
-Ejemplos:
+Casos de uso principales:
 
 ```txt
-POST /login
-POST /logout
-GET /auth/me
-GET /dashboard/stats
-POST /checkout
+POST /login          → devuelve token fake
+POST /logout         → devuelve 204
+GET /auth/me         → devuelve usuario actual simulado
+GET /dashboard/stats → devuelve métricas estáticas
+POST /checkout       → simula proceso de pago
 ```
 
-Posible estructura:
+### Opción A — Respuestas estáticas (MVP — implementado en esta fase)
 
-```yml
+La más simple y suficiente para el 90% de los casos de uso de mocking.
+
+```yaml
 _routes:
   - method: GET
     path: /auth/me
@@ -903,7 +915,147 @@ _routes:
         id: 1
         name: Ana
         role: admin
+
+  - method: POST
+    path: /login
+    response:
+      status: 200
+      body:
+        token: fake-jwt-token-abc123
+
+  - method: POST
+    path: /logout
+    response:
+      status: 204
+
+  - method: GET
+    path: /dashboard/stats
+    response:
+      status: 200
+      headers:
+        Cache-Control: no-store
+      body:
+        users: 150
+        orders: 32
+        revenue: 4820.50
 ```
+
+Comportamiento:
+
+- El campo `method` es case-insensitive (`GET`, `get`, `Get` son equivalentes).
+- El campo `path` puede incluir parámetros de Fastify (`:id`, `:slug`).
+- `response.status` por defecto es `200` si se omite.
+- `response.body` puede ser cualquier valor YAML válido (objeto, array, string, número, null).
+- `response.headers` aplica headers personalizados adicionales a la respuesta.
+- Custom routes toman prioridad sobre resource routes (se registran primero).
+- Custom routes respetan `--base`: `path: /auth/me` con `--base /api` → `/api/auth/me`.
+
+Limitaciones de la Opción A:
+
+```txt
+- La respuesta es siempre la misma independientemente del request.
+- No se pueden referenciar parámetros del request en el body.
+- No hay lógica condicional basada en headers, body o query params.
+- --readonly bloquea POST/PUT/PATCH/DELETE custom routes igual que las de colección.
+```
+
+### Opción B — Variables de request en el body (futura, Phase 4 extendida)
+
+Permite usar datos del request en la respuesta. Sintaxis con `{{}}`:
+
+```yaml
+_routes:
+  - method: GET
+    path: /users/:id/summary
+    response:
+      status: 200
+      body:
+        requestedId: "{{params.id}}"
+        timestamp: "{{now}}"
+        message: Perfil del usuario {{params.id}}
+
+  - method: POST
+    path: /echo
+    response:
+      status: 200
+      body:
+        received: "{{body}}"
+        query: "{{query}}"
+```
+
+Variables disponibles (propuesta):
+
+| Variable       | Valor                                     |
+| -------------- | ----------------------------------------- |
+| `{{params.X}}` | Path param `:X` del request               |
+| `{{query.X}}`  | Query param `?X=` del request             |
+| `{{body}}`     | Body completo del request (objeto)        |
+| `{{body.X}}`   | Campo `X` del body del request            |
+| `{{now}}`      | Timestamp ISO del momento de la respuesta |
+| `{{uuid}}`     | UUID v4 generado en cada request          |
+
+Peso de implementación: **medio** — requiere un motor de template ligero (mustache o similar)
+y acceso al contexto del request en el handler.
+
+### Opción C — Escenarios condicionales (futura, Phase 8)
+
+Permite definir respuestas alternativas basadas en condiciones del request.
+Se alinea con la Phase 8 de validaciones y escenarios.
+
+```yaml
+_routes:
+  - method: POST
+    path: /login
+    response:
+      status: 200
+      body:
+        token: abc123
+    scenarios:
+      - when:
+          body.email: bad@test.com
+        response:
+          status: 401
+          body:
+            error: Invalid credentials
+      - when:
+          body.email: locked@test.com
+        response:
+          status: 403
+          body:
+            error: Account locked
+
+  - method: GET
+    path: /feature-flag
+    response:
+      status: 200
+      body:
+        enabled: false
+    scenarios:
+      - when:
+          query._variant: experimental
+        response:
+          status: 200
+          body:
+            enabled: true
+```
+
+Peso de implementación: **alto** — requiere un motor de evaluación de condiciones, gestión
+de estado de escenario activo, y posiblemente una API para cambiar el escenario activo en runtime.
+
+### Decisiones de diseño de Fase 4 (Opción A)
+
+**¿Cómo se registran en Fastify?**
+Las custom routes se registran con `server.route()` antes de las resource routes.
+Esto garantiza que un `GET /auth/me` definido en `_routes` tenga prioridad sobre
+una hipotética colección `authMe` en el YAML.
+
+**¿Qué pasa si `_routes` está vacío o ausente?**
+`storage.getRoutes()` devuelve `[]` y no se registra ninguna ruta adicional.
+No hay overhead ni cambio de comportamiento en instalaciones existentes.
+
+**¿Cómo aparecen en `/_about`?**
+Se añade una sección "Custom routes" que lista método, path y status de cada ruta.
+Solo aparece si hay al menos una custom route definida.
 
 ---
 

@@ -1,5 +1,7 @@
+import type { FastifyInstance } from "fastify";
+import type { YamlStorage } from "../../storage/types.js";
 import type { Resource } from "../../storage/types.js";
-import type { RoutePlugin, ItemParams, RouteQuery } from "../types.js";
+import type { RouteCommand, ItemParams, RouteQuery } from "../types.js";
 import { findById, replaceItem, patchItem, deleteItem } from "../../services/resource.service.js";
 import { expandItems, embedItems } from "../../services/expand.service.js";
 import { projectFields } from "../../services/query.service.js";
@@ -17,45 +19,58 @@ import { projectFields } from "../../services/query.service.js";
  * DELETE /{resource}/:id — Removes an item and returns it as confirmation.
  *                          Persists the change. Returns 404 if the id does not exist.
  */
-export const registerItemRoutes: RoutePlugin = (server, storage, resource, base) => {
-  // GET /{resource}/:id
-  server.get<ItemParams & RouteQuery>(`${base}/:id`, (req, reply) => {
-    const item = findById(storage.getCollection(resource) ?? [], req.params.id);
-    if (!item) return reply.status(404).send({ error: "Not found" });
-    const fields = ((req.query["_fields"] as string | undefined) ?? "")
-      .split(",")
-      .map((f) => f.trim())
-      .filter(Boolean);
-    return projectFields(
-      embedItems(expandItems(item, req.query, resource, storage), req.query, resource, storage),
-      fields
-    );
-  });
+export class ItemRouteCommand implements RouteCommand {
+  constructor(
+    private readonly storage: YamlStorage,
+    private readonly resource: string,
+    private readonly base: string
+  ) {}
 
-  // PUT /{resource}/:id
-  server.put<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
-    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
-      return reply.status(400).send({ error: "Request body must be a JSON object" });
-    }
-    const item = replaceItem(storage, resource, req.params.id, req.body as Resource);
-    if (!item) return reply.status(404).send({ error: "Not found" });
-    return expandItems(item, req.query, resource, storage);
-  });
+  register(server: FastifyInstance): void {
+    // GET /{resource}/:id
+    server.get<ItemParams & RouteQuery>(`${this.base}/:id`, (req, reply) => {
+      const item = findById(this.storage.getCollection(this.resource) ?? [], req.params.id);
+      if (!item) return reply.status(404).send({ error: "Not found" });
+      const fields = ((req.query["_fields"] as string | undefined) ?? "")
+        .split(",")
+        .map((f) => f.trim())
+        .filter(Boolean);
+      return projectFields(
+        embedItems(
+          expandItems(item, req.query, this.resource, this.storage),
+          req.query,
+          this.resource,
+          this.storage
+        ),
+        fields
+      );
+    });
 
-  // PATCH /{resource}/:id
-  server.patch<ItemParams & RouteQuery & { Body: Resource }>(`${base}/:id`, (req, reply) => {
-    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
-      return reply.status(400).send({ error: "Request body must be a JSON object" });
-    }
-    const item = patchItem(storage, resource, req.params.id, req.body as Resource);
-    if (!item) return reply.status(404).send({ error: "Not found" });
-    return expandItems(item, req.query, resource, storage);
-  });
+    // PUT /{resource}/:id
+    server.put<ItemParams & RouteQuery & { Body: Resource }>(`${this.base}/:id`, (req, reply) => {
+      if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+        return reply.status(400).send({ error: "Request body must be a JSON object" });
+      }
+      const item = replaceItem(this.storage, this.resource, req.params.id, req.body as Resource);
+      if (!item) return reply.status(404).send({ error: "Not found" });
+      return expandItems(item, req.query, this.resource, this.storage);
+    });
 
-  // DELETE /{resource}/:id
-  server.delete<ItemParams & RouteQuery>(`${base}/:id`, (req, reply) => {
-    const item = deleteItem(storage, resource, req.params.id);
-    if (!item) return reply.status(404).send({ error: "Not found" });
-    return expandItems(item, req.query, resource, storage);
-  });
-};
+    // PATCH /{resource}/:id
+    server.patch<ItemParams & RouteQuery & { Body: Resource }>(`${this.base}/:id`, (req, reply) => {
+      if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
+        return reply.status(400).send({ error: "Request body must be a JSON object" });
+      }
+      const item = patchItem(this.storage, this.resource, req.params.id, req.body as Resource);
+      if (!item) return reply.status(404).send({ error: "Not found" });
+      return expandItems(item, req.query, this.resource, this.storage);
+    });
+
+    // DELETE /{resource}/:id
+    server.delete<ItemParams & RouteQuery>(`${this.base}/:id`, (req, reply) => {
+      const item = deleteItem(this.storage, this.resource, req.params.id);
+      if (!item) return reply.status(404).send({ error: "Not found" });
+      return expandItems(item, req.query, this.resource, this.storage);
+    });
+  }
+}

@@ -1,7 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../storage/yamlStorage.js";
-import type { Resource, Relations } from "../storage/types.js";
-import type { ServerOptions } from "../config/loadOptions.js";
+import type { Resource } from "../storage/types.js";
 
 /** Fastify route params for item-level routes that include an `:id` segment. */
 export type ItemParams = { Params: { id: string } };
@@ -17,36 +15,22 @@ export type NestedItemParams = { Params: { id: string; childId: string } };
 export type RouteQuery = { Querystring: Record<string, string | string[]> };
 
 /**
- * A function that registers collection- or item-level routes for a single resource.
+ * A route registration command.
  *
- * @param server   - The Fastify instance to register routes on.
- * @param storage  - Live YAML storage shared across all route handlers.
- * @param resource - Collection name as declared in the YAML file (e.g. `"users"`).
- * @param base     - Full URL prefix for this resource (e.g. `/api/users`).
- * @param options  - Resolved server options (pagination config, readonly, delay, etc.).
- */
-export type RoutePlugin = (
-  server: FastifyInstance,
-  storage: YamlStorage,
-  resource: string,
-  base: string,
-  options: ServerOptions
-) => void;
-
-/**
- * A function that registers nested child routes derived from `_rel` declarations.
+ * Each command captures its own dependencies in the constructor and exposes
+ * a single `register` method. The caller iterates over a uniform array of
+ * commands without needing to know each command's specific parameter set.
  *
- * @param server    - The Fastify instance to register routes on.
- * @param storage   - Live YAML storage shared across all route handlers.
- * @param relations - Relational mappings from the YAML `_rel` block.
- * @param base      - URL prefix under which nested routes are mounted (e.g. `/api`).
+ * @example
+ * const commands: RouteCommand[] = [
+ *   new AboutRouteCommand(storage, options),
+ *   new CollectionRouteCommand(storage, "users", "/users", options),
+ * ];
+ * for (const cmd of commands) cmd.register(server);
  */
-export type NestedRoutePlugin = (
-  server: FastifyInstance,
-  storage: YamlStorage,
-  relations: Relations,
-  base: string
-) => void;
+export interface RouteCommand {
+  register(server: FastifyInstance): void;
+}
 
 /** Pagination metadata included in a {@link PagedResponse}. */
 export interface Pagination {

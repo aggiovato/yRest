@@ -1,5 +1,4 @@
-import type { YamlStorage } from "../storage/yamlStorage.js";
-import type { Resource } from "../storage/types.js";
+import type { YamlStorage, Resource } from "../storage/types.js";
 import { nextId } from "../utils/params.js";
 
 /**
