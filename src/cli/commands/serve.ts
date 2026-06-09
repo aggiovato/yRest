@@ -77,14 +77,19 @@ export function registerServe(program: Command): void {
       const green = (s: string) => `\x1b[32m${s}\x1b[0m`;
       const methodStr = (m: string) => {
         const colors: Record<string, string> = {
-          GET: "\x1b[32m", POST: "\x1b[33m", PUT: "\x1b[34m",
-          PATCH: "\x1b[36m", DELETE: "\x1b[31m",
+          GET: "\x1b[32m",
+          POST: "\x1b[33m",
+          PUT: "\x1b[34m",
+          PATCH: "\x1b[36m",
+          DELETE: "\x1b[31m",
         };
         const u = m.toUpperCase();
         return `${colors[u] ?? ""}${u.padEnd(7)}\x1b[0m`;
       };
 
-      console.log(`\n  ${b("yrest")}  ${dim("·")}  ${green(`http://${options.host}:${options.port}`)}\n`);
+      console.log(
+        `\n  ${b("yrest")}  ${dim("·")}  ${green(`http://${options.host}:${options.port}`)}\n`
+      );
 
       console.log(`  ${b("Collections")} ${dim(`(base: ${base})`)}:`);
       for (const name of collections) {
