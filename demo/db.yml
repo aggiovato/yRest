@@ -1,7 +1,6 @@
 _rel:
   todos:
     userId: users
-
 _routes:
   - method: GET
     path: /health
@@ -11,12 +10,10 @@ _routes:
         status: ok
         server: yrest
         version: "0.5.0"
-
   - method: POST
     path: /auth/logout
     response:
       status: 204
-
   - method: GET
     path: /todos/:id/share
     response:
@@ -25,8 +22,7 @@ _routes:
         todoId: "{{params.id}}"
         sharedAt: "{{now}}"
         shareToken: "{{uuid}}"
-        url: "https://app.example.com/shared/{{params.id}}"
-
+        url: https://app.example.com/shared/{{params.id}}
   - method: POST
     path: /auth/login
     handler: login
@@ -34,7 +30,6 @@ _routes:
       status: 200
       body:
         token: fallback-token
-
   - method: GET
     path: /stats
     handler: stats
@@ -42,7 +37,13 @@ _routes:
       status: 200
       body:
         message: handler not loaded
-
+  - method: GET
+    path: /summary
+    handler: summary
+    response:
+      status: 200
+      body:
+        message: handler not loaded
 users:
   - id: 1
     name: Ana García
@@ -54,7 +55,6 @@ users:
     email: luis@demo.com
     avatar: LM
     role: user
-
 todos:
   - id: 1
     title: Configure yrest as mock API server

@@ -1,61 +1,58 @@
-import { useState } from 'react';
-import { fetchApi } from '../../../lib/api';
-import { ApiLog } from '../../ui/ApiLog';
-import type { ApiCallLog } from '../../../context/AppContext';
+import { useState } from "react";
+import { fetchApi } from "../../../lib/api";
+import { ApiLog } from "../../ui/ApiLog";
+import type { ApiCallLog } from "../../../context/AppContext";
 
+/**
+ * Handlers tab — demonstrates GET /stats and GET /summary, both backed by
+ * JavaScript functions in yrest.handlers.js referenced from _routes.
+ */
 export function HandlersPanel() {
   const [log, setLog] = useState<ApiCallLog | null>(null);
-  const [email, setEmail] = useState('ana@demo.com');
-  const [password, setPassword] = useState('demo123');
+  const [loading, setLoading] = useState<string | null>(null);
 
-  async function handleLogin() {
-    const r = await fetchApi('POST', '/auth/login', { email, password });
-    setLog({ method: 'POST', url: r.url, status: r.status, data: r.data, ts: Date.now() });
-  }
-
-  async function handleStats() {
-    const r = await fetchApi('GET', '/stats');
-    setLog({ method: 'GET', url: r.url, status: r.status, data: r.data, ts: Date.now() });
+  async function call(method: string, path: string) {
+    setLoading(path);
+    const r = await fetchApi(method, path);
+    setLog({ method, url: r.url, status: r.status, data: r.data, ts: Date.now() });
+    setLoading(null);
   }
 
   return (
     <>
       <p className="feature-desc">
-        JavaScript functions exported from <code>yrest.handlers.js</code> and referenced by name
-        in <code>_routes</code>. They have access to <code>req.params</code>,{' '}
+        JavaScript functions in <code>yrest.handlers.js</code> referenced by name in{" "}
+        <code>_routes</code>. Handlers have access to <code>req.params</code>,{" "}
         <code>req.query</code>, <code>req.body</code>, and <code>req.headers</code>.
-        The response can contain real logic.
       </p>
-      <p className="hint">
-        Credentials: <strong>ana@demo.com</strong> / <strong>demo123</strong>
-        &nbsp;·&nbsp;
-        <strong>luis@demo.com</strong> / <strong>demo123</strong>
-      </p>
-      <div className="ex-controls">
-        <div className="ex-field">
-          <span className="ex-label">email</span>
-          <input
-            className="ex-input"
-            type="email"
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            style={{ width: '190px' }}
-          />
-        </div>
-        <div className="ex-field">
-          <span className="ex-label">password</span>
-          <input
-            className="ex-input"
-            type="password"
-            value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={{ width: '120px' }}
-          />
-        </div>
-        <button className="btn-try" onClick={handleLogin}>POST /api/auth/login →</button>
-        <button className="btn-try" onClick={handleStats}>GET /api/stats →</button>
+      <pre
+        className="hint"
+        style={{ whiteSpace: "pre", overflowX: "auto" }}
+      >{`# db.yml — _routes entries that use handlers
+  - method: GET
+    path: /stats
+    handler: stats      # → export async function stats(_req)
+
+  - method: GET
+    path: /summary
+    handler: summary    # → export async function summary(_req)`}</pre>
+      <div className="btn-try-group">
+        <button
+          className="btn-try"
+          onClick={() => call("GET", "/stats")}
+          disabled={loading === "/stats"}
+        >
+          GET /api/stats →
+        </button>
+        <button
+          className="btn-try"
+          onClick={() => call("GET", "/summary")}
+          disabled={loading === "/summary"}
+        >
+          GET /api/summary →
+        </button>
       </div>
-      <ApiLog log={log} emptyMessage="Click one of the buttons..." />
+      <ApiLog log={log} emptyMessage="Click a button to call a handler..." />
     </>
   );
 }

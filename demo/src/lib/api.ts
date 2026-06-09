@@ -13,11 +13,13 @@ export async function fetchApi(
   body: unknown = null
 ): Promise<ApiResult> {
   const url = `${API_BASE}${path}`;
-  const opts: RequestInit = {
-    method,
-    headers: { "Content-Type": "application/json" },
-  };
-  if (body != null) opts.body = JSON.stringify(body);
+  const opts: RequestInit = { method };
+  // Only set Content-Type when there is a body — some servers (including Fastify)
+  // reject requests that declare application/json but send an empty body.
+  if (body != null) {
+    opts.headers = { "Content-Type": "application/json" };
+    opts.body = JSON.stringify(body);
+  }
 
   try {
     const res = await fetch(url, opts);

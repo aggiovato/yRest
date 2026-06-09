@@ -1,18 +1,19 @@
-import { useState } from 'react';
+import React, { useState } from "react";
 
 interface Props {
   onAdd: (title: string) => void;
+  disabled?: boolean;
 }
 
-export function TodoForm({ onAdd }: Props) {
-  const [value, setValue] = useState('');
+export function TodoForm({ onAdd, disabled }: Props) {
+  const [value, setValue] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const title = value.trim();
-    if (!title) return;
+    if (!title || disabled) return;
     onAdd(title);
-    setValue('');
+    setValue("");
   }
 
   return (
@@ -20,12 +21,15 @@ export function TodoForm({ onAdd }: Props) {
       <input
         className="add-input"
         value={value}
-        onChange={e => setValue(e.target.value)}
-        placeholder="New task..."
+        onChange={(e) => setValue(e.target.value)}
+        placeholder={disabled ? "Sign in to add tasks…" : "New task…"}
         autoComplete="off"
         maxLength={120}
+        disabled={disabled}
       />
-      <button className="btn" type="submit">+ Add</button>
+      <button className="btn" type="submit" disabled={disabled}>
+        + Add
+      </button>
     </form>
   );
 }

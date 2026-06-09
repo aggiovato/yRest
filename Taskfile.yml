@@ -85,9 +85,20 @@ tasks:
   # ── Demo ───────────────────────────────────────────────────────────────────
 
   demo:
-    desc: Start the demo — yrest API on :3070 + Astro dev server on :4321 (requires npm install in demo/)
+    desc: Build package then start demo — yrest API on :3070 + Astro dev server on :4321
+    deps: [build]
     dir: demo
     cmd: npm start
+
+  demo:stop:
+    desc: Kill any processes occupying the demo ports (3070 API + 4321 web)
+    cmds:
+      - cmd: fuser -k 3070/tcp 2>/dev/null || true
+        silent: true
+      - cmd: fuser -k 4321/tcp 2>/dev/null || true
+        silent: true
+      - cmd: echo "Ports 3070 and 4321 released."
+        silent: true
 
   # ── Release ────────────────────────────────────────────────────────────────
 
