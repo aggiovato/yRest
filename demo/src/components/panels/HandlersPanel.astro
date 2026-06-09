@@ -1,0 +1,59 @@
+---
+---
+
+<div class="tab-panel" id="panel-handlers">
+  <p class="feature-desc">
+    Funciones JavaScript exportadas desde <code>yrest.handlers.js</code> y referenciadas
+    por nombre en <code>_routes</code>. Tienen acceso a <code>req.params</code>,
+    <code>req.query</code>, <code>req.body</code> y <code>req.headers</code>.
+    La respuesta es dinámica y puede contener lógica real.
+  </p>
+
+  <p class="hint">
+    Credenciales: <strong>ana@demo.com</strong> / <strong>demo123</strong>
+    &nbsp;&middot;&nbsp;
+    <strong>luis@demo.com</strong> / <strong>demo123</strong>
+  </p>
+
+  <div class="login-form">
+    <div class="ex-field">
+      <span class="ex-label">email</span>
+      <input class="ex-input" id="login-email" type="email" value="ana@demo.com" style="width:190px" />
+    </div>
+    <div class="ex-field">
+      <span class="ex-label">password</span>
+      <input class="ex-input" id="login-pass" type="password" value="demo123" style="width:120px" />
+    </div>
+    <button class="btn-try" id="handler-login">POST /api/auth/login &rarr;</button>
+    <button class="btn-try" id="handler-stats">GET /api/stats &rarr;</button>
+  </div>
+
+  <div class="api-log" id="handlers-log">
+    <p class="api-log-empty">Pulsa uno de los botones...</p>
+  </div>
+</div>
+
+<style>
+  .login-form {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+</style>
+
+<script>
+  import { fetchApi, renderLog } from '../../lib/api.ts';
+
+  document.getElementById('handler-login')!.addEventListener('click', async () => {
+    const email    = (document.getElementById('login-email') as HTMLInputElement).value.trim();
+    const password = (document.getElementById('login-pass')  as HTMLInputElement).value;
+    const r = await fetchApi('POST', '/auth/login', { email, password });
+    renderLog('handlers-log', 'POST', r.url, r.status, r.data);
+  });
+
+  document.getElementById('handler-stats')!.addEventListener('click', async () => {
+    const r = await fetchApi('GET', '/stats');
+    renderLog('handlers-log', 'GET', r.url, r.status, r.data);
+  });
+</script>

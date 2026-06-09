@@ -1,0 +1,110 @@
+---
+import CrudPanel          from './panels/CrudPanel.astro';
+import FiltersPanel       from './panels/FiltersPanel.astro';
+import SortPagePanel      from './panels/SortPagePanel.astro';
+import RelationsPanel     from './panels/RelationsPanel.astro';
+import ProjectionPanel    from './panels/ProjectionPanel.astro';
+import CustomRoutesPanel  from './panels/CustomRoutesPanel.astro';
+import TemplatesPanel     from './panels/TemplatesPanel.astro';
+import HandlersPanel      from './panels/HandlersPanel.astro';
+
+const TABS = [
+  { id: 'crud',       label: 'Phase 1 — CRUD'       },
+  { id: 'filters',    label: 'Phase 2 — Filtros'     },
+  { id: 'sortpage',   label: 'Sort · Paginación'     },
+  { id: 'relations',  label: 'Relaciones'             },
+  { id: 'projection', label: 'Proyección'             },
+  { id: 'custom',     label: '4A — Static routes'    },
+  { id: 'templates',  label: '4B — Templates'        },
+  { id: 'handlers',   label: '4D — Handlers'         },
+];
+---
+
+<section class="explorer-section">
+
+  <div class="explorer-header">
+    <p class="explorer-title">API Explorer</p>
+    <nav class="tabs" role="tablist">
+      {TABS.map((tab, i) => (
+        <button
+          class={`tab${i === 0 ? ' active' : ''}`}
+          data-tab={tab.id}
+          role="tab"
+        >
+          {tab.label}
+        </button>
+      ))}
+    </nav>
+  </div>
+
+  <CrudPanel />
+  <FiltersPanel />
+  <SortPagePanel />
+  <RelationsPanel />
+  <ProjectionPanel />
+  <CustomRoutesPanel />
+  <TemplatesPanel />
+  <HandlersPanel />
+
+</section>
+
+<style>
+  .explorer-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .explorer-header {
+    padding: 14px 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .explorer-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 6px 14px;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+</style>
+
+<script>
+  const tabs   = document.querySelectorAll<HTMLElement>('.tab');
+  const panels = document.querySelectorAll<HTMLElement>('.tab-panel');
+
+  // Activate first panel on load
+  panels[0]?.classList.add('active');
+
+  tabs.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabs.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(`panel-${btn.dataset.tab}`)?.classList.add('active');
+    });
+  });
+</script>

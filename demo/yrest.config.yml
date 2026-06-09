@@ -1,0 +1,6 @@
+file: db.yml
+port: 3070
+host: localhost
+base: /api
+watch: true
+handlers: ./yrest.handlers.js

@@ -1,0 +1,14 @@
+---
+import Layout      from '../layouts/Layout.astro';
+import AppHeader   from '../components/AppHeader.astro';
+import TodoApp     from '../components/TodoApp.astro';
+import ApiExplorer from '../components/ApiExplorer.astro';
+---
+
+<Layout title="yrest demo — Todo list">
+  <AppHeader />
+  <main class="app-main">
+    <TodoApp />
+    <ApiExplorer />
+  </main>
+</Layout>

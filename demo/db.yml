@@ -1,0 +1,69 @@
+_rel:
+  todos:
+    userId: users
+users:
+  - id: 1
+    name: Ana García
+    email: ana@demo.com
+    avatar: AG
+    role: admin
+  - id: 2
+    name: Luis Martín
+    email: luis@demo.com
+    avatar: LM
+    role: user
+todos:
+  - id: 1
+    title: Configure yrest as mock API server
+    done: false
+    priority: high
+    userId: 1
+    createdAt: 2026-06-01
+  - id: 2
+    title: Write integration tests for the API
+    done: false
+    priority: high
+    userId: 1
+    createdAt: 2026-06-02
+  - id: 3
+    title: Design the dashboard UI
+    done: false
+    priority: medium
+    userId: 2
+    createdAt: 2026-06-03
+  - id: 4
+    title: Review open pull requests
+    done: false
+    priority: medium
+    userId: 1
+    createdAt: 2026-06-04
+  - id: 5
+    title: Update project documentation
+    done: false
+    priority: low
+    userId: 2
+    createdAt: 2026-06-05
+  - id: 6
+    title: Deploy to staging environment
+    done: false
+    priority: high
+    userId: 1
+    createdAt: 2026-06-06
+  - id: 7
+    title: Schedule team retrospective
+    done: true
+    priority: low
+    userId: 2
+    createdAt: 2026-06-07
+  - id: 8
+    title: Fix authentication session bug
+    done: false
+    priority: high
+    userId: 1
+    createdAt: 2026-06-08
+  - id: 9
+    title: hola mundo
+    done: false
+    priority: medium
+    userId: 1
+    createdAt: 2026-06-09

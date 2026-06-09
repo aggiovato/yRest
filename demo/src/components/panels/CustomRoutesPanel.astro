@@ -1,0 +1,33 @@
+---
+---
+
+<div class="tab-panel" id="panel-custom">
+  <p class="feature-desc">
+    Rutas estáticas definidas en el bloque <code>_routes</code> de <code>db.yml</code>.
+    La respuesta es fija — sin lógica de servidor. Se registran antes que las rutas
+    de recursos, por lo que tienen prioridad sobre cualquier colección del mismo nombre.
+  </p>
+
+  <div class="btn-try-group">
+    <button class="btn-try" id="custom-health">GET /api/health &rarr;</button>
+    <button class="btn-try" id="custom-logout">POST /api/auth/logout &rarr;</button>
+  </div>
+
+  <div class="api-log" id="custom-log">
+    <p class="api-log-empty">Pulsa uno de los botones...</p>
+  </div>
+</div>
+
+<script>
+  import { fetchApi, renderLog } from '../../lib/api.ts';
+
+  document.getElementById('custom-health')!.addEventListener('click', async () => {
+    const r = await fetchApi('GET', '/health');
+    renderLog('custom-log', 'GET', r.url, r.status, r.data);
+  });
+
+  document.getElementById('custom-logout')!.addEventListener('click', async () => {
+    const r = await fetchApi('POST', '/auth/logout', {});
+    renderLog('custom-log', 'POST', r.url, r.status, r.data);
+  });
+</script>

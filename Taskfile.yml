@@ -82,6 +82,13 @@ tasks:
           printf "\n  \033[1;32m→  All checks passed — safe to push\033[0m\n\n"
         silent: true
 
+  # ── Demo ───────────────────────────────────────────────────────────────────
+
+  demo:
+    desc: Start the demo — yrest API on :3070 + Astro dev server on :4321 (requires npm install in demo/)
+    dir: demo
+    cmd: npm start
+
   # ── Release ────────────────────────────────────────────────────────────────
 
   release:patch:

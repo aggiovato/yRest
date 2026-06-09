@@ -1,0 +1,21 @@
+{
+  "name": "@aggiovato/yrest-demo",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Demo app showcasing every @aggiovato/yrest feature — a todo list backed by a YAML mock API",
+  "scripts": {
+    "dev": "astro dev --port 4321",
+    "build": "astro build",
+    "preview": "astro preview",
+    "api": "yrest serve",
+    "start": "concurrently -n \"api,web\" -c \"cyan,magenta\" \"npm run api\" \"npm run dev\""
+  },
+  "dependencies": {
+    "astro": "^4.16.0"
+  },
+  "devDependencies": {
+    "@aggiovato/yrest": "file:../",
+    "concurrently": "^9.0.0"
+  }
+}
