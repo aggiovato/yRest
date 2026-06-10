@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 
 interface Props {
   onAdd: (title: string) => void;
@@ -8,7 +8,7 @@ interface Props {
 export function TodoForm({ onAdd, disabled }: Props) {
   const [value, setValue] = useState("");
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmit(e: SyntheticEvent<HTMLFormElement>) {
     e.preventDefault();
     const title = value.trim();
     if (!title || disabled) return;

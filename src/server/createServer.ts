@@ -5,11 +5,7 @@ import type { ServerOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "../router/types.js";
 import type { HandlerMap } from "../utils/handlers.js";
 import { buildResourceRouteCommands } from "../router/resource.router.js";
-import {
-  AboutRouteCommand,
-  CustomRouteCommand,
-  SnapshotRouteCommand,
-} from "../router/routes/index.js";
+import { AboutRouteCommand, CustomRouteCommand, SnapshotRouteCommand } from "../router/routes";
 
 /** HTTP methods that modify server state. Used by the readonly guard hook. */
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -28,6 +24,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
  *
  * @param storage - Initialised YAML storage instance.
  * @param options - Validated server options.
+ * @param handlers - Map of named handler functions loaded from yrest.handlers.js.
  */
 export async function createServer(
   storage: YamlStorage,

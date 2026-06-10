@@ -1,7 +1,7 @@
 import type { YamlStorage } from "../storage/types.js";
 import type { ServerOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "./types.js";
-import { CollectionRouteCommand, ItemRouteCommand, NestedRouteCommand } from "./routes/index.js";
+import { CollectionRouteCommand, ItemRouteCommand, NestedRouteCommand } from "./routes";
 
 /**
  * Builds the full list of route commands for every collection in the YAML storage.

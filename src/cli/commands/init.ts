@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Command } from "commander";
-import { SAMPLES, templates } from "./templates/index.js";
-import type { Sample } from "./templates/index.js";
+import { SAMPLES, templates } from "./templates";
+import type { Sample } from "./templates";
 
 /** Default content for a generated `yrest.config.yml`. */
 const CONFIG_TEMPLATE = `# yrest configuration

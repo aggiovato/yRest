@@ -32,9 +32,9 @@ export function TodoApp() {
   const [summary, setSummary] = useState<SummaryData | null>(null);
   const [summaryLoading, setSummaryLoading] = useState(false);
 
-  function handleAdd(title: string) {
+  async function handleAdd(title: string) {
     if (!session) return;
-    addTodo(title, session.userId);
+    await addTodo(title, session.userId);
   }
 
   async function openSummary() {

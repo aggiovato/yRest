@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState, type SyntheticEvent } from "react";
 import { fetchApi } from "../../../lib/api";
 import { ApiLog } from "../../ui/ApiLog";
 import { useAppContext } from "../../../context/AppContext";
@@ -18,7 +18,7 @@ export function AuthPanel() {
   const [loading, setLoading] = useState(false);
   const [log, setLog] = useState<ApiCallLog | null>(null);
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: SyntheticEvent) {
     e.preventDefault();
     setError(null);
     setLoading(true);

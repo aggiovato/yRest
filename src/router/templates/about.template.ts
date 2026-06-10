@@ -105,12 +105,13 @@ function examplesBlock(
     );
   }
 
-  for (const [child, fields] of Object.entries(relations)) {
-    for (const [, parent] of Object.entries(fields)) {
+  const firstRelEntry = Object.entries(relations)[0];
+  if (firstRelEntry) {
+    const [child, fields] = firstRelEntry;
+    const parent = Object.values(fields)[0];
+    if (parent) {
       examples.push(`# Nested resource\ncurl ${host}${base}/${parent}/1/${child}`);
-      break;
     }
-    break;
   }
 
   if (options.pageable.enabled && firstCol) {
@@ -161,6 +162,7 @@ function examplesBlock(
  *
  * @param storage - Live YAML storage to derive collections and relations from.
  * @param options - Resolved server options for mode display and config info.
+ * @param handlers - Map of named handler functions loaded from yrest.handlers.js.
  * @returns Complete HTML document as a string.
  */
 export function generateAboutHtml(

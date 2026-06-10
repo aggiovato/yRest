@@ -30,7 +30,7 @@ export function useServerStatus() {
       }
     }
 
-    check();
+    void check();
     const id = setInterval(check, state.connected ? POLL_CONNECTED : POLL_DISCONNECTED);
     return () => clearInterval(id);
     // Re-run when connected changes so the interval adjusts immediately.
