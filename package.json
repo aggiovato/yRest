@@ -1,17 +1,30 @@
 {
   "name": "@aggiovato/yrest",
   "version": "0.5.1",
-  "description": "Zero-config REST API mock server powered by a YAML file",
+  "description": "Zero-config YAML REST API mock server. Create a full CRUD fake backend from a db.yml file for frontend development, testing and prototyping.",
   "keywords": [
     "yaml",
     "rest",
-    "mock",
-    "api",
+    "rest-api",
+    "mock-api",
+    "mock-server",
+    "fake-api",
+    "fake-backend",
+    "json-server",
+    "frontend",
+    "testing",
+    "prototype",
+    "crud",
     "cli",
-    "fastify"
+    "fastify",
+    "typescript"
   ],
   "license": "MIT",
   "author": "Aggiovato",
+  "homepage": "https://github.com/aggiovato/yaml-rest#readme",
+  "bugs": {
+    "url": "https://github.com/aggiovato/yaml-rest/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aggiovato/yaml-rest.git"

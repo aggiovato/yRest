@@ -1,8 +1,68 @@
 # yrest
 
-Zero-config REST API mock server powered by a YAML file.
+![npm version](https://img.shields.io/npm/v/@aggiovato/yrest)
+![npm downloads](https://img.shields.io/npm/dw/@aggiovato/yrest)
+![license](https://img.shields.io/npm/l/@aggiovato/yrest)
+![CI](https://github.com/aggiovato/yaml-rest/actions/workflows/ci.yml/badge.svg)
+![Node](https://img.shields.io/node/v/@aggiovato/yrest)
+![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)
 
-Define your data in a `db.yml` file and get a fully functional CRUD REST API in seconds — no backend required.
+Zero-config YAML REST API mock server. Define your data in a `db.yml` file and get a fully functional CRUD fake backend in seconds — no backend required.
+
+```yaml
+# db.yml
+users:
+  - id: 1
+    name: Ana
+    email: ana@test.com
+
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+```
+
+```bash
+npx @aggiovato/yrest serve db.yml
+```
+
+```
+GET  /users          → [{ id: 1, name: "Ana", email: "ana@test.com" }]
+GET  /users/1        → { id: 1, name: "Ana", email: "ana@test.com" }
+POST /users          → 201 Created
+PUT  /users/1        → 200 OK
+PATCH /users/1       → 200 OK
+DELETE /users/1      → 200 OK
+```
+
+---
+
+## Why yrest?
+
+A YAML-first alternative to json-server for frontend development.
+
+| Feature                                      | yrest | json-server |
+| -------------------------------------------- | :---: | :---------: |
+| YAML database                                |  ✅   |     ❌      |
+| Zero config                                  |  ✅   |     ✅      |
+| Full CRUD                                    |  ✅   |     ✅      |
+| Field operators (`_gte`, `_like`, `_regex`…) |  ✅   |     ⚠️      |
+| Full-text search                             |  ✅   |     ✅      |
+| Relations + nested routes                    |  ✅   |     ✅      |
+| Field projection (`_fields`)                 |  ✅   |     ❌      |
+| Pageable mode (envelope response)            |  ✅   |     ❌      |
+| Custom static routes (`_routes`)             |  ✅   |     ❌      |
+| Template variables in responses              |  ✅   |     ❌      |
+| Handler functions (JS logic)                 |  ✅   |     ❌      |
+| Snapshot endpoints                           |  ✅   |     ❌      |
+| Config file                                  |  ✅   |     ⚠️      |
+| API overview page (`/_about`)                |  ✅   |     ❌      |
+| Watch mode                                   |  ✅   |     ✅      |
+| Readonly mode                                |  ✅   |     ❌      |
+| Atomic writes                                |  ✅   |     ✅      |
+| TypeScript types                             |  ✅   |     ❌      |
+
+---
 
 ## Install
 
@@ -10,31 +70,36 @@ Define your data in a `db.yml` file and get a fully functional CRUD REST API in 
 npm install -D @aggiovato/yrest
 ```
 
-Or run directly with npx:
+Or run directly with npx (no install needed):
 
 ```bash
 npx @aggiovato/yrest serve db.yml
 ```
 
+---
+
 ## Quick start
 
 ```bash
-# Create a sample db.yml and yrest.config.yml in the current directory
+# Create a sample db.yml and yrest.config.yml
 npx @aggiovato/yrest init
 
 # Start the server
 npx @aggiovato/yrest serve db.yml
 ```
 
-```txt
-yrest running at http://localhost:3070
+```
+yrest  ·  http://localhost:3070
 
-Resources (base: /):
-  /users
-  /posts
+Collections (base: /):
+  CRUD  /users
+  CRUD  /posts
+
+Meta:
+  GET    /_about
 ```
 
-Open `http://localhost:3070/_about` in your browser for a live overview of all generated endpoints.
+Open `http://localhost:3070/_about` for a live overview of all generated endpoints, active modes and ready-to-run `curl` examples.
 
 ---
 
@@ -73,17 +138,21 @@ npx @aggiovato/yrest serve db.yml --port 3001 --host 0.0.0.0
 npx @aggiovato/yrest serve db.yml --base /api --watch
 npx @aggiovato/yrest serve db.yml --readonly --delay 300
 npx @aggiovato/yrest serve db.yml --pageable 20
+npx @aggiovato/yrest serve db.yml --snapshot
+npx @aggiovato/yrest serve db.yml --handlers yrest.handlers.js
 ```
 
-| Flag             | Default     | Description                                                             |
-| ---------------- | ----------- | ----------------------------------------------------------------------- |
-| `--port`         | `3070`      | Port to listen on                                                       |
-| `--host`         | `localhost` | Host to bind                                                            |
-| `--base`         | _(none)_    | Prefix for all routes (e.g. `/api`)                                     |
-| `--watch`        | `false`     | Reload `db.yml` automatically when it changes on disk                   |
-| `--readonly`     | `false`     | Reject all write operations (POST, PUT, PATCH, DELETE) with `405`       |
-| `--delay <ms>`   | `0`         | Add a fixed delay to all responses (simulates network latency)          |
-| `--pageable [n]` | `false`     | Wrap GET collection responses in `{ data, pagination }`. Optional limit |
+| Flag                | Default     | Description                                                             |
+| ------------------- | ----------- | ----------------------------------------------------------------------- |
+| `--port`            | `3070`      | Port to listen on                                                       |
+| `--host`            | `localhost` | Host to bind                                                            |
+| `--base`            | _(none)_    | Prefix for all routes (e.g. `/api`)                                     |
+| `--watch`           | `false`     | Reload `db.yml` automatically when it changes on disk                   |
+| `--readonly`        | `false`     | Reject all write operations (POST, PUT, PATCH, DELETE) with `405`       |
+| `--delay <ms>`      | `0`         | Add a fixed delay to all responses (simulates network latency)          |
+| `--pageable [n]`    | `false`     | Wrap GET collection responses in `{ data, pagination }`. Optional limit |
+| `--snapshot`        | `false`     | Save initial state snapshot and expose `/_snapshot` endpoints           |
+| `--handlers <file>` | _(none)_    | Path to a JS file exporting handler functions for custom routes         |
 
 All flags can also be set in `yrest.config.yml` (see below). CLI flags always take priority over the config file.
 
@@ -103,6 +172,8 @@ host: localhost
 # readonly: false
 # delay: 0
 # pageable: false   # true (limit 10), or a number (custom limit)
+# snapshot: false
+# handlers: yrest.handlers.js
 ```
 
 **Priority order** (highest wins): CLI flags → `yrest.config.yml` → schema defaults.
@@ -134,7 +205,7 @@ Each top-level key becomes a resource with full CRUD endpoints.
 
 For each resource in `db.yml`:
 
-```txt
+```
 GET     /users          List all
 GET     /users/:id      Get one
 POST    /users          Create
@@ -155,16 +226,55 @@ All query params can be combined freely.
 
 Return only items that match one or more field values:
 
-```txt
+```
 GET /users?name=Ana
 GET /users?role=admin&active=true
 ```
 
 Comparison is case-sensitive and converts types to string (`?id=1` matches numeric `id: 1`).
 
+Repeated params are treated as OR — any match passes:
+
+```
+GET /users?role=admin&role=editor    # returns admins and editors
+```
+
+### Field operators
+
+Append an operator suffix to any field name:
+
+```
+GET /users?age_gte=18               # age >= 18
+GET /users?age_lte=65               # age <= 65
+GET /users?status_ne=inactive       # status != "inactive"
+GET /users?name_like=ana            # name contains "ana" (case-insensitive)
+GET /users?name_start=A             # name starts with "A" (case-insensitive)
+GET /users?email_regex=@gmail\.com  # email matches regex (case-insensitive)
+```
+
+| Suffix   | Type             | Description                      |
+| -------- | ---------------- | -------------------------------- |
+| `_gte`   | numeric / string | Greater than or equal            |
+| `_lte`   | numeric / string | Less than or equal               |
+| `_ne`    | any              | Not equal                        |
+| `_like`  | string           | Case-insensitive substring match |
+| `_start` | string           | Case-insensitive prefix match    |
+| `_regex` | string           | Case-insensitive regex match     |
+
+### Full-text search
+
+Search across all scalar fields of every item (case-insensitive substring match):
+
+```
+GET /users?_q=ana
+GET /posts?_q=javascript
+```
+
+An item passes if any string or number field contains the search term.
+
 ### Sorting
 
-```txt
+```
 GET /users?_sort=name              # ascending (default)
 GET /users?_sort=name&_order=desc  # descending
 ```
@@ -175,7 +285,7 @@ String fields are compared case-insensitively. Items missing the sort field are 
 
 **Without `--pageable`** (default):
 
-```txt
+```
 GET /users?_page=1&_limit=10   # page 1, 10 items per page
 GET /users?_limit=5            # first 5 items
 ```
@@ -212,31 +322,60 @@ npx @aggiovato/yrest serve db.yml --pageable 20   # custom limit: 20
 
 The `?_page` and `?_limit` query params still work in pageable mode to navigate pages.
 
-### Relation embedding (`?_expand`)
+### Field projection
+
+Return only specific fields in the response:
+
+```
+GET /users?_fields=id,name
+GET /posts?_fields=id,title,userId
+```
+
+Works on both collection and single-item endpoints.
+
+### Relation embedding (`_expand`)
 
 Embed a related parent object directly into the response using the `_rel` block (see [Relational data](#relational-data)):
 
-```txt
+```
 GET /posts?_expand=user           # embed user object in each post
 GET /posts/1?_expand=user         # embed in a single item
 ```
 
 Both syntaxes are supported:
 
-```txt
+```
 ?_expand=author,category          # comma-separated
 ?_expand=author&_expand=category  # repeated param
 ```
 
 Unresolvable keys are silently ignored. Works on all operations: GET, POST, PUT, PATCH, DELETE.
 
-### Combined example
+### Embed children (`_embed`)
 
-```txt
-GET /posts?userId=1&_sort=title&_order=asc&_page=1&_limit=5&_expand=user
+Embed related child collections directly into a parent item:
+
+```
+GET /users/1?_embed=posts         # embed all posts where userId === 1
+GET /users?_embed=posts           # embed posts in every user
 ```
 
-Returns the first 5 posts by user 1, sorted alphabetically by title, with the user object embedded.
+Both syntaxes are supported:
+
+```
+?_embed=posts,comments            # comma-separated
+?_embed=posts&_embed=comments     # repeated param
+```
+
+Requires `_rel` to be declared (see [Relational data](#relational-data)).
+
+### Combined example
+
+```
+GET /posts?userId=1&_sort=title&_order=asc&_page=1&_limit=5&_expand=user&_fields=id,title,user
+```
+
+Returns the first 5 posts by user 1, sorted alphabetically by title, with the user object embedded, returning only `id`, `title` and `user` fields.
 
 ---
 
@@ -263,15 +402,157 @@ This enables:
 
 **Nested routes:**
 
-```txt
+```
 GET /users/1/posts    # all posts where userId === 1
 ```
 
-**Relation embedding with `?_expand`:**
+**Embed parent with `?_expand`:**
 
-```txt
+```
 GET /posts/1?_expand=user   →  { id: 1, title: "First post", userId: 1, user: { id: 1, name: "Ana" } }
 ```
+
+**Embed children with `?_embed`:**
+
+```
+GET /users/1?_embed=posts   →  { id: 1, name: "Ana", posts: [{ id: 1, title: "First post", userId: 1 }] }
+```
+
+---
+
+## Custom routes
+
+Define endpoints that don't fit CRUD directly in `db.yml` using the `_routes` block.
+
+### Static responses
+
+```yaml
+_routes:
+  - method: POST
+    path: /login
+    response:
+      status: 200
+      body:
+        token: fake-jwt-token-abc123
+
+  - method: POST
+    path: /logout
+    response:
+      status: 204
+
+  - method: GET
+    path: /dashboard/stats
+    response:
+      status: 200
+      headers:
+        Cache-Control: no-store
+      body:
+        users: 150
+        revenue: 4820.50
+```
+
+- `method` is case-insensitive. `path` supports Fastify params (`:id`).
+- `response.status` defaults to `200`. `response.body` is any YAML value.
+- Custom routes are registered before resource routes and always take priority.
+- Shown in `/_about` under "Custom routes".
+
+### Template variables
+
+Interpolate request data into the response body using `{{}}` syntax:
+
+```yaml
+_routes:
+  - method: GET
+    path: /users/:id/summary
+    response:
+      status: 200
+      body:
+        requestedId: "{{params.id}}"
+        timestamp: "{{now}}"
+
+  - method: POST
+    path: /echo
+    response:
+      status: 200
+      body:
+        received: "{{body}}"
+        query: "{{query}}"
+        requestId: "{{uuid}}"
+```
+
+Available variables:
+
+| Variable        | Description                                         |
+| --------------- | --------------------------------------------------- |
+| `{{params.X}}`  | URL parameter (e.g. `{{params.id}}`)                |
+| `{{query.X}}`   | Query string param (e.g. `{{query.page}}`)          |
+| `{{body}}`      | Full request body                                   |
+| `{{body.X}}`    | Field from the request body (e.g. `{{body.email}}`) |
+| `{{headers.X}}` | Request header value                                |
+| `{{now}}`       | Current UTC timestamp (ISO 8601)                    |
+| `{{uuid}}`      | Random UUID v4                                      |
+
+When a field contains only a single `{{variable}}` placeholder, the resolved value preserves its original type (number, boolean, object). When embedded in a larger string it is stringified.
+
+### Handler functions
+
+For routes that need real logic (conditional responses, stateful mocks, request inspection), reference a JavaScript function via the `handler:` field:
+
+```yaml
+_routes:
+  - method: POST
+    path: /login
+    handler: login
+    response: # optional fallback if handler throws
+      status: 200
+      body: { token: fake }
+
+  - method: GET
+    path: /auth/me
+    handler: getCurrentUser
+```
+
+Create a `yrest.handlers.js` file in the same directory as `db.yml`:
+
+```js
+// yrest.handlers.js
+export async function login(req) {
+  const { email, password } = req.body ?? {};
+  if (password !== "secret") return { status: 401, body: { error: "Invalid credentials" } };
+  return { status: 200, body: { token: `tok-${email}` } };
+}
+
+export async function getCurrentUser(req) {
+  return { status: 200, body: { id: 1, name: "Ana", role: "admin" } };
+}
+```
+
+Pass the file to the server with `--handlers`:
+
+```bash
+npx @aggiovato/yrest serve db.yml --handlers yrest.handlers.js
+```
+
+**Handler signature:**
+
+```ts
+type HandlerRequest = {
+  params: Record<string, string>;
+  query: Record<string, string | string[]>;
+  body: unknown;
+  headers: Record<string, string | string[]>;
+};
+
+type HandlerResponse = {
+  status?: number; // defaults to 200
+  body?: unknown;
+  headers?: Record<string, string>;
+};
+
+type Handler = (req: HandlerRequest) => HandlerResponse | Promise<HandlerResponse>;
+```
+
+If a named handler is not found in the file, the server returns `501`. If the handler throws, it returns `500`. If a `response:` block is defined alongside `handler:`, it is used as fallback only when the handler itself throws.
 
 ---
 
@@ -305,11 +586,27 @@ Adds a fixed delay (in milliseconds) to every response to simulate real network 
 npx @aggiovato/yrest serve db.yml --delay 500   # 500ms on every response
 ```
 
+### Snapshot mode
+
+Saves the initial database state at startup and exposes three meta endpoints to inspect, save and restore it:
+
+```bash
+npx @aggiovato/yrest serve db.yml --snapshot
+```
+
+| Endpoint                | Description                                                         |
+| ----------------------- | ------------------------------------------------------------------- |
+| `GET /_snapshot`        | Returns snapshot metadata (saved time + item counts per collection) |
+| `POST /_snapshot/save`  | Replaces the snapshot with the current database state               |
+| `POST /_snapshot/reset` | Restores the database to the last saved snapshot                    |
+
+Useful for test suites that need a clean reset between runs or demos that need a predictable starting state.
+
 ---
 
 ## API overview page
 
-Every running server exposes `GET /_about` — a self-contained HTML page listing all generated endpoints, active modes, query param reference and ready-to-run `curl` examples derived from your actual `db.yml`:
+Every running server exposes `GET /_about` — a self-contained HTML page listing all generated endpoints, custom routes, active modes, query param reference and ready-to-run `curl` examples derived from your actual `db.yml`:
 
 ```bash
 open http://localhost:3070/_about
@@ -321,13 +618,15 @@ The page reflects the live state of the server, so it updates automatically in w
 
 ## HTTP responses
 
-| Status | When                                   |
-| ------ | -------------------------------------- |
-| `200`  | Successful GET, PUT, PATCH, DELETE     |
-| `201`  | Successful POST                        |
-| `404`  | Resource or id not found               |
-| `405`  | Write operation in readonly mode       |
-| `500`  | Error reading or writing the YAML file |
+| Status | When                                                                 |
+| ------ | -------------------------------------------------------------------- |
+| `200`  | Successful GET, PUT, PATCH, DELETE                                   |
+| `201`  | Successful POST                                                      |
+| `400`  | Invalid or missing request body                                      |
+| `404`  | Resource or id not found                                             |
+| `405`  | Write operation in readonly mode                                     |
+| `500`  | Error reading or writing the YAML file                               |
+| `501`  | Handler referenced in `_routes` is not exported by the handlers file |
 
 DELETE returns the deleted item as confirmation.
 
@@ -353,12 +652,19 @@ CORS is enabled by default, so you can call the API from any frontend running on
 // List all
 const users = await fetch("http://localhost:3070/users").then((r) => r.json());
 
-// Filter + sort + paginate
-const res = await fetch("http://localhost:3070/users?role=admin&_sort=name&_page=1&_limit=10");
+// Filter + operators + search
+const res = await fetch("http://localhost:3070/users?age_gte=18&name_like=ana&_q=dev");
 
-// Embed related object
+// Sort + paginate + project fields
+const res = await fetch("http://localhost:3070/users?_sort=name&_page=1&_limit=10&_fields=id,name");
+
+// Embed related object (parent)
 const post = await fetch("http://localhost:3070/posts/1?_expand=user").then((r) => r.json());
 // → { id: 1, title: "...", userId: 1, user: { id: 1, name: "Ana" } }
+
+// Embed children
+const user = await fetch("http://localhost:3070/users/1?_embed=posts").then((r) => r.json());
+// → { id: 1, name: "Ana", posts: [{ id: 1, title: "First post", userId: 1 }] }
 
 // Create
 await fetch("http://localhost:3070/users", {
@@ -376,6 +682,14 @@ await fetch("http://localhost:3070/users/1", {
 
 // Delete
 await fetch("http://localhost:3070/users/1", { method: "DELETE" });
+
+// Custom route with handler
+const session = await fetch("http://localhost:3070/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ email: "ana@test.com", password: "secret" }),
+}).then((r) => r.json());
+// → { token: "tok-ana@test.com" }
 ```
 
 ## Use in package.json scripts
@@ -384,7 +698,8 @@ await fetch("http://localhost:3070/users/1", { method: "DELETE" });
 {
   "scripts": {
     "mock": "yrest serve db.yml",
-    "mock:watch": "yrest serve db.yml --watch"
+    "mock:watch": "yrest serve db.yml --watch",
+    "mock:readonly": "yrest serve db.yml --readonly --delay 200"
   }
 }
 ```
