@@ -1,6 +1,6 @@
 {
   "name": "@aggiovato/yrest",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "Zero-config YAML REST API mock server. Create a full CRUD fake backend from a db.yml file for frontend development, testing and prototyping.",
   "keywords": [
     "yaml",
