@@ -715,27 +715,27 @@ import { createYrestServer, yrest } from "@yrest/cli";
 
 **Options:**
 
-| Option       | Type               | Default     | Description                                              |
-| ------------ | ------------------ | ----------- | -------------------------------------------------------- |
-| `data`       | `Data`             | —           | Inline data object (use with `yrest\`...\``)             |
-| `file`       | `string`           | —           | Path to a `db.yml` file (`data` or `file` is required)  |
-| `port`       | `number`           | `3070`      | TCP port. Use `0` to get a random available port         |
-| `host`       | `string`           | `localhost` | Host to bind                                             |
-| `base`       | `string`           | —           | URL prefix for all routes (e.g. `"/api"`)                |
-| `readonly`   | `boolean`          | `false`     | Reject all write operations with `405`                   |
-| `delay`      | `number`           | `0`         | Fixed delay in ms added to every response                |
-| `pageable`   | `boolean\|number`  | `false`     | Wrap GET responses in `{ data, pagination }` envelope    |
-| `snapshot`   | `boolean`          | `false`     | Enable snapshot endpoints (`/_snapshot`)                 |
-| `handlers`   | `string`           | —           | Path to a JS file exporting handler functions            |
+| Option     | Type              | Default     | Description                                            |
+| ---------- | ----------------- | ----------- | ------------------------------------------------------ |
+| `data`     | `Data`            | —           | Inline data object (use with `yrest\`...\``)           |
+| `file`     | `string`          | —           | Path to a `db.yml` file (`data` or `file` is required) |
+| `port`     | `number`          | `3070`      | TCP port. Use `0` to get a random available port       |
+| `host`     | `string`          | `localhost` | Host to bind                                           |
+| `base`     | `string`          | —           | URL prefix for all routes (e.g. `"/api"`)              |
+| `readonly` | `boolean`         | `false`     | Reject all write operations with `405`                 |
+| `delay`    | `number`          | `0`         | Fixed delay in ms added to every response              |
+| `pageable` | `boolean\|number` | `false`     | Wrap GET responses in `{ data, pagination }` envelope  |
+| `snapshot` | `boolean`         | `false`     | Enable snapshot endpoints (`/_snapshot`)               |
+| `handlers` | `string`          | —           | Path to a JS file exporting handler functions          |
 
 **Returned handle:**
 
-| Member    | Description                                                      |
-| --------- | ---------------------------------------------------------------- |
-| `start()` | Starts the server and begins listening                           |
-| `stop()`  | Gracefully closes the server                                     |
-| `port`    | The actual port after `start()` (useful when `port: 0`)          |
-| `url`     | Base URL after `start()` (e.g. `http://localhost:49821`)         |
+| Member    | Description                                              |
+| --------- | -------------------------------------------------------- |
+| `start()` | Starts the server and begins listening                   |
+| `stop()`  | Gracefully closes the server                             |
+| `port`    | The actual port after `start()` (useful when `port: 0`)  |
+| `url`     | Base URL after `start()` (e.g. `http://localhost:49821`) |
 
 ### `yrest` tagged template literal
 
@@ -767,7 +767,7 @@ const server = createYrestServer({
       - id: 2
         name: Luis
   `,
-  port: 0,        // random port — no conflicts between parallel tests
+  port: 0, // random port — no conflicts between parallel tests
   readonly: true,
 });
 
