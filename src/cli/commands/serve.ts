@@ -2,7 +2,7 @@ import { watchFile } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Command } from "commander";
 import { createYrestStorage } from "../../storage/yrestStorage.js";
-import { createServer } from "../../server/createServer.js";
+import { createYrestServerFromStorage } from "../../server/index.js";
 import { yrestOptionsSchema } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
 import { loadHandlers } from "../../utils/handlers.js";
@@ -71,9 +71,8 @@ export function registerServe(program: Command): void {
 
       const handlers = options.handlers ? await loadHandlers(resolve(options.handlers)) : new Map();
 
-      const server = await createServer(storage, options, handlers);
-
-      await server.listen({ port: options.port, host: options.host });
+      const yrestServer = createYrestServerFromStorage(storage, options, handlers);
+      await yrestServer.start();
 
       const collections = Object.keys(storage.getData());
       const customRoutes = storage.getRoutes();
@@ -95,7 +94,7 @@ export function registerServe(program: Command): void {
       };
 
       console.log(
-        `\n  ${b("yrest")}  ${dim("·")}  ${green(`http://${options.host}:${options.port}`)}\n`
+        `\n  ${b("yrest")}  ${dim("·")}  ${green(`http://${options.host}:${yrestServer.port}`)}\n`
       );
 
       console.log(`  ${b("Collections")} ${dim(`(base: ${base})`)}:`);

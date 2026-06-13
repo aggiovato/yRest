@@ -13,7 +13,8 @@
  * await server.listen({ port: options.port });
  */
 export { createYrestStorage } from "./storage/yrestStorage.js";
-export { createServer } from "./server/createServer.js";
+export { createServer, createYrestServerFromStorage } from "./server/index.js";
+export type { YrestServer } from "./server/index.js";
 export { yrestOptionsSchema } from "./config/loadOptions.js";
 export type { YrestOptions } from "./config/loadOptions.js";
 export type { Data, Resource, Relations, CustomRoute, YrestStorage } from "./storage/types.js";
