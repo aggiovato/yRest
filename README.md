@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![npm downloads](https://img.shields.io/npm/dw/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![license](https://img.shields.io/npm/l/@yrest/cli)](LICENSE)
-[![CI](https://github.com/aggiovato/yaml-rest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yaml-rest/actions)
+[![CI](https://github.com/aggiovato/yRest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yRest/actions)
 [![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
 

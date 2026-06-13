@@ -30,13 +30,13 @@
   ],
   "license": "MIT",
   "author": "Aggiovato",
-  "homepage": "https://github.com/aggiovato/yaml-rest#readme",
+  "homepage": "https://github.com/aggiovato/yRest#readme",
   "bugs": {
-    "url": "https://github.com/aggiovato/yaml-rest/issues"
+    "url": "https://github.com/aggiovato/yRest/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aggiovato/yaml-rest.git"
+    "url": "git+https://github.com/aggiovato/yRest.git"
   },
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
