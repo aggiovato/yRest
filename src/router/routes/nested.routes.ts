@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { Relations } from "../../storage/types.js";
 import type { RouteCommand, ItemParams, NestedItemParams } from "../types.js";
 import { findById } from "../../services/resource.service.js";
@@ -20,7 +20,7 @@ import { findById } from "../../services/resource.service.js";
  */
 export class NestedRouteCommand implements RouteCommand {
   constructor(
-    private readonly storage: YamlStorage,
+    private readonly storage: YrestStorage,
     private readonly relations: Relations,
     private readonly base: string
   ) {}

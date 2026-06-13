@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
 import type { Resource } from "../../storage/types.js";
 import type { RouteCommand, RouteQuery, Pagination, PagedResponse } from "../types.js";
@@ -25,7 +25,7 @@ import { expandItems, embedItems } from "../../services/expand.service.js";
  */
 export class CollectionRouteCommand implements RouteCommand {
   constructor(
-    private readonly storage: YamlStorage,
+    private readonly storage: YrestStorage,
     private readonly resource: string,
     private readonly base: string,
     private readonly options: ServerOptions

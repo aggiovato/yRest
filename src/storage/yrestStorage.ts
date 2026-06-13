@@ -2,11 +2,11 @@ import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
-import type { CustomRoute, Data, Relations, YamlStorage } from "./types.js";
+import type { CustomRoute, Data, Relations, YrestStorage } from "./types.js";
 import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
- * Creates a {@link YamlStorage} instance backed by the given YAML file.
+ * Creates a {@link YrestStorage} instance backed by the given YAML file.
  *
  * The file is read and parsed eagerly on construction. The `_rel` key is
  * extracted as relational metadata; `_routes` as custom route declarations;
@@ -15,7 +15,7 @@ import { deepCopyData } from "../utils/deepCopy.js";
  * @param filePath - Relative or absolute path to the YAML database file.
  * @throws {Error} If the file cannot be read or its YAML is invalid.
  */
-export function createYamlStorage(filePath: string): YamlStorage {
+export function createYrestStorage(filePath: string): YrestStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 

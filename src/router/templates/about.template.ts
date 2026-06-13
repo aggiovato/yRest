@@ -1,4 +1,4 @@
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
 import type { HandlerMap } from "../../utils/handlers.js";
 import { hasTemplates } from "../../utils/interpolate.js";
@@ -166,7 +166,7 @@ function examplesBlock(
  * @returns Complete HTML document as a string.
  */
 export function generateAboutHtml(
-  storage: YamlStorage,
+  storage: YrestStorage,
   options: ServerOptions,
   handlers: HandlerMap = new Map()
 ): string {

@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { RouteCommand } from "../types.js";
 
 /**
@@ -13,7 +13,7 @@ import type { RouteCommand } from "../types.js";
  * POST /_snapshot/reset  — Restores the database to the last saved snapshot.
  */
 export class SnapshotRouteCommand implements RouteCommand {
-  constructor(private readonly storage: YamlStorage) {}
+  constructor(private readonly storage: YrestStorage) {}
 
   register(server: FastifyInstance): void {
     server.get("/_snapshot", (_req, reply) => {

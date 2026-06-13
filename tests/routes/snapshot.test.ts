@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYamlStorage } from "../../src/storage/yamlStorage";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
 import { serverOptionsSchema } from "../../src/config/loadOptions";
 
@@ -18,7 +18,7 @@ users:
 async function createSnapshotServer() {
   const filePath = join(tmpdir(), `yrest-snapshot-${randomUUID()}.yml`);
   writeFileSync(filePath, YAML_DB, "utf8");
-  const storage = createYamlStorage(filePath);
+  const storage = createYrestStorage(filePath);
   const options = serverOptionsSchema.parse({ file: filePath, snapshot: true });
   const server = await createServer(storage, options);
   return { server, storage, filePath };
@@ -124,7 +124,7 @@ describe("snapshot mode", () => {
     const filePath = join(tmpdir(), `yrest-no-snapshot-${randomUUID()}.yml`);
     writeFileSync(filePath, YAML_DB, "utf8");
     files.push(filePath);
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     const options = serverOptionsSchema.parse({ file: filePath, snapshot: false });
     const server = await createServer(storage, options);
 

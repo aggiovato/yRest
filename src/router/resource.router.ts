@@ -1,4 +1,4 @@
-import type { YamlStorage } from "../storage/types.js";
+import type { YrestStorage } from "../storage/types.js";
 import type { ServerOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "./types.js";
 import { CollectionRouteCommand, ItemRouteCommand, NestedRouteCommand } from "./routes";
@@ -15,7 +15,7 @@ import { CollectionRouteCommand, ItemRouteCommand, NestedRouteCommand } from "./
  * @returns An ordered list of route commands ready to be registered on a Fastify instance.
  */
 export function buildResourceRouteCommands(
-  storage: YamlStorage,
+  storage: YrestStorage,
   options: ServerOptions
 ): RouteCommand[] {
   const commands: RouteCommand[] = [];

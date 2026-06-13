@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYamlStorage } from "../../src/storage/yamlStorage";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
 import { serverOptionsSchema } from "../../src/config/loadOptions";
 
@@ -34,7 +34,7 @@ products:
 async function makeServer() {
   const filePath = join(tmpdir(), `yrest-operators-${randomUUID()}.yml`);
   writeFileSync(filePath, YAML_DB, "utf8");
-  const storage = createYamlStorage(filePath);
+  const storage = createYrestStorage(filePath);
   const options = serverOptionsSchema.parse({ file: filePath });
   const server = await createServer(storage, options);
   return { server, filePath };

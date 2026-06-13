@@ -1,7 +1,7 @@
 import { watchFile } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Command } from "commander";
-import { createYamlStorage } from "../../storage/yamlStorage.js";
+import { createYrestStorage } from "../../storage/yrestStorage.js";
 import { createServer } from "../../server/createServer.js";
 import { serverOptionsSchema } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
@@ -62,7 +62,7 @@ export function registerServe(program: Command): void {
 
       let storage;
       try {
-        storage = createYamlStorage(options.file);
+        storage = createYrestStorage(options.file);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
         console.error(`Error: cannot load "${options.file}" — ${msg}`);

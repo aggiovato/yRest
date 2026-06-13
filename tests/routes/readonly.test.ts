@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYamlStorage } from "../../src/storage/yamlStorage";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
 import { serverOptionsSchema } from "../../src/config/loadOptions";
 import { YAML_BASIC } from "./helpers";
@@ -16,7 +16,7 @@ describe("readonly mode", () => {
   beforeEach(async () => {
     filePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     writeFileSync(filePath, YAML_BASIC, "utf8");
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     const options = serverOptionsSchema.parse({ file: filePath, readonly: true });
     server = await createServer(storage, options);
   });

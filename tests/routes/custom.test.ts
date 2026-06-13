@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYamlStorage } from "../../src/storage/yamlStorage";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
 import { serverOptionsSchema } from "../../src/config/loadOptions";
 import { createTestServer, cleanup } from "./helpers";
@@ -126,7 +126,7 @@ users:
     const fp = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     filePath = fp;
     writeFileSync(fp, YAML_WITH_CUSTOM_ROUTES, "utf8");
-    const storage = createYamlStorage(fp);
+    const storage = createYrestStorage(fp);
     const opts = serverOptionsSchema.parse({ file: fp, base: "/api" });
     const server = await createServer(storage, opts);
 

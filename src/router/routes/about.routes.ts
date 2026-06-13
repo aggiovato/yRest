@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { ServerOptions } from "../../config/loadOptions.js";
 import type { RouteCommand } from "../types.js";
 import type { HandlerMap } from "../../utils/handlers.js";
@@ -17,7 +17,7 @@ import { generateAboutHtml } from "../templates/about.template.js";
  */
 export class AboutRouteCommand implements RouteCommand {
   constructor(
-    private readonly storage: YamlStorage,
+    private readonly storage: YrestStorage,
     private readonly options: ServerOptions,
     private readonly handlers: HandlerMap = new Map()
   ) {}

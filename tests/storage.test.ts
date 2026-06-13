@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYamlStorage } from "../src/storage/yamlStorage";
+import { createYrestStorage } from "../src/storage/yrestStorage";
 
 const SAMPLE_YAML = `
 users:
@@ -32,7 +32,7 @@ posts:
     userId: 1
 `;
 
-describe("createYamlStorage", () => {
+describe("createYrestStorage", () => {
   let filePath: string;
 
   beforeEach(() => {
@@ -45,42 +45,42 @@ describe("createYamlStorage", () => {
   });
 
   it("reads collections from YAML file", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     expect(Object.keys(storage.getData())).toEqual(["users", "posts"]);
   });
 
   it("getCollection returns correct items", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     const users = storage.getCollection("users");
     expect(users).toHaveLength(2);
     expect(users?.[0]).toMatchObject({ id: 1, name: "Ana" });
   });
 
   it("getCollection returns undefined for unknown collection", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     expect(storage.getCollection("unknown")).toBeUndefined();
   });
 
   it("setCollection updates in-memory data", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     storage.setCollection("users", [{ id: 99, name: "Updated" }]);
     expect(storage.getCollection("users")).toHaveLength(1);
     expect(storage.getCollection("users")?.[0]).toMatchObject({ id: 99, name: "Updated" });
   });
 
   it("persist writes changes to disk", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     storage.setCollection("users", [{ id: 99, name: "Persisted" }]);
     storage.persist();
 
-    const reloaded = createYamlStorage(filePath);
+    const reloaded = createYrestStorage(filePath);
     expect(reloaded.getCollection("users")?.[0]).toMatchObject({ id: 99, name: "Persisted" });
   });
 
   it("getData does not expose _rel as a collection", () => {
     const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
-    const storage = createYamlStorage(relFilePath);
+    const storage = createYrestStorage(relFilePath);
     expect(Object.keys(storage.getData())).not.toContain("_rel");
     unlinkSync(relFilePath);
   });
@@ -88,23 +88,23 @@ describe("createYamlStorage", () => {
   it("getRelations returns _rel content", () => {
     const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
-    const storage = createYamlStorage(relFilePath);
+    const storage = createYrestStorage(relFilePath);
     expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
     unlinkSync(relFilePath);
   });
 
   it("persist does not corrupt other collections", () => {
-    const storage = createYamlStorage(filePath);
+    const storage = createYrestStorage(filePath);
     storage.setCollection("users", [{ id: 99, name: "X" }]);
     storage.persist();
 
-    const reloaded = createYamlStorage(filePath);
+    const reloaded = createYrestStorage(filePath);
     expect(reloaded.getCollection("posts")).toHaveLength(1);
   });
 
   describe("reload", () => {
     it("picks up new data written to disk by an external process", () => {
-      const storage = createYamlStorage(filePath);
+      const storage = createYrestStorage(filePath);
       expect(storage.getCollection("users")).toHaveLength(2);
 
       writeFileSync(
@@ -127,7 +127,7 @@ users:
     });
 
     it("picks up a new collection added externally", () => {
-      const storage = createYamlStorage(filePath);
+      const storage = createYrestStorage(filePath);
       expect(storage.getCollection("tags")).toBeUndefined();
 
       writeFileSync(
@@ -148,7 +148,7 @@ tags:
     });
 
     it("picks up a removed collection", () => {
-      const storage = createYamlStorage(filePath);
+      const storage = createYrestStorage(filePath);
       expect(storage.getCollection("posts")).toBeDefined();
 
       writeFileSync(
@@ -168,7 +168,7 @@ users:
     it("updates _rel relations on reload", () => {
       const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
       writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
-      const storage = createYamlStorage(relFilePath);
+      const storage = createYrestStorage(relFilePath);
       expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
 
       writeFileSync(

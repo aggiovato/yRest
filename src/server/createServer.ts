@@ -1,6 +1,6 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import type { YamlStorage } from "../storage/types.js";
+import type { YrestStorage } from "../storage/types.js";
 import type { ServerOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "../router/types.js";
 import type { HandlerMap } from "../utils/handlers.js";
@@ -27,7 +27,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
  * @param handlers - Map of named handler functions loaded from yrest.handlers.js.
  */
 export async function createServer(
-  storage: YamlStorage,
+  storage: YrestStorage,
   options: ServerOptions,
   handlers: HandlerMap = new Map()
 ) {

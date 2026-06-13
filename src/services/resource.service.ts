@@ -1,4 +1,4 @@
-import type { YamlStorage, Resource } from "../storage/types.js";
+import type { YrestStorage, Resource } from "../storage/types.js";
 import { nextId } from "../utils/params.js";
 
 /**
@@ -34,7 +34,7 @@ export function findIndexById(items: Resource[], id: string): number {
  * @param resource - Collection name.
  * @param body     - Fields for the new item.
  */
-export function createItem(storage: YamlStorage, resource: string, body: Resource): Resource {
+export function createItem(storage: YrestStorage, resource: string, body: Resource): Resource {
   const collection = storage.getCollection(resource) ?? [];
   const item: Resource = {
     id: body["id"] !== undefined ? body["id"] : nextId(collection),
@@ -56,7 +56,7 @@ export function createItem(storage: YamlStorage, resource: string, body: Resourc
  * @param body     - New field values (`id` is ignored and taken from the existing item).
  */
 export function replaceItem(
-  storage: YamlStorage,
+  storage: YrestStorage,
   resource: string,
   id: string,
   body: Resource
@@ -80,7 +80,7 @@ export function replaceItem(
  * @param body     - Fields to merge into the existing item.
  */
 export function patchItem(
-  storage: YamlStorage,
+  storage: YrestStorage,
   resource: string,
   id: string,
   body: Resource
@@ -103,7 +103,7 @@ export function patchItem(
  * @param id       - Id of the item to remove.
  */
 export function deleteItem(
-  storage: YamlStorage,
+  storage: YrestStorage,
   resource: string,
   id: string
 ): Resource | undefined {

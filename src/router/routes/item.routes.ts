@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import type { YamlStorage } from "../../storage/types.js";
+import type { YrestStorage } from "../../storage/types.js";
 import type { Resource } from "../../storage/types.js";
 import type { RouteCommand, ItemParams, RouteQuery } from "../types.js";
 import { findById, replaceItem, patchItem, deleteItem } from "../../services/resource.service.js";
@@ -21,7 +21,7 @@ import { projectFields } from "../../services/query.service.js";
  */
 export class ItemRouteCommand implements RouteCommand {
   constructor(
-    private readonly storage: YamlStorage,
+    private readonly storage: YrestStorage,
     private readonly resource: string,
     private readonly base: string
   ) {}

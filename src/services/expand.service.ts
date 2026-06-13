@@ -1,4 +1,4 @@
-import type { YamlStorage, Resource } from "../storage/types.js";
+import type { YrestStorage, Resource } from "../storage/types.js";
 
 /**
  * Embeds a related parent object into a single item based on `?_expand`.
@@ -14,7 +14,7 @@ export function expandItems(
   item: Resource,
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource;
 
 /**
@@ -39,14 +39,14 @@ export function expandItems(
   items: Resource[],
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource[];
 
 export function expandItems(
   input: Resource | Resource[],
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource | Resource[] {
   const isArray = Array.isArray(input);
   const items = isArray ? input : [input];
@@ -109,7 +109,7 @@ export function embedItems(
   item: Resource,
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource;
 
 /**
@@ -127,14 +127,14 @@ export function embedItems(
   items: Resource[],
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource[];
 
 export function embedItems(
   input: Resource | Resource[],
   query: Record<string, string | string[]>,
   resource: string,
-  storage: YamlStorage
+  storage: YrestStorage
 ): Resource | Resource[] {
   const isArray = Array.isArray(input);
   const items = isArray ? input : [input];

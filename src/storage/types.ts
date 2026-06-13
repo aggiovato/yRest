@@ -63,7 +63,7 @@ export type CustomRoute = {
  * flushed to disk by calling {@link persist}. Use {@link reload} to pull in
  * changes made to the file externally (e.g. in watch mode).
  */
-export interface YamlStorage {
+export interface YrestStorage {
   /** Returns the full in-memory dataset (all collections). */
   getData(): Data;
 
