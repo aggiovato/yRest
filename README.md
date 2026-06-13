@@ -708,6 +708,28 @@ const session = await fetch("http://localhost:3070/login", {
 
 ---
 
+## Roadmap
+
+| Feature                                           | Status |
+| ------------------------------------------------- | ------ |
+| Full CRUD from `db.yml`                           | ✅     |
+| Field filters, operators, full-text search        | ✅     |
+| Relations, `_expand`, `_embed`, nested routes     | ✅     |
+| Pagination, sorting, field projection             | ✅     |
+| Watch, readonly, delay, snapshot modes            | ✅     |
+| Custom routes (`_routes`) with static responses   | ✅     |
+| Template variables in responses (`{{params.id}}`) | ✅     |
+| Handler functions (`yrest.handlers.js`)           | ✅     |
+| Visual panel (`/_panel`)                          | 🔜     |
+| Programmatic API for Vitest / Playwright          | 🔜     |
+| Docker image                                      | 🔜     |
+| OpenAPI export (`yrest openapi db.yml`)           | 🔜     |
+| VS Code extension with YAML snippets              | 🔜     |
+| Request validation with JSON Schema               | 🔜     |
+| Conditional scenarios                             | 🔜     |
+
+---
+
 ## Contributing
 
 ### Prerequisites
