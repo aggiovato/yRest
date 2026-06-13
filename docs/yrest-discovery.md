@@ -483,7 +483,7 @@ Si hay CI:
 
 Debe haber una sección visible de instalación y uso:
 
-```md
+````md
 ## Quick start
 
 ```bash
@@ -491,6 +491,7 @@ npm install -D @aggiovato/yrest
 npx @aggiovato/yrest init --sample relational
 npx @aggiovato/yrest serve db.yml --watch
 ```
+````
 
 Your mock API is now running:
 
@@ -498,7 +499,8 @@ Your mock API is now running:
 curl http://localhost:3070/users
 curl "http://localhost:3070/posts?_expand=user"
 ```
-```
+
+````
 
 ### 6.4. Ejemplo mínimo de `db.yml`
 
@@ -525,7 +527,7 @@ comments:
   - id: 1
     body: Nice post
     postId: 1
-```
+````
 
 ### 6.5. Ejemplos de endpoints generados
 
@@ -591,13 +593,13 @@ Una tabla comparativa ayuda a usuarios y posicionamiento.
 ```md
 ## yRest vs alternatives
 
-| Tool | Data source | CRUD | Relations | Best for |
-|---|---|---:|---:|---|
-| yRest | YAML / `db.yml` | Yes | Yes | YAML-first fake REST APIs |
-| json-server | JSON / JSON5 | Yes | Partial | Quick JSON mock APIs |
-| yaml-server | YAML | Basic | Limited | Simple YAML resources |
-| Mockoon | UI / OpenAPI / data buckets | Yes | Partial | Visual API mocking |
-| Prism | OpenAPI | Mock only | Contract-based | OpenAPI-first workflows |
+| Tool        | Data source                 |      CRUD |      Relations | Best for                  |
+| ----------- | --------------------------- | --------: | -------------: | ------------------------- |
+| yRest       | YAML / `db.yml`             |       Yes |            Yes | YAML-first fake REST APIs |
+| json-server | JSON / JSON5                |       Yes |        Partial | Quick JSON mock APIs      |
+| yaml-server | YAML                        |     Basic |        Limited | Simple YAML resources     |
+| Mockoon     | UI / OpenAPI / data buckets |       Yes |        Partial | Visual API mocking        |
+| Prism       | OpenAPI                     | Mock only | Contract-based | OpenAPI-first workflows   |
 ```
 
 El objetivo no es atacar a otras herramientas, sino dejar claro cuándo elegir yRest.
@@ -819,7 +821,7 @@ yrest-playwright-example
 Mostrar cómo consumir:
 
 ```ts
-const users = await fetch('http://localhost:3070/users').then(res => res.json());
+const users = await fetch("http://localhost:3070/users").then((res) => res.json());
 ```
 
 ### 9.3. Ejemplo Angular
@@ -827,9 +829,9 @@ const users = await fetch('http://localhost:3070/users').then(res => res.json())
 Mostrar un servicio simple:
 
 ```ts
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class UsersService {
-  private readonly apiUrl = 'http://localhost:3070/users';
+  private readonly apiUrl = "http://localhost:3070/users";
 
   constructor(private readonly http: HttpClient) {}
 
@@ -1210,7 +1212,7 @@ Esto permite enlazar documentación desde npm y GitHub de forma ordenada.
 
 Este sería un ejemplo de cómo podría empezar el README:
 
-```md
+````md
 # yRest
 
 YAML-powered REST API mock server for frontend development.
@@ -1226,6 +1228,7 @@ npm install -D @aggiovato/yrest
 npx @aggiovato/yrest init --sample relational
 npx @aggiovato/yrest serve db.yml --watch
 ```
+````
 
 Your mock API is now running at:
 
@@ -1278,7 +1281,8 @@ Use yRest when you need:
 - Relations with `_rel`, `_expand`, `_embed`
 - Filters, sorting, pagination and field projection
 - A mock backend for React, Angular, Vue, Svelte or Astro apps
-```
+
+````
 
 ---
 
@@ -1294,7 +1298,7 @@ It creates a full CRUD mock REST API from a simple db.yml file, with filters, pa
 Useful for frontend development, testing and prototyping when you need a fake backend without writing backend code.
 
 npm: @aggiovato/yrest
-```
+````
 
 ---
 

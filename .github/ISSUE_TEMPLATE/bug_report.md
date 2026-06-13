@@ -10,9 +10,9 @@ labels: bug
 
 ## Steps to reproduce
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## Expected behavior
 
@@ -20,9 +20,9 @@ labels: bug
 
 ## Environment
 
-- yRest version: 
-- Node.js version: 
-- OS: 
+- yRest version:
+- Node.js version:
+- OS:
 
 ## `db.yml` (if relevant)
 
