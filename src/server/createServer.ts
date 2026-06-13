@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import type { YrestStorage } from "../storage/types.js";
-import type { ServerOptions } from "../config/loadOptions.js";
+import type { YrestOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "../router/types.js";
 import type { HandlerMap } from "../utils/handlers.js";
 import { buildResourceRouteCommands } from "../router/resource.router.js";
@@ -28,7 +28,7 @@ const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
  */
 export async function createServer(
   storage: YrestStorage,
-  options: ServerOptions,
+  options: YrestOptions,
   handlers: HandlerMap = new Map()
 ) {
   const server = Fastify();

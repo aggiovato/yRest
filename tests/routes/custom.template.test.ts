@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { writeFileSync } from "node:fs";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 import { createTestServer, cleanup } from "./helpers";
 
 const YAML_WITH_TEMPLATES = `
@@ -193,7 +193,7 @@ _routes:
     filePath = fp;
     writeFileSync(fp, YAML_WITH_TEMPLATES, "utf8");
     const storage = createYrestStorage(fp);
-    const opts = serverOptionsSchema.parse({ file: fp, base: "/api" });
+    const opts = yrestOptionsSchema.parse({ file: fp, base: "/api" });
     const server = await createServer(storage, opts);
 
     const res = await server.inject({ method: "GET", url: "/api/users/7/summary" });

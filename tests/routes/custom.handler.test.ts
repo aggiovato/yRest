@@ -6,7 +6,7 @@ import { randomUUID } from "node:crypto";
 import type { HandlerRequest, HandlerMap, Handler } from "../../src/utils/handlers";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 import { cleanup } from "./helpers";
 
 const YAML_WITH_HANDLERS = `
@@ -51,7 +51,7 @@ async function makeServer(yaml: string, handlerMap: HandlerMap = new Map()) {
   const fp = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
   writeFileSync(fp, yaml, "utf8");
   const storage = createYrestStorage(fp);
-  const opts = serverOptionsSchema.parse({ file: fp });
+  const opts = yrestOptionsSchema.parse({ file: fp });
   const server = await createServer(storage, opts, handlerMap);
   return { server, filePath: fp };
 }

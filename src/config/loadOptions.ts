@@ -6,7 +6,7 @@ import { z } from "zod";
  * Validates and normalises options from three sources in ascending priority:
  * schema defaults → `yrest.config.yml` → explicit CLI flags.
  */
-export const serverOptionsSchema = z.object({
+export const yrestOptionsSchema = z.object({
   /** Path to the YAML database file. Must be a non-empty string. */
   file: z.string().min(1),
   /** TCP port the server listens on. Accepts string input and coerces to number. */
@@ -52,6 +52,6 @@ export const serverOptionsSchema = z.object({
 
 /**
  * Resolved server configuration after Zod validation and transformation.
- * Inferred from {@link serverOptionsSchema}.
+ * Inferred from {@link yrestOptionsSchema}.
  */
-export type ServerOptions = z.infer<typeof serverOptionsSchema>;
+export type YrestOptions = z.infer<typeof yrestOptionsSchema>;

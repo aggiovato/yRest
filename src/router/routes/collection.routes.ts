@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
 import type { YrestStorage } from "../../storage/types.js";
-import type { ServerOptions } from "../../config/loadOptions.js";
+import type { YrestOptions } from "../../config/loadOptions.js";
 import type { Resource } from "../../storage/types.js";
 import type { RouteCommand, RouteQuery, Pagination, PagedResponse } from "../types.js";
 import { firstParam } from "../../utils/params.js";
@@ -28,7 +28,7 @@ export class CollectionRouteCommand implements RouteCommand {
     private readonly storage: YrestStorage,
     private readonly resource: string,
     private readonly base: string,
-    private readonly options: ServerOptions
+    private readonly options: YrestOptions
   ) {}
 
   register(server: FastifyInstance): void {

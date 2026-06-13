@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 import { createTestServer, cleanup } from "./helpers";
 
 const YAML_WITH_CUSTOM_ROUTES = `
@@ -127,7 +127,7 @@ users:
     filePath = fp;
     writeFileSync(fp, YAML_WITH_CUSTOM_ROUTES, "utf8");
     const storage = createYrestStorage(fp);
-    const opts = serverOptionsSchema.parse({ file: fp, base: "/api" });
+    const opts = yrestOptionsSchema.parse({ file: fp, base: "/api" });
     const server = await createServer(storage, opts);
 
     const hit = await server.inject({ method: "GET", url: "/api/auth/me" });

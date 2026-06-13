@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 import { YAML_BASIC } from "./helpers";
 import type { createServer as CreateServer } from "../../src/server/createServer";
 
@@ -17,7 +17,7 @@ describe("readonly mode", () => {
     filePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     writeFileSync(filePath, YAML_BASIC, "utf8");
     const storage = createYrestStorage(filePath);
-    const options = serverOptionsSchema.parse({ file: filePath, readonly: true });
+    const options = yrestOptionsSchema.parse({ file: filePath, readonly: true });
     server = await createServer(storage, options);
   });
 

@@ -5,16 +5,16 @@
  * create a storage instance, pass it to `createServer`, and call `listen`.
  *
  * @example
- * import { createYrestStorage, createServer, serverOptionsSchema } from "@yrest/cli";
+ * import { createYrestStorage, createServer, yrestOptionsSchema } from "@yrest/cli";
  *
  * const storage = createYrestStorage("db.yml");
- * const options = serverOptionsSchema.parse({ file: "db.yml", port: 3000 });
+ * const options = yrestOptionsSchema.parse({ file: "db.yml", port: 3000 });
  * const server = await createServer(storage, options);
  * await server.listen({ port: options.port });
  */
 export { createYrestStorage } from "./storage/yrestStorage.js";
 export { createServer } from "./server/createServer.js";
-export { serverOptionsSchema } from "./config/loadOptions.js";
-export type { ServerOptions } from "./config/loadOptions.js";
+export { yrestOptionsSchema } from "./config/loadOptions.js";
+export type { YrestOptions } from "./config/loadOptions.js";
 export type { Data, Resource, Relations, CustomRoute, YrestStorage } from "./storage/types.js";
 export type { HandlerRequest, HandlerResponse, Handler, HandlerMap } from "./utils/handlers.js";

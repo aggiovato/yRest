@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 
 const YAML_TEN = `
 items:
@@ -16,7 +16,7 @@ async function createPageableServer(pageableArg: boolean | number) {
   const filePath = join(tmpdir(), `yrest-pageable-${randomUUID()}.yml`);
   writeFileSync(filePath, YAML_TEN, "utf8");
   const storage = createYrestStorage(filePath);
-  const options = serverOptionsSchema.parse({ file: filePath, pageable: pageableArg });
+  const options = yrestOptionsSchema.parse({ file: filePath, pageable: pageableArg });
   const server = await createServer(storage, options);
   return { server, filePath };
 }

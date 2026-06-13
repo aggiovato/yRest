@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 
 const YAML_DB = `
 users:
@@ -19,7 +19,7 @@ async function createSnapshotServer() {
   const filePath = join(tmpdir(), `yrest-snapshot-${randomUUID()}.yml`);
   writeFileSync(filePath, YAML_DB, "utf8");
   const storage = createYrestStorage(filePath);
-  const options = serverOptionsSchema.parse({ file: filePath, snapshot: true });
+  const options = yrestOptionsSchema.parse({ file: filePath, snapshot: true });
   const server = await createServer(storage, options);
   return { server, storage, filePath };
 }
@@ -125,7 +125,7 @@ describe("snapshot mode", () => {
     writeFileSync(filePath, YAML_DB, "utf8");
     files.push(filePath);
     const storage = createYrestStorage(filePath);
-    const options = serverOptionsSchema.parse({ file: filePath, snapshot: false });
+    const options = yrestOptionsSchema.parse({ file: filePath, snapshot: false });
     const server = await createServer(storage, options);
 
     const res = await server.inject({ method: "GET", url: "/_snapshot" });

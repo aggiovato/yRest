@@ -4,9 +4,9 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { createYrestStorage } from "../../src/storage/yrestStorage";
 import { createServer } from "../../src/server/createServer";
-import { serverOptionsSchema } from "../../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 
-export const options = serverOptionsSchema.parse({ file: "db.yml" });
+export const options = yrestOptionsSchema.parse({ file: "db.yml" });
 
 export const YAML_BASIC = `
 users:

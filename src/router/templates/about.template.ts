@@ -1,5 +1,5 @@
 import type { YrestStorage } from "../../storage/types.js";
-import type { ServerOptions } from "../../config/loadOptions.js";
+import type { YrestOptions } from "../../config/loadOptions.js";
 import type { HandlerMap } from "../../utils/handlers.js";
 import { hasTemplates } from "../../utils/interpolate.js";
 
@@ -75,7 +75,7 @@ function examplesBlock(
   relations: Record<string, Record<string, string>>,
   base: string,
   host: string,
-  options: ServerOptions,
+  options: YrestOptions,
   firstCustomRoute?: { method?: string; path?: string } | undefined
 ): string {
   const examples: string[] = [];
@@ -167,7 +167,7 @@ function examplesBlock(
  */
 export function generateAboutHtml(
   storage: YrestStorage,
-  options: ServerOptions,
+  options: YrestOptions,
   handlers: HandlerMap = new Map()
 ): string {
   const collections = Object.keys(storage.getData());

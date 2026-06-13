@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import type { Command } from "commander";
 import { createYrestStorage } from "../../storage/yrestStorage.js";
 import { createServer } from "../../server/createServer.js";
-import { serverOptionsSchema } from "../../config/loadOptions.js";
+import { yrestOptionsSchema } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
 import { loadHandlers } from "../../utils/handlers.js";
 
@@ -58,7 +58,7 @@ export function registerServe(program: Command): void {
         ...cliOverrides,
       };
 
-      const options = serverOptionsSchema.parse(merged);
+      const options = yrestOptionsSchema.parse(merged);
 
       let storage;
       try {
