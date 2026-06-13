@@ -7,6 +7,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.6.0] — 2026-06-13
+
+### Added
+
+- **Phase 7 — Programmatic API:** `createYrestServer` factory to embed the mock server directly in test suites (Vitest, Playwright, Cypress) without touching the CLI
+- **`yrest` tagged template literal:** define inline YAML data in TypeScript with automatic dedent and interpolation support — `const data = yrest\`users: [...]\``
+- **In-memory storage:** `createYrestServer({ data })` runs fully in-memory with no `db.yml` file required; each test instance is isolated and stateless
+- **`port: 0` support:** assigns a random available port at startup — no port conflicts between parallel test workers
+- **`src/server/index.ts` barrel:** unified import point for `createServer` and `createYrestServerFromStorage`
+- GitHub Release notes now populated from `CHANGELOG.md` instead of auto-generated commit list
+
+### Changed
+
+- Internal rename: `YamlStorage` → `YrestStorage`, `createYamlStorage` → `createYrestStorage`
+- Internal rename: `ServerOptions` → `YrestOptions`, `serverOptionsSchema` → `yrestOptionsSchema`
+- `createYrestServerFromStorage` extracted to `src/server/yrestServer.ts` as shared lifecycle core used by both CLI and programmatic API — eliminates duplicated Fastify `listen/close` logic
+- Public exports in `src/index.ts` reorganised into two sections: Programmatic API and low-level building blocks
+
+### Fixed
+
+- `start()` called twice no longer leaks an orphaned Fastify instance — idempotent by guard
+- `yrest` template now throws a descriptive `[yrest]` error when interpolating an object or array instead of silently producing invalid YAML
+
+---
+
 ## [0.5.3] — 2026-06-13
 
 ### Changed
@@ -119,6 +144,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.6.0]: https://github.com/aggiovato/yRest/releases/tag/v0.6.0
 [0.5.3]: https://github.com/aggiovato/yRest/releases/tag/v0.5.3
 [0.5.2]: https://github.com/aggiovato/yRest/releases/tag/v0.5.2
 [0.5.1]: https://github.com/aggiovato/yRest/releases/tag/v0.5.1
