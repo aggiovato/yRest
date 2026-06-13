@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.5.3] — 2026-06-13
+
+### Changed
+
+- Package renamed from `@aggiovato/yrest` to `@yrest/cli` (new npm org `@yrest`)
+- Repository renamed from `yaml-rest` to `yRest` on GitHub
+- `package.json` description rewritten to lead with "YAML-powered json-server alternative"
+- Keywords expanded with `json-server-alternative`, `api-mock`, `frontend-development` and others
+
+### Added
+
+- `CHANGELOG.md` with full version history
+- GitHub issue templates (bug report, feature request)
+- GitHub PR template
+
+---
+
 ## [0.5.2] — 2025-06-10
 
 ### Fixed
@@ -102,6 +119,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.5.3]: https://github.com/aggiovato/yRest/releases/tag/v0.5.3
 [0.5.2]: https://github.com/aggiovato/yRest/releases/tag/v0.5.2
 [0.5.1]: https://github.com/aggiovato/yRest/releases/tag/v0.5.1
 [0.5.0]: https://github.com/aggiovato/yRest/releases/tag/v0.5.0
