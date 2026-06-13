@@ -1,13 +1,15 @@
-# yrest
+# yRest
 
-![npm version](https://img.shields.io/npm/v/@aggiovato/yrest)
-![npm downloads](https://img.shields.io/npm/dw/@aggiovato/yrest)
-![license](https://img.shields.io/npm/l/@aggiovato/yrest)
-![CI](https://github.com/aggiovato/yaml-rest/actions/workflows/ci.yml/badge.svg)
-![Node](https://img.shields.io/node/v/@aggiovato/yrest)
-![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)
+[![npm version](https://img.shields.io/npm/v/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
+[![npm downloads](https://img.shields.io/npm/dw/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
+[![license](https://img.shields.io/npm/l/@aggiovato/yrest)](LICENSE)
+[![CI](https://github.com/aggiovato/yaml-rest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yaml-rest/actions)
+[![Node](https://img.shields.io/node/v/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
 
-Zero-config YAML REST API mock server. Define your data in a `db.yml` file and get a fully functional CRUD fake backend in seconds — no backend required.
+YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
+
+> Think `json-server`, but powered by YAML — with relations, filters, pagination, nested routes, snapshots and custom handlers.
 
 ```yaml
 # db.yml
@@ -37,7 +39,7 @@ DELETE /users/1      → 200 OK
 
 ---
 
-## Why yrest?
+## Why yRest?
 
 A YAML-first alternative to json-server for frontend development.
 
@@ -803,6 +805,12 @@ push tag v*
     ├── tests + build  (via prepublishOnly)
     └── npm publish --provenance  (via Trusted Publishing / OIDC, Node 24)
 ```
+
+---
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for the full version history.
 
 ---
 
