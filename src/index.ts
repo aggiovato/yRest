@@ -1,11 +1,11 @@
 /**
- * Public API for `@aggiovato/yrest`.
+ * Public API for `@yrest/cli`.
  *
  * Exposes the core building blocks to embed the mock server programmatically:
  * create a storage instance, pass it to `createServer`, and call `listen`.
  *
  * @example
- * import { createYamlStorage, createServer, serverOptionsSchema } from "@aggiovato/yrest";
+ * import { createYamlStorage, createServer, serverOptionsSchema } from "@yrest/cli";
  *
  * const storage = createYamlStorage("db.yml");
  * const options = serverOptionsSchema.parse({ file: "db.yml", port: 3000 });

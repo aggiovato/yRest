@@ -81,7 +81,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Fixed
 
-- `yrest init` post-init hint now shows the correct `npx @aggiovato/yrest` command
+- `yrest init` post-init hint now shows the correct `npx @yrest/cli` command
 
 ### Added
 

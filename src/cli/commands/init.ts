@@ -56,6 +56,6 @@ export function registerInit(program: Command): void {
         console.log("Created yrest.config.yml");
       }
 
-      console.log(`Run: npx @aggiovato/yrest serve`);
+      console.log(`Run: npx @yrest/cli serve`);
     });
 }

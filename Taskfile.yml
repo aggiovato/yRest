@@ -2,7 +2,7 @@ version: "3"
 
 vars:
   DB_FILE: db.yml
-  PKG_NAME: "@aggiovato/yrest"
+  PKG_NAME: "@yrest/cli"
 
 tasks:
   # ── Development ────────────────────────────────────────────────────────────

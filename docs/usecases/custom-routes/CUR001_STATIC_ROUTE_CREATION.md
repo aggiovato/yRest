@@ -11,7 +11,7 @@ Developer (user of the yrest CLI)
 
 ## Preconditions
 
-- yrest is installed (`npm install -D @aggiovato/yrest` or via `npx`)
+- yrest is installed (`npm install -D @yrest/cli` or via `npx`)
 - A `db.yml` file exists (or will be created) in the working directory
 - The yrest server is not yet running, or will be restarted after editing `db.yml`
 

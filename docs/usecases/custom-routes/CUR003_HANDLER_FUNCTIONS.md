@@ -13,7 +13,7 @@ Developer (user of the yrest CLI)
 
 ## Preconditions
 
-- yrest is installed (`npm install -D @aggiovato/yrest` or via `npx`)
+- yrest is installed (`npm install -D @yrest/cli` or via `npx`)
 - A `db.yml` file with a `_routes` block exists (or will be created)
 - The `handlers:` path is set in `yrest.config.yml` (or via `--handlers` CLI flag)
 - The referenced JavaScript file exports functions matching the names used in `_routes`
@@ -126,7 +126,7 @@ type HandlerResponse = {
 type Handler = (req: HandlerRequest) => HandlerResponse | Promise<HandlerResponse>;
 ```
 
-All types are exported from `@aggiovato/yrest` for use in TypeScript or JSDoc.
+All types are exported from `@yrest/cli` for use in TypeScript or JSDoc.
 
 ## YAML + Handler File Example
 

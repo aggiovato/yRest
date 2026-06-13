@@ -13,7 +13,7 @@ Developer (user of the yrest CLI)
 
 ## Preconditions
 
-- yrest is installed (`npm install -D @aggiovato/yrest` or via `npx`)
+- yrest is installed (`npm install -D @yrest/cli` or via `npx`)
 - A `db.yml` file with a `_routes` block exists
 - At least one route has `response.body` containing one or more `{{variable}}` placeholders
 

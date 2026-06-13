@@ -1,10 +1,10 @@
 # yRest
 
-[![npm version](https://img.shields.io/npm/v/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
-[![npm downloads](https://img.shields.io/npm/dw/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
-[![license](https://img.shields.io/npm/l/@aggiovato/yrest)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
+[![npm downloads](https://img.shields.io/npm/dw/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
+[![license](https://img.shields.io/npm/l/@yrest/cli)](LICENSE)
 [![CI](https://github.com/aggiovato/yaml-rest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yaml-rest/actions)
-[![Node](https://img.shields.io/node/v/@aggiovato/yrest)](https://www.npmjs.com/package/@aggiovato/yrest)
+[![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
 
 YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
@@ -25,7 +25,7 @@ posts:
 ```
 
 ```bash
-npx @aggiovato/yrest serve db.yml
+npx @yrest/cli serve db.yml
 ```
 
 ```
@@ -69,13 +69,13 @@ A YAML-first alternative to json-server for frontend development.
 ## Install
 
 ```bash
-npm install -D @aggiovato/yrest
+npm install -D @yrest/cli
 ```
 
 Or run directly with npx (no install needed):
 
 ```bash
-npx @aggiovato/yrest serve db.yml
+npx @yrest/cli serve db.yml
 ```
 
 ---
@@ -84,10 +84,10 @@ npx @aggiovato/yrest serve db.yml
 
 ```bash
 # Create a sample db.yml and yrest.config.yml
-npx @aggiovato/yrest init
+npx @yrest/cli init
 
 # Start the server
-npx @aggiovato/yrest serve db.yml
+npx @yrest/cli serve db.yml
 ```
 
 ```
@@ -112,10 +112,10 @@ Open `http://localhost:3070/_about` for a live overview of all generated endpoin
 Creates a sample `db.yml` and a `yrest.config.yml` template in the current directory.
 
 ```bash
-npx @aggiovato/yrest init                            # basic sample (default)
-npx @aggiovato/yrest init --sample relational        # with _rel relations
-npx @aggiovato/yrest init --file api.yml             # custom filename
-npx @aggiovato/yrest init --sample relational --file api.yml
+npx @yrest/cli init                            # basic sample (default)
+npx @yrest/cli init --sample relational        # with _rel relations
+npx @yrest/cli init --file api.yml             # custom filename
+npx @yrest/cli init --sample relational --file api.yml
 ```
 
 | Flag       | Default  | Description                         |
@@ -135,13 +135,13 @@ npx @aggiovato/yrest init --sample relational --file api.yml
 Starts the mock server.
 
 ```bash
-npx @aggiovato/yrest serve db.yml
-npx @aggiovato/yrest serve db.yml --port 3001 --host 0.0.0.0
-npx @aggiovato/yrest serve db.yml --base /api --watch
-npx @aggiovato/yrest serve db.yml --readonly --delay 300
-npx @aggiovato/yrest serve db.yml --pageable 20
-npx @aggiovato/yrest serve db.yml --snapshot
-npx @aggiovato/yrest serve db.yml --handlers yrest.handlers.js
+npx @yrest/cli serve db.yml
+npx @yrest/cli serve db.yml --port 3001 --host 0.0.0.0
+npx @yrest/cli serve db.yml --base /api --watch
+npx @yrest/cli serve db.yml --readonly --delay 300
+npx @yrest/cli serve db.yml --pageable 20
+npx @yrest/cli serve db.yml --snapshot
+npx @yrest/cli serve db.yml --handlers yrest.handlers.js
 ```
 
 | Flag                | Default     | Description                                                             |
@@ -299,8 +299,8 @@ When `_page` or `_limit` are used, the response includes an `X-Total-Count` head
 Every GET collection response is automatically wrapped in a `{ data, pagination }` envelope:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --pageable      # default limit: 10
-npx @aggiovato/yrest serve db.yml --pageable 20   # custom limit: 20
+npx @yrest/cli serve db.yml --pageable      # default limit: 10
+npx @yrest/cli serve db.yml --pageable 20   # custom limit: 20
 ```
 
 ```json
@@ -532,7 +532,7 @@ export async function getCurrentUser(req) {
 Pass the file to the server with `--handlers`:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --handlers yrest.handlers.js
+npx @yrest/cli serve db.yml --handlers yrest.handlers.js
 ```
 
 **Handler signature:**
@@ -565,7 +565,7 @@ If a named handler is not found in the file, the server returns `501`. If the ha
 Automatically reloads `db.yml` when it changes on disk — useful when you edit the file manually while the server is running:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --watch
+npx @yrest/cli serve db.yml --watch
 ```
 
 > **Note:** Watch mode reloads data in existing collections. Adding or removing entire collections requires a server restart.
@@ -575,7 +575,7 @@ npx @aggiovato/yrest serve db.yml --watch
 Rejects all write operations with `405 Method Not Allowed`:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --readonly
+npx @yrest/cli serve db.yml --readonly
 ```
 
 Useful to expose a stable read-only snapshot for demos or CI environments.
@@ -585,7 +585,7 @@ Useful to expose a stable read-only snapshot for demos or CI environments.
 Adds a fixed delay (in milliseconds) to every response to simulate real network latency:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --delay 500   # 500ms on every response
+npx @yrest/cli serve db.yml --delay 500   # 500ms on every response
 ```
 
 ### Snapshot mode
@@ -593,7 +593,7 @@ npx @aggiovato/yrest serve db.yml --delay 500   # 500ms on every response
 Saves the initial database state at startup and exposes three meta endpoints to inspect, save and restore it:
 
 ```bash
-npx @aggiovato/yrest serve db.yml --snapshot
+npx @yrest/cli serve db.yml --snapshot
 ```
 
 | Endpoint                | Description                                                         |

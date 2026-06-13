@@ -5,8 +5,8 @@
  * Handler for POST /api/auth/login
  * Validates credentials and returns a session token.
  * Credentials: ana@demo.com / demo123, luis@demo.com / demo123
- * @param {import('@aggiovato/yrest').HandlerRequest} req
- * @returns {Promise<import('@aggiovato/yrest').HandlerResponse>}
+ * @param {import('@yrest/cli').HandlerRequest} req
+ * @returns {Promise<import('@yrest/cli').HandlerResponse>}
  */
 export async function login(req) {
   const { email, password } = req.body ?? {};
@@ -50,7 +50,7 @@ export async function login(req) {
 /**
  * Handler for GET /api/stats
  * Returns live server statistics — values change on every request.
- * @returns {Promise<import('@aggiovato/yrest').HandlerResponse>}
+ * @returns {Promise<import('@yrest/cli').HandlerResponse>}
  * @param _req
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -73,7 +73,7 @@ export async function stats(_req) {
  * Handler for GET /api/summary
  * Aggregates all todos and users to produce per-user stats and a
  * tasks-per-day chart payload. Data is fetched from the yrest API itself.
- * @returns {Promise<import('@aggiovato/yrest').HandlerResponse>}
+ * @returns {Promise<import('@yrest/cli').HandlerResponse>}
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export async function summary(_req) {
