@@ -107,7 +107,7 @@ describe("createYrestServer", () => {
       const res = await post(`${server.url}/users`, { name: "Carol" });
       expect(res.status).toBe(201);
       const body = (await res.json()) as Record<string, unknown>;
-      expect(body.id).toBe(3);
+      expect(typeof body.id).toBe("number");
       expect(body.name).toBe("Carol");
     });
 

@@ -63,6 +63,7 @@ A YAML-first alternative to json-server for frontend development.
 | Readonly mode                                |  ✅   |     ❌      |
 | Atomic writes                                |  ✅   |     ✅      |
 | TypeScript types                             |  ✅   |     ❌      |
+| Programmatic API for test frameworks         |  ✅   |     ❌      |
 
 ---
 
@@ -694,6 +695,139 @@ const session = await fetch("http://localhost:3070/login", {
 // → { token: "tok-ana@test.com" }
 ```
 
+## Programmatic API
+
+Use yRest directly inside your test suite — no CLI, no separate process to manage.
+
+Install as a dev dependency:
+
+```bash
+npm install -D @yrest/cli
+```
+
+### `createYrestServer`
+
+Creates a server instance that you control with `start()` and `stop()`. Accepts either inline YAML data or a path to a `db.yml` file.
+
+```ts
+import { createYrestServer, yrest } from "@yrest/cli";
+```
+
+**Options:**
+
+| Option       | Type               | Default     | Description                                              |
+| ------------ | ------------------ | ----------- | -------------------------------------------------------- |
+| `data`       | `Data`             | —           | Inline data object (use with `yrest\`...\``)             |
+| `file`       | `string`           | —           | Path to a `db.yml` file (`data` or `file` is required)  |
+| `port`       | `number`           | `3070`      | TCP port. Use `0` to get a random available port         |
+| `host`       | `string`           | `localhost` | Host to bind                                             |
+| `base`       | `string`           | —           | URL prefix for all routes (e.g. `"/api"`)                |
+| `readonly`   | `boolean`          | `false`     | Reject all write operations with `405`                   |
+| `delay`      | `number`           | `0`         | Fixed delay in ms added to every response                |
+| `pageable`   | `boolean\|number`  | `false`     | Wrap GET responses in `{ data, pagination }` envelope    |
+| `snapshot`   | `boolean`          | `false`     | Enable snapshot endpoints (`/_snapshot`)                 |
+| `handlers`   | `string`           | —           | Path to a JS file exporting handler functions            |
+
+**Returned handle:**
+
+| Member    | Description                                                      |
+| --------- | ---------------------------------------------------------------- |
+| `start()` | Starts the server and begins listening                           |
+| `stop()`  | Gracefully closes the server                                     |
+| `port`    | The actual port after `start()` (useful when `port: 0`)          |
+| `url`     | Base URL after `start()` (e.g. `http://localhost:49821`)         |
+
+### `yrest` tagged template literal
+
+Parses inline YAML into a data object. Strips common leading indentation automatically, so you can indent naturally inside your test files. Supports interpolated values.
+
+```ts
+const data = yrest`
+  users:
+    - id: 1
+      name: Ana
+  posts:
+    - id: 1
+      title: First post
+      userId: 1
+`;
+```
+
+### Vitest example
+
+```ts
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { createYrestServer, yrest } from "@yrest/cli";
+
+const server = createYrestServer({
+  data: yrest`
+    users:
+      - id: 1
+        name: Ana
+      - id: 2
+        name: Luis
+  `,
+  port: 0,        // random port — no conflicts between parallel tests
+  readonly: true,
+});
+
+beforeAll(() => server.start());
+afterAll(() => server.stop());
+
+describe("users API", () => {
+  it("returns all users", async () => {
+    const res = await fetch(`${server.url}/users`);
+    expect(res.status).toBe(200);
+    expect(await res.json()).toHaveLength(2);
+  });
+
+  it("returns a single user", async () => {
+    const res = await fetch(`${server.url}/users/1`);
+    expect(await res.json()).toMatchObject({ name: "Ana" });
+  });
+});
+```
+
+### Playwright example
+
+```ts
+// tests/api.spec.ts
+import { test, expect, beforeAll, afterAll } from "@playwright/test";
+import { createYrestServer, yrest } from "@yrest/cli";
+
+const server = createYrestServer({
+  data: yrest`
+    users:
+      - id: 1
+        name: Ana
+  `,
+  port: 0,
+  readonly: true,
+});
+
+beforeAll(() => server.start());
+afterAll(() => server.stop());
+
+test("lists users", async () => {
+  const res = await fetch(`${server.url}/users`);
+  expect(await res.json()).toHaveLength(1);
+});
+```
+
+### File-based example
+
+When your test data is too large for inline YAML, point to a file:
+
+```ts
+const server = createYrestServer({
+  file: "./tests/fixtures/db.yml",
+  port: 0,
+  readonly: true,
+});
+```
+
+---
+
 ## Use in package.json scripts
 
 ```json
@@ -721,7 +855,7 @@ const session = await fetch("http://localhost:3070/login", {
 | Template variables in responses (`{{params.id}}`) | ✅     |
 | Handler functions (`yrest.handlers.js`)           | ✅     |
 | Visual panel (`/_panel`)                          | 🔜     |
-| Programmatic API for Vitest / Playwright          | 🔜     |
+| Programmatic API for Vitest / Playwright          | ✅     |
 | Docker image                                      | 🔜     |
 | OpenAPI export (`yrest openapi db.yml`)           | 🔜     |
 | VS Code extension with YAML snippets              | 🔜     |

@@ -46,6 +46,7 @@ export function createYrestServerFromStorage(
 
   return {
     async start() {
+      if (_started) return;
       _fastify = await createServer(storage, options, handlers);
       await _fastify.listen({ port: options.port, host: options.host });
       const address = _fastify.addresses()[0];

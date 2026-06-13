@@ -24,7 +24,7 @@ import type { Data } from "../storage/types.js";
  */
 export function yrest(strings: TemplateStringsArray, ...values: unknown[]): Data {
   const raw = strings.reduce<string>(
-    (acc, str, i) => acc + str + (values[i] !== undefined ? String(values[i]) : ""),
+    (acc, str, i) => acc + str + (values[i] !== undefined ? stringifyInterpolation(values[i]) : ""),
     ""
   );
 
@@ -44,6 +44,17 @@ export function yrest(strings: TemplateStringsArray, ...values: unknown[]): Data
   }
 
   return parsed as Data;
+}
+
+function stringifyInterpolation(value: unknown): string {
+  if (value === null || value === undefined) return String(value);
+  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return String(value);
+  }
+  const type = Array.isArray(value) ? "array" : typeof value;
+  throw new Error(
+    `[yrest] Cannot interpolate a value of type "${type}". Only string, number, and boolean are supported.`
+  );
 }
 
 function dedent(str: string): string {

@@ -200,5 +200,19 @@ describe("yrest tagged template literal", () => {
     it("throws when template resolves to a scalar", () => {
       expect(() => yrest`just a string`).toThrow("[yrest]");
     });
+
+    it("throws with a clear message when interpolating an object", () => {
+      const obj = { key: "value" };
+      expect(() => yrest`users: ${obj}`).toThrow(
+        '[yrest] Cannot interpolate a value of type "object"'
+      );
+    });
+
+    it("throws with a clear message when interpolating an array", () => {
+      const arr = [1, 2, 3];
+      expect(() => yrest`users: ${arr}`).toThrow(
+        '[yrest] Cannot interpolate a value of type "array"'
+      );
+    });
   });
 });
