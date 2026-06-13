@@ -1,6 +1,6 @@
 {
   "name": "@yrest/cli",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a db.yml file.",
   "keywords": [
     "yrest",
