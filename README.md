@@ -56,6 +56,7 @@ A YAML-first alternative to json-server for frontend development.
 | Custom static routes (`_routes`)             |  ✅   |     ❌      |
 | Template variables in responses              |  ✅   |     ❌      |
 | Handler functions (JS logic)                 |  ✅   |     ❌      |
+| Conditional scenarios (`scenarios:`)         |  ✅   |     ❌      |
 | Snapshot endpoints                           |  ✅   |     ❌      |
 | Config file                                  |  ✅   |     ⚠️      |
 | API overview page (`/_about`)                |  ✅   |     ❌      |
@@ -497,6 +498,103 @@ Available variables:
 
 When a field contains only a single `{{variable}}` placeholder, the resolved value preserves its original type (number, boolean, object). When embedded in a larger string it is stringified.
 
+### Conditional scenarios
+
+Define multiple conditional response variants for a custom route. Scenarios are evaluated in declaration order — the first matching `when:` wins. If none match, the `otherwise:` block is used (if defined), otherwise the static `response:` block.
+
+```yaml
+_routes:
+  - method: POST
+    path: /login
+    scenarios:
+      - when:
+          body.email: ana@test.com
+          body.password: secret
+        response:
+          status: 200
+          body:
+            token: tok-ana
+      - when:
+          body.email: admin@test.com
+          body.password: admin
+        response:
+          status: 200
+          body:
+            token: tok-admin
+            role: admin
+    otherwise:
+      status: 401
+      body:
+        error: Invalid credentials
+```
+
+**`when:` as an object** — all entries must match (AND semantics):
+
+```yaml
+when:
+  body.email: ana@test.com
+  body.password: secret
+```
+
+**`when:` as an array of objects** — any group satisfying all its conditions matches (OR of ANDs):
+
+```yaml
+when:
+  - body.role: admin
+  - body.role: superadmin
+```
+
+Condition keys use dot-notation to address request data:
+
+| Prefix      | Example             | Resolves to                |
+| ----------- | ------------------- | -------------------------- |
+| `body.X`    | `body.email`        | `req.body.email`           |
+| `params.X`  | `params.id`         | `req.params.id`            |
+| `query.X`   | `query.page`        | `req.query.page`           |
+| `headers.X` | `headers.x-api-key` | `req.headers["x-api-key"]` |
+
+Field operator suffixes (`_ne`, `_like`, `_start`, `_regex`, `_gte`, `_lte`) work on condition keys exactly as they do on query params:
+
+```yaml
+scenarios:
+  - when:
+      body.name_like: ana # name contains "ana" (case-insensitive)
+      body.age_gte: "18" # age >= 18
+    response:
+      status: 200
+      body: { ok: true }
+```
+
+Template variables (`{{}}`) are supported in both scenario and `otherwise` response bodies:
+
+```yaml
+scenarios:
+  - when:
+      body.email: ana@test.com
+    response:
+      status: 200
+      body:
+        message: "Welcome {{body.email}}"
+otherwise:
+  status: 401
+  body:
+    error: "Unknown user: {{body.email}}"
+```
+
+### Per-route delay
+
+Add a fixed delay (ms) to a specific route without affecting the rest of the server. Takes priority over the global `--delay` option for that route:
+
+```yaml
+_routes:
+  - method: GET
+    path: /slow-endpoint
+    delay: 800
+    response:
+      status: 200
+      body: { data: loaded }
+```
+
 ### Handler functions
 
 For routes that need real logic (conditional responses, stateful mocks, request inspection), reference a JavaScript function via the `handler:` field:
@@ -844,23 +942,24 @@ const server = createYrestServer({
 
 ## Roadmap
 
-| Feature                                           | Status |
-| ------------------------------------------------- | ------ |
-| Full CRUD from `db.yml`                           | ✅     |
-| Field filters, operators, full-text search        | ✅     |
-| Relations, `_expand`, `_embed`, nested routes     | ✅     |
-| Pagination, sorting, field projection             | ✅     |
-| Watch, readonly, delay, snapshot modes            | ✅     |
-| Custom routes (`_routes`) with static responses   | ✅     |
-| Template variables in responses (`{{params.id}}`) | ✅     |
-| Handler functions (`yrest.handlers.js`)           | ✅     |
-| Visual panel (`/_panel`)                          | 🔜     |
-| Programmatic API for Vitest / Playwright          | ✅     |
-| Docker image                                      | 🔜     |
-| OpenAPI export (`yrest openapi db.yml`)           | 🔜     |
-| VS Code extension with YAML snippets              | 🔜     |
-| Request validation with JSON Schema               | 🔜     |
-| Conditional scenarios                             | 🔜     |
+| Feature                                            | Status |
+| -------------------------------------------------- | ------ |
+| Full CRUD from `db.yml`                            | ✅     |
+| Field filters, operators, full-text search         | ✅     |
+| Relations, `_expand`, `_embed`, nested routes      | ✅     |
+| Pagination, sorting, field projection              | ✅     |
+| Watch, readonly, delay, snapshot modes             | ✅     |
+| Custom routes (`_routes`) with static responses    | ✅     |
+| Template variables in responses (`{{params.id}}`)  | ✅     |
+| Handler functions (`yrest.handlers.js`)            | ✅     |
+| Visual panel (`/_panel`)                           | 🔜     |
+| Programmatic API for Vitest / Playwright           | ✅     |
+| Docker image                                       | 🔜     |
+| OpenAPI export (`yrest openapi db.yml`)            | 🔜     |
+| VS Code extension with YAML snippets               | 🔜     |
+| Request validation with JSON Schema                | 🔜     |
+| Conditional scenarios (`scenarios:`, `otherwise:`) | ✅     |
+| Per-route delay (`delay:`)                         | ✅     |
 
 ---
 

@@ -3,6 +3,12 @@ import type { YrestStorage } from "../../storage/types.js";
 import type { RouteCommand } from "../types.js";
 import type { HandlerMap, HandlerRequest } from "../../utils/handlers.js";
 import { interpolate, hasTemplates } from "../../utils/interpolate.js";
+import { findMatchingScenario } from "../../utils/conditions.js";
+
+function resolveBody(body: unknown, ctx: HandlerRequest): unknown {
+  if (body != null && hasTemplates(body)) return interpolate(body, ctx);
+  return body ?? null;
+}
 
 type CustomRouteGeneric = {
   Params: Record<string, string>;
@@ -13,10 +19,12 @@ type CustomRouteGeneric = {
 /**
  * Registers all custom routes declared under `_routes` in the YAML file.
  *
- * Resolution priority per route:
- * 1. `handler:` name found in the handler map → calls the function, uses its return value.
- * 2. `handler:` name missing from the map → 501 with an informative error.
- * 3. No `handler:` → static or template response (4A/4B behaviour).
+ * Resolution priority per request:
+ * 1. `handler` name found in the handler map → calls the function, uses its return value.
+ * 2. `handler` name missing from the map → 501 with an informative error.
+ * 3. First matching `scenario` → returns scenario response (supports `{{}}` templates).
+ * 4. `otherwise` block → explicit fallback when scenarios are defined but none matched.
+ * 5. Static or template `response` block (final fallback).
  *
  * Custom routes are registered before resource routes so they always take priority.
  */
@@ -45,6 +53,10 @@ export class CustomRouteCommand implements RouteCommand {
         method: method as Parameters<FastifyInstance["route"]>[0]["method"],
         url,
         handler: async (req, reply) => {
+          if (route.delay && route.delay > 0) {
+            await new Promise<void>((resolve) => setTimeout(resolve, route.delay));
+          }
+
           for (const [key, value] of Object.entries(headers)) {
             reply.header(key, value);
           }
@@ -78,15 +90,28 @@ export class CustomRouteCommand implements RouteCommand {
             }
           }
 
-          const body = dynamic
-            ? interpolate(rawBody, {
-                params: req.params,
-                query: req.query,
-                body: req.body,
-                headers: req.headers as Record<string, string | string[]>,
-              })
-            : rawBody;
+          // No handler defined, so we check for scenarios or fallback to the static/template response.
+          const ctx: HandlerRequest = {
+            params: req.params,
+            query: req.query,
+            body: req.body,
+            headers: req.headers as Record<string, string | string[]>,
+          };
 
+          if (route.scenarios?.length) {
+            const matched = findMatchingScenario(route.scenarios, ctx);
+
+            const active = matched?.response ?? route.otherwise;
+            if (active) {
+              const aStatus = active.status ?? 200;
+              const aBody = resolveBody(active.body, ctx);
+              for (const [k, v] of Object.entries(active.headers ?? {})) reply.header(k, v);
+              if (!active.body && aStatus === 204) return reply.status(aStatus).send();
+              return reply.status(aStatus).send(aBody);
+            }
+          }
+
+          const body = dynamic ? interpolate(rawBody, ctx) : rawBody;
           if (body === null && status === 204) return reply.status(status).send();
           return reply.status(status).send(body);
         },

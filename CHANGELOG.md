@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.7.0] — 2026-06-14
+
+### Added
+
+- **Conditional scenarios (`scenarios:`):** custom routes can now declare multiple response variants evaluated in declaration order — the first matching `when:` block wins
+- **`when:` as object → AND semantics:** all entries must match (dot-notation keys: `body.X`, `params.X`, `query.X`, `headers.X`)
+- **`when:` as array of objects → OR of ANDs:** any group satisfying all its conditions triggers the scenario
+- **`otherwise:` fallback:** explicit response when `scenarios:` are defined but none matched — takes priority over `response:`
+- **Field operator suffixes in conditions:** `_ne`, `_like`, `_start`, `_regex`, `_gte`, `_lte` work on scenario condition keys, reusing the same operators as the query layer
+- **Template variables in scenarios/otherwise:** `{{}}` interpolation supported in scenario and `otherwise` response bodies
+- **Per-route `delay:`:** fixed delay (ms) applied to a specific `_routes` entry before any response is sent, regardless of which path resolved it (handler / scenario / otherwise / response)
+- **`/_about` route badges:** custom routes section now shows scenario count (purple), `(OR)` indicator, `otherwise` label, `delay·Xms` badge (orange), and `{{…}}` template indicator
+- `OPERATORS` and `applyOperator` exported from `query.service.ts` for reuse by the condition engine
+- New `src/utils/conditions.ts` module: `findMatchingScenario` with dot-notation path resolver
+
+---
+
 ## [0.6.0] — 2026-06-13
 
 ### Added
@@ -144,6 +161,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.7.0]: https://github.com/aggiovato/yRest/releases/tag/v0.7.0
 [0.6.0]: https://github.com/aggiovato/yRest/releases/tag/v0.6.0
 [0.5.3]: https://github.com/aggiovato/yRest/releases/tag/v0.5.3
 [0.5.2]: https://github.com/aggiovato/yRest/releases/tag/v0.5.2

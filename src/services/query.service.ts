@@ -1,9 +1,9 @@
 import type { Resource } from "../storage/types.js";
 
-const OPERATORS = ["_gte", "_lte", "_ne", "_like", "_start", "_regex"] as const;
-type Operator = (typeof OPERATORS)[number];
+export const OPERATORS = ["_gte", "_lte", "_ne", "_like", "_start", "_regex"] as const;
+export type Operator = (typeof OPERATORS)[number];
 
-function applyOperator(itemValue: unknown, op: Operator, filterValue: string): boolean {
+export function applyOperator(itemValue: unknown, op: Operator, filterValue: string): boolean {
   const strItem = String(itemValue);
   const numItem = Number(itemValue);
   const numFilter = Number(filterValue);

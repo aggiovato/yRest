@@ -21,18 +21,73 @@ export type Data = Record<string, Resource[]>;
 export type Relations = Record<string, Record<string, string>>;
 
 /**
+ * A static response block shared by {@link CustomRoute} and {@link Scenario}.
+ */
+export type RouteResponse = {
+  /** HTTP status code. Defaults to `200` if omitted. */
+  status?: number;
+  /** Response body. Any YAML-serialisable value (object, array, string, number, null). */
+  body?: unknown;
+  /** Additional response headers to set alongside `Content-Type`. */
+  headers?: Record<string, string>;
+};
+
+/**
+ * A conditional response variant for a custom route.
+ *
+ * Evaluated in declaration order — the first scenario whose `when` conditions match wins.
+ * If none match, the route falls back to `otherwise:` (if defined) or `response:`.
+ *
+ * **`when` as an object** — all entries must match (AND):
+ * ```yaml
+ * when: { body.email: ana@test.com, body.password: secret }
+ * ```
+ *
+ * **`when` as an array** — any group must match (OR of ANDs):
+ * ```yaml
+ * when:
+ *   - { body.role: admin }
+ *   - { body.role: superadmin }
+ * ```
+ *
+ * Condition keys use dot-notation (`body.X`, `params.X`, `query.X`, `headers.X`).
+ * Field operator suffixes are supported: `_ne`, `_like`, `_start`, `_regex`, `_gte`, `_lte`.
+ * Response bodies support `{{}}` template variables (same as static routes).
+ */
+export type Scenario = {
+  /**
+   * Condition(s) to evaluate against the request.
+   * - Object → all entries AND
+   * - Array of objects → any group OR (each group is AND internally)
+   */
+  when: Record<string, unknown> | Record<string, unknown>[];
+  /** Response to return when the conditions match. Supports `{{}}` template variables. */
+  response: RouteResponse;
+};
+
+/**
  * A single custom route declared under `_routes` in the YAML file.
  *
- * Custom routes are registered before resource routes and take priority over them.
- * They always return a static, pre-defined response regardless of the request body or params.
+ * Resolution priority per request:
+ * 1. `handler` function (if defined and found in the handlers file)
+ * 2. First matching `scenario` (evaluated in declaration order)
+ * 3. `otherwise` block (explicit fallback when scenarios are defined but none matched)
+ * 4. Static `response` block (final fallback)
  *
  * @example
  * // _routes:
  * //   - method: POST
  * //     path: /login
- * //     response:
- * //       status: 200
- * //       body: { token: abc123 }
+ * //     scenarios:
+ * //       - when: { body.password: secret }
+ * //         response: { status: 200, body: { token: real-tok } }
+ * //       - when:
+ * //           - { body.role: admin }
+ * //           - { body.role: superadmin }
+ * //         response: { status: 200, body: { token: admin-tok } }
+ * //     otherwise:
+ * //       status: 401
+ * //       body: { error: Invalid credentials }
  */
 export type CustomRoute = {
   /** HTTP method (case-insensitive: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). */
@@ -41,19 +96,23 @@ export type CustomRoute = {
   path: string;
   /**
    * Name of an exported function in the handlers file (`handlers:` in config).
-   * When set, the function is called on every request and its return value is used as the response.
-   * Takes priority over `response:`. Falls back to `response:` if the name is not found.
+   * Takes priority over `scenarios` and `response`. Falls back to `response` if not found.
    */
   handler?: string;
-  /** Static or template response. Used when `handler` is absent or not found in the handlers file. */
-  response?: {
-    /** HTTP status code. Defaults to `200` if omitted. */
-    status?: number;
-    /** Response body. Any YAML-serialisable value (object, array, string, number, null). */
-    body?: unknown;
-    /** Additional response headers to set alongside `Content-Type`. */
-    headers?: Record<string, string>;
-  };
+  /** Conditional response variants. Evaluated in order — first match wins. */
+  scenarios?: Scenario[];
+  /**
+   * Explicit fallback response when `scenarios` are defined but none matched.
+   * Takes priority over `response` when present. Supports `{{}}` template variables.
+   */
+  otherwise?: RouteResponse;
+  /** Static or template response. Final fallback when no handler, scenario, or otherwise applies. */
+  response?: RouteResponse;
+  /**
+   * Per-route response delay in milliseconds. Overrides the global `--delay` option for this route.
+   * Applied before any response is sent, regardless of which path resolved the response.
+   */
+  delay?: number;
 };
 
 /**

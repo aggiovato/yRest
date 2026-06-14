@@ -240,18 +240,40 @@ export function generateAboutHtml(
       ${customRoutes
         .map((r) => {
           const fullPath = `${base}${r.path}`;
+
+          const tags: string[] = [];
+          if (r.delay && r.delay > 0) {
+            tags.push(`<span style="color:#fb923c;font-size:11px">delay·${r.delay}ms</span>`);
+          }
+          if (r.scenarios?.length) {
+            const hasOr = r.scenarios.some((s) => Array.isArray(s.when));
+            tags.push(
+              `<span style="color:#a371f7;font-size:11px">scenarios·${r.scenarios.length}${hasOr ? " (OR)" : ""}</span>`
+            );
+          }
+          if (r.otherwise) {
+            tags.push(`<span style="color:var(--text-muted);font-size:11px">otherwise</span>`);
+          }
+
           let desc: string;
           if (r.handler) {
             const found = handlers.has(r.handler);
             desc = found
               ? `Handler — <code>${r.handler}()</code>`
               : `Handler — <code>${r.handler}()</code> <span style="color:#f85149">(not loaded)</span>`;
+          } else if (r.scenarios?.length) {
+            const hasTemplateInScenarios =
+              r.scenarios.some((s) => s.response.body != null && hasTemplates(s.response.body)) ||
+              (r.otherwise?.body != null && hasTemplates(r.otherwise.body));
+            desc = hasTemplateInScenarios ? `Scenarios — <code>{{…}}</code>` : `Scenarios`;
           } else if (r.response?.body != null && hasTemplates(r.response.body)) {
-            desc = `Dynamic body — <code>{{…}}</code>`;
+            desc = `Dynamic — <code>{{…}}</code>`;
           } else {
             const status = r.response?.status ?? 200;
-            desc = `Static — <code>${status}</code>${r.response?.headers ? ` + custom headers` : ""}`;
+            desc = `Static — <code>${status}</code>${r.response?.headers ? ` + headers` : ""}`;
           }
+
+          if (tags.length) desc += `&ensp;${tags.join("&ensp;")}`;
           return endpointRow(r.method?.toUpperCase() ?? "GET", fullPath, desc);
         })
         .join("")}
@@ -419,7 +441,7 @@ export function generateAboutHtml(
 
   <div class="banner">
     <div class="banner-inner">
-      <h1><span class="y">y</span><span class="rest">rest</span></h1>
+      <h1><span class="y">y</span><span class="rest">Rest</span></h1>
       <p>Zero-config REST API mock server</p>
       <div class="banner-meta">
         <span>URL <strong>${host}</strong></span>
@@ -471,7 +493,7 @@ export function generateAboutHtml(
     ${collections.length ? `<h2>Examples</h2><div class="card">${examplesBlock(collections, relations, base, host, options, customRoutes[0])}</div>` : ""}
 
     <footer>
-      Powered by <a href="https://github.com/aggiovato/yaml-rest" target="_blank">@aggiovato/yrest</a> &nbsp;·&nbsp; <a href="/_about">/_about</a>
+      Powered by <a href="https://github.com/aggiovato/yRest" target="_blank">@yrest/cli</a> &nbsp;·&nbsp; <a href="/_about">/_about</a>
     </footer>
 
   </div>
