@@ -85,14 +85,26 @@ export function nestedRoutesAccordion(relations: Relations, base: string): strin
 
   for (const [source, fields] of Object.entries(relations)) {
     for (const [key, def] of Object.entries(fields)) {
+      const nestedBadge = def.nested ? ` ${badge("nested", "#facc15", "#facc1518")}` : "";
+
       if (def.type === "many2many") {
-        const path = `${base}/${source}/:id/${key}`;
         const singular = source.endsWith("s") ? source.slice(0, -1) : source;
+        const m2mBadge = badge("many2many", "#818cf8", "#818cf818");
+        // forward: GET /{source}/:id/{key}
         rows.push(
           endpointRow(
             "GET",
-            path,
-            `List ${def.target} linked to a ${singular} via ${def.through}. ${badge("many2many", "#818cf8", "#818cf818")}`
+            `${base}/${source}/:id/${key}`,
+            `List ${def.target} linked to a ${singular} via ${def.through}. ${m2mBadge}${nestedBadge}`
+          )
+        );
+        // inverse: GET /{target}/:id/{source}
+        const targetSingular = def.target.endsWith("s") ? def.target.slice(0, -1) : def.target;
+        rows.push(
+          endpointRow(
+            "GET",
+            `${base}/${def.target}/:id/${source}`,
+            `List ${source} linked to a ${targetSingular} via ${def.through} (inverse). ${m2mBadge}`
           )
         );
       } else {
@@ -104,7 +116,7 @@ export function nestedRoutesAccordion(relations: Relations, base: string): strin
           endpointRow(
             "GET",
             path,
-            `${def.type === "one2one" ? "Get" : "List"} ${source} belonging to a ${parentSingular}.${typeBadge}`
+            `${def.type === "one2one" ? "Get" : "List"} ${source} belonging to a ${parentSingular}.${typeBadge}${nestedBadge}`
           )
         );
       }

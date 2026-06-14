@@ -34,9 +34,16 @@ export type Data = Record<string, Resource[]>;
  * //       target: profiles
  */
 export type RelationDef =
-  | { type: "many2one"; target: string }
-  | { type: "one2one"; target: string }
-  | { type: "many2many"; target: string; through: string; foreignKey: string; otherKey: string };
+  | { type: "many2one"; target: string; nested?: boolean }
+  | { type: "one2one"; target: string; nested?: boolean }
+  | {
+      type: "many2many";
+      target: string;
+      through: string;
+      foreignKey: string;
+      otherKey: string;
+      nested?: boolean;
+    };
 
 /**
  * Relational mappings declared under `_rel` in the YAML file, normalised to {@link RelationDef}.

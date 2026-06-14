@@ -3,7 +3,7 @@ import type { YrestStorage } from "../../storage/types.js";
 import type { Resource } from "../../storage/types.js";
 import type { RouteCommand, ItemParams, RouteQuery } from "../types.js";
 import { findById, replaceItem, patchItem, deleteItem } from "../../services/resource.service.js";
-import { expandItems, embedItems } from "../../services/expand.service.js";
+import { applyNested, expandItems, embedItems } from "../../services/expand.service.js";
 import { projectFields } from "../../services/query.service.js";
 
 /**
@@ -37,7 +37,12 @@ export class ItemRouteCommand implements RouteCommand {
         .filter(Boolean);
       return projectFields(
         embedItems(
-          expandItems(item, req.query, this.resource, this.storage),
+          expandItems(
+            applyNested(item, this.resource, this.storage),
+            req.query,
+            this.resource,
+            this.storage
+          ),
           req.query,
           this.resource,
           this.storage

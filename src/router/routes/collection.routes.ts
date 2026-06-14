@@ -12,7 +12,7 @@ import {
   projectFields,
 } from "../../services/query.service.js";
 import { createItem } from "../../services/resource.service.js";
-import { expandItems, embedItems } from "../../services/expand.service.js";
+import { applyNested, expandItems, embedItems } from "../../services/expand.service.js";
 
 /**
  * Registers collection-level routes for a given resource.
@@ -59,7 +59,12 @@ export class CollectionRouteCommand implements RouteCommand {
 
         const data = projectFields(
           embedItems(
-            expandItems(paginate(sorted, page, limit), req.query, this.resource, this.storage),
+            expandItems(
+              applyNested(paginate(sorted, page, limit), this.resource, this.storage),
+              req.query,
+              this.resource,
+              this.storage
+            ),
             req.query,
             this.resource,
             this.storage
@@ -98,7 +103,12 @@ export class CollectionRouteCommand implements RouteCommand {
 
       return projectFields(
         embedItems(
-          expandItems(result, req.query, this.resource, this.storage),
+          expandItems(
+            applyNested(result, this.resource, this.storage),
+            req.query,
+            this.resource,
+            this.storage
+          ),
           req.query,
           this.resource,
           this.storage

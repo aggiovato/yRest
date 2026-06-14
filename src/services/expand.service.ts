@@ -1,4 +1,4 @@
-import type { YrestStorage, Resource } from "../storage/types.js";
+import type { YrestStorage, Resource, RelationDef } from "../storage/types.js";
 
 /**
  * Embeds a related parent object into a single item based on `?_expand`.
@@ -197,6 +197,70 @@ export function embedItems(
         );
       }
     }
+    return out;
+  });
+
+  return isArray ? result : result[0]!;
+}
+
+/**
+ * Auto-embeds related objects for all relations declared with `nested: true` in `_rel`,
+ * without requiring `?_expand` or `?_embed` query params.
+ *
+ * - `many2one` / `one2one` with `nested: true`: resolves the FK field to the full parent object
+ *   and adds it under the derived key (`userId` → `user`). The original FK field is preserved.
+ * - `many2many` with `nested: true`: resolves via the pivot and embeds the target array
+ *   under the alias key (e.g. `tags`).
+ *
+ * Called before the query-param-driven expand/embed pipeline so auto-nested fields are always
+ * present regardless of the request query string.
+ */
+export function applyNested(item: Resource, resource: string, storage: YrestStorage): Resource;
+export function applyNested(items: Resource[], resource: string, storage: YrestStorage): Resource[];
+export function applyNested(
+  input: Resource | Resource[],
+  resource: string,
+  storage: YrestStorage
+): Resource | Resource[] {
+  const isArray = Array.isArray(input);
+  const items = isArray ? input : [input];
+
+  const resourceRelations = storage.getRelations()[resource] ?? {};
+  const nestedDefs = Object.entries(resourceRelations).filter(([, def]) => def.nested === true) as [
+    string,
+    RelationDef & { nested: true },
+  ][];
+
+  if (nestedDefs.length === 0) return input;
+
+  const result = items.map((item) => {
+    const out: Resource = { ...item };
+
+    for (const [key, def] of nestedDefs) {
+      if (def.type === "many2many") {
+        const pivot = storage.getCollection(def.through) ?? [];
+        const matchingIds = new Set(
+          pivot
+            .filter((row) => String(row[def.foreignKey]) === String(item["id"]))
+            .map((row) => String(row[def.otherKey]))
+        );
+        out[key] = (storage.getCollection(def.target) ?? []).filter((t) =>
+          matchingIds.has(String(t["id"]))
+        );
+      } else {
+        // many2one or one2one: key is the FK field, embed under derived name
+        const foreignKeyValue = item[key];
+        if (foreignKeyValue === undefined) continue;
+        const parent = (storage.getCollection(def.target) ?? []).find(
+          (p) => String(p["id"]) === String(foreignKeyValue)
+        );
+        if (parent !== undefined) {
+          const embedKey = key.replace(/Id$/i, "");
+          out[embedKey] = parent;
+        }
+      }
+    }
+
     return out;
   });
 

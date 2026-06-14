@@ -38,16 +38,18 @@ function normaliseRelationDef(key: string, value: unknown): RelationDef | null {
   const v = value as Record<string, unknown>;
   const type = v["type"];
 
+  const nested = v["nested"] === true ? true : undefined;
+
   if (type === "many2one" || type === undefined) {
     const target = v["target"];
     if (typeof target !== "string") return null;
-    return { type: "many2one", target };
+    return nested ? { type: "many2one", target, nested } : { type: "many2one", target };
   }
 
   if (type === "one2one") {
     const target = v["target"];
     if (typeof target !== "string") return null;
-    return { type: "one2one", target };
+    return nested ? { type: "one2one", target, nested } : { type: "one2one", target };
   }
 
   if (type === "many2many") {
@@ -61,7 +63,9 @@ function normaliseRelationDef(key: string, value: unknown): RelationDef | null {
       typeof otherKey !== "string"
     )
       return null;
-    return { type: "many2many", target, through, foreignKey, otherKey };
+    return nested
+      ? { type: "many2many", target, through, foreignKey, otherKey, nested }
+      : { type: "many2many", target, through, foreignKey, otherKey };
   }
 
   return null;

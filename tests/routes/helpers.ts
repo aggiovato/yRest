@@ -116,6 +116,44 @@ post_tags:
     tagId: 3
 `;
 
+export const YAML_WITH_NESTED = `
+_rel:
+  posts:
+    userId:
+      type: many2one
+      target: users
+      nested: true
+    tags:
+      type: many2many
+      target: tags
+      through: post_tags
+      foreignKey: postId
+      otherKey: tagId
+      nested: true
+users:
+  - id: 1
+    name: Ana
+tags:
+  - id: 1
+    name: typescript
+  - id: 2
+    name: vitest
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+  - id: 2
+    title: Second post
+    userId: 1
+post_tags:
+  - id: 1
+    postId: 1
+    tagId: 1
+  - id: 2
+    postId: 1
+    tagId: 2
+`;
+
 export async function createTestServer(yaml: string) {
   const filePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
   writeFileSync(filePath, yaml, "utf8");

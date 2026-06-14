@@ -97,10 +97,8 @@ export class NestedRouteCommand implements RouteCommand {
       otherKey: string;
     }
   ): void {
-    const collectionPath = `${this.base}/${source}/:id/${alias}`;
-
-    // GET /{source}/:id/{alias}
-    server.get<ItemParams>(collectionPath, (req, reply) => {
+    // GET /{source}/:id/{alias}  e.g. GET /posts/1/tags
+    server.get<ItemParams>(`${this.base}/${source}/:id/${alias}`, (req, reply) => {
       const sourceCollection = this.storage.getCollection(source) ?? [];
       const sourceItem = findById(sourceCollection, req.params.id);
       if (!sourceItem) return reply.status(404).send({ error: "Not found" });
@@ -113,6 +111,24 @@ export class NestedRouteCommand implements RouteCommand {
       );
 
       return (this.storage.getCollection(def.target) ?? []).filter((t) =>
+        matchingIds.has(String(t["id"]))
+      );
+    });
+
+    // GET /{target}/:id/{source}  e.g. GET /tags/1/posts  (inverse)
+    server.get<ItemParams>(`${this.base}/${def.target}/:id/${source}`, (req, reply) => {
+      const targetCollection = this.storage.getCollection(def.target) ?? [];
+      const targetItem = findById(targetCollection, req.params.id);
+      if (!targetItem) return reply.status(404).send({ error: "Not found" });
+
+      const pivot = this.storage.getCollection(def.through) ?? [];
+      const matchingIds = new Set(
+        pivot
+          .filter((row) => String(row[def.otherKey]) === req.params.id)
+          .map((row) => String(row[def.foreignKey]))
+      );
+
+      return (this.storage.getCollection(source) ?? []).filter((t) =>
         matchingIds.has(String(t["id"]))
       );
     });
