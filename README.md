@@ -10,7 +10,7 @@
 [![CI](https://github.com/aggiovato/yRest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yRest/actions)
 [![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
-[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.9.0)](https://socket.dev/npm/package/@yrest/cli)
+[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.10.0)](https://socket.dev/npm/package/@yrest/cli)
 
 YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
 
@@ -48,30 +48,32 @@ DELETE /users/1      → 200 OK
 
 A YAML-first alternative to json-server for frontend development.
 
-| Feature                                      | yrest | json-server |
-| -------------------------------------------- | :---: | :---------: |
-| YAML database                                |  ✅   |     ❌      |
-| Zero config                                  |  ✅   |     ✅      |
-| Full CRUD                                    |  ✅   |     ✅      |
-| Field operators (`_gte`, `_like`, `_regex`…) |  ✅   |     ⚠️      |
-| Full-text search                             |  ✅   |     ✅      |
-| Relations: many2one, one2one, many2many      |  ✅   |     ⚠️      |
-| Nested routes + bidirectional many2many      |  ✅   |     ✅      |
-| Auto-embedding (`nested: true`)              |  ✅   |     ❌      |
-| Field projection (`_fields`)                 |  ✅   |     ❌      |
-| Pageable mode (envelope response)            |  ✅   |     ❌      |
-| Custom static routes (`_routes`)             |  ✅   |     ❌      |
-| Template variables in responses              |  ✅   |     ❌      |
-| Handler functions (JS logic)                 |  ✅   |     ❌      |
-| Conditional scenarios (`scenarios:`)         |  ✅   |     ❌      |
-| Snapshot endpoints                           |  ✅   |     ❌      |
-| Config file                                  |  ✅   |     ⚠️      |
-| API overview page (`/_about`)                |  ✅   |     ❌      |
-| Watch mode                                   |  ✅   |     ✅      |
-| Readonly mode                                |  ✅   |     ❌      |
-| Atomic writes                                |  ✅   |     ✅      |
-| TypeScript types                             |  ✅   |     ❌      |
-| Programmatic API for test frameworks         |  ✅   |     ❌      |
+| Feature                                             | yrest | json-server |
+| --------------------------------------------------- | :---: | :---------: |
+| YAML database                                       |  ✅   |     ❌      |
+| Zero config                                         |  ✅   |     ✅      |
+| Full CRUD                                           |  ✅   |     ✅      |
+| Field operators (`_gte`, `_like`, `_regex`…)        |  ✅   |     ⚠️      |
+| Full-text search                                    |  ✅   |     ✅      |
+| Relations: many2one, one2one, many2many             |  ✅   |     ⚠️      |
+| Nested routes + bidirectional many2many             |  ✅   |     ✅      |
+| Auto-embedding (`nested: true`)                     |  ✅   |     ❌      |
+| Field projection (`_fields`)                        |  ✅   |     ❌      |
+| Pageable mode (envelope response)                   |  ✅   |     ❌      |
+| Custom static routes (`_routes`)                    |  ✅   |     ❌      |
+| Template variables in responses                     |  ✅   |     ❌      |
+| Handler functions (JS logic)                        |  ✅   |     ❌      |
+| Conditional scenarios (`scenarios:`)                |  ✅   |     ❌      |
+| Snapshot endpoints                                  |  ✅   |     ❌      |
+| Config file                                         |  ✅   |     ⚠️      |
+| API overview page (`/_about`)                       |  ✅   |     ❌      |
+| Watch mode                                          |  ✅   |     ✅      |
+| Readonly mode                                       |  ✅   |     ❌      |
+| Atomic writes                                       |  ✅   |     ✅      |
+| TypeScript types                                    |  ✅   |     ❌      |
+| Programmatic API for test frameworks                |  ✅   |     ❌      |
+| OpenAPI 3.0 spec (`GET /_openapi`, `yrest openapi`) |  ✅   |     ❌      |
+| Field annotations (`_schema`)                       |  ✅   |     ❌      |
 
 ---
 
@@ -137,6 +139,31 @@ npx @yrest/cli init --sample relational --file api.yml
 - `basic` — three independent collections: `users`, `products` and `categories`
 - `relational` — blog domain with all three relation types: `users`, `posts`, `comments`, `tags` and a pivot table
 - `ecommerce` — e-commerce domain with products, orders, reviews and custom `_routes` (scenarios, template vars, error injection)
+
+---
+
+### `openapi`
+
+Generates an OpenAPI 3.0.3 spec from a `db.yml` file without starting a server.
+
+```bash
+npx @yrest/cli openapi db.yml                          # writes openapi.yaml
+npx @yrest/cli openapi db.yml --format json            # writes openapi.json
+npx @yrest/cli openapi db.yml --stdout                 # prints to stdout
+npx @yrest/cli openapi db.yml --output api-spec.yaml   # custom output path
+```
+
+| Flag              | Default     | Description                                                 |
+| ----------------- | ----------- | ----------------------------------------------------------- |
+| `--output <file>` | _(auto)_    | Output file path (default: `openapi.yaml` / `openapi.json`) |
+| `--format <fmt>`  | `yaml`      | Output format: `yaml` or `json`                             |
+| `--stdout`        | `false`     | Print to stdout instead of writing a file                   |
+| `--base <base>`   | _(none)_    | Base path prefix applied to all routes                      |
+| `--port <port>`   | `3070`      | Server port shown in the `servers` block                    |
+| `--host <host>`   | `localhost` | Server host shown in the `servers` block                    |
+| `--title <title>` | `yRest API` | API title for the `info` block                              |
+
+The spec is also available live at `GET /_openapi` (YAML) and `GET /_openapi.json` (JSON) while the server is running — no extra flag or config needed.
 
 ---
 
@@ -212,6 +239,46 @@ posts:
 ```
 
 Each top-level key becomes a resource with full CRUD endpoints.
+
+---
+
+## Field annotations (`_schema`)
+
+Add a `_schema` block to `db.yml` to declare field-level metadata per collection. Used by the OpenAPI generator to produce accurate schemas — has no effect on runtime CRUD behavior.
+
+```yaml
+_schema:
+  users:
+    name: required # shorthand: marks field as required
+    email:
+      required: true
+      format: email
+    age:
+      type: integer
+    role:
+      type: string
+      enum: [admin, editor, viewer]
+      default: viewer
+      description: User role
+
+users:
+  - id: 1
+    name: Ana
+    email: ana@test.com
+    age: 28
+    role: admin
+```
+
+| Key           | Type      | Description                                                                               |
+| ------------- | --------- | ----------------------------------------------------------------------------------------- |
+| `required`    | `boolean` | Marks the field as required in the OpenAPI schema                                         |
+| `type`        | `string`  | Overrides the inferred type (`string`, `integer`, `number`, `boolean`, `array`, `object`) |
+| `format`      | `string`  | OpenAPI format hint (`email`, `date`, `date-time`, `uuid`, `uri`, …)                      |
+| `enum`        | `array`   | Restricts the field to a fixed set of values                                              |
+| `description` | `string`  | Field description included in the OpenAPI schema                                          |
+| `default`     | `any`     | Default value shown in the OpenAPI schema                                                 |
+
+Fields not listed in `_schema` are inferred from the first items in the collection and treated as optional. `_schema` itself is excluded from the generated REST resources.
 
 ---
 
@@ -815,15 +882,22 @@ Useful for test suites that need a clean reset between runs or demos that need a
 
 ---
 
-## API overview page
+## Meta endpoints
 
-Every running server exposes `GET /_about` — a self-contained HTML page listing all generated endpoints, custom routes, active modes, query param reference and ready-to-run `curl` examples derived from your actual `db.yml`:
+Every running server exposes the following meta endpoints without any extra configuration:
+
+| Endpoint             | Description                                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| `GET /_about`        | Self-contained HTML page listing all endpoints, modes, query params and ready-to-run `curl` examples |
+| `GET /_openapi`      | OpenAPI 3.0.3 spec in YAML format — regenerated on every request                                     |
+| `GET /_openapi.json` | OpenAPI 3.0.3 spec in JSON format                                                                    |
 
 ```bash
 open http://localhost:3070/_about
+curl http://localhost:3070/_openapi.json | npx swagger-ui-watcher -
 ```
 
-The page reflects the live state of the server, so it updates automatically in watch mode.
+Both `/_about` and the OpenAPI spec reflect the live storage state and update automatically in watch mode.
 
 ---
 
@@ -1065,7 +1139,7 @@ const server = createYrestServer({
 | Visual panel (`/_panel`)                           | 🔜     |
 | Programmatic API for Vitest / Playwright           | ✅     |
 | Docker image                                       | 🔜     |
-| OpenAPI export (`yrest openapi db.yml`)            | 🔜     |
+| OpenAPI export (`yrest openapi db.yml`)            | ✅     |
 | VS Code extension with YAML snippets               | 🔜     |
 | Request validation with JSON Schema                | 🔜     |
 | Conditional scenarios (`scenarios:`, `otherwise:`) | ✅     |

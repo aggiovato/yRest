@@ -7,6 +7,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.10.0] — 2026-06-14
+
+### Added
+
+- **OpenAPI 3.0.3 spec generation:** always-on `GET /_openapi` (YAML, `text/yaml`) and `GET /_openapi.json` (JSON) endpoints — regenerated on every request so they stay in sync in watch mode
+- **`yrest openapi <file>` CLI command:** generate an OpenAPI spec from a `db.yml` file without starting a server
+  - `--output <file>` — write to a specific file path (default: `openapi.yaml` / `openapi.json`)
+  - `--format json|yaml` — output format (default: `yaml`)
+  - `--stdout` — print to stdout instead of writing a file
+  - `--base`, `--port`, `--host`, `--title` — tune the `servers` and `info` blocks
+- **`_schema` block:** declare field-level annotations per collection for accurate OpenAPI output
+  - String shorthand: `fieldName: required` — marks the field as required
+  - Object form: `fieldName: { required: true, type: integer, format: email, enum: [...], description: "...", default: ... }`
+  - Fields absent from `_schema` are inferred from data and treated as optional
+  - `_schema` is excluded from the CRUD collections — does not appear as a REST resource
+- **`buildCollectionSchema()`** (`src/openapi/inferSchema.ts`): infers OpenAPI property types from the first 10 items in a collection, then merges `_schema` overrides; declared `required: true` fields populate the `required[]` array
+- **`buildCrudPaths()`** (`src/openapi/buildPaths.ts`): generates full CRUD path items (GET list + POST + GET item + PUT + PATCH + DELETE) with all supported query parameters documented
+- **`buildRelationPaths()`** (`src/openapi/buildPaths.ts`): generates relation path items for `many2one` (collection + item routes), `one2one`, and bidirectional `many2many`
+- **`buildCustomRoutePaths()`** (`src/openapi/buildPaths.ts`): generates path items for all `_routes` entries; extracts path params, collects all possible status codes from `scenarios`, `otherwise`, `response` and `error` blocks
+- **`generateOpenApi()`** (`src/openapi/generateOpenApi.ts`): assembles the complete OpenAPI 3.0.3 document from storage state + server options
+
+### Fixed
+
+- **YAML anchors in OpenAPI output:** `yaml.stringify` produced YAML anchors (`&a1`, `*a1`) for shared parameter objects (`COLLECTION_QUERY_PARAMS`, `ID_PATH_PARAM`), which are rejected by OpenAPI validators; fixed by passing `aliasDuplicateObjects: false` to all `stringify()` calls in `openapi.routes.ts` and the `openapi` CLI command
+- **`$ref` names truncated to a single letter:** `schemaRef()` in `buildPaths.ts` was re-singularizing an already-singular schema name (`"User"` → `"U"`, `"Post"` → `"P"`); fixed by passing the name through directly
+
+---
+
 ## [0.9.0] — 2026-06-14
 
 ### Added
@@ -225,6 +253,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.10.0]: https://github.com/aggiovato/yRest/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/aggiovato/yRest/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/aggiovato/yRest/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/aggiovato/yRest/releases/tag/v0.8.0
