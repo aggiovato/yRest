@@ -1,4 +1,8 @@
-# yRest
+<div align="center">
+  <img src="assets/yRest-banner.png" alt="yRest" width="100%" />
+</div>
+
+<br/>
 
 [![npm version](https://img.shields.io/npm/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![npm downloads](https://img.shields.io/npm/dw/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)

@@ -5,9 +5,7 @@ export function AppHeader() {
 
   return (
     <header className="app-header">
-      <span className="app-logo">
-        y<span>rest</span>
-      </span>
+      <img src="/logo-text.png" alt="yRest" className="app-logo" />
       <span className="header-sep">·</span>
       <span className="app-subtitle">todo list demo</span>
       <div className={`server-status ${connected ? "connected" : "disconnected"}`}>

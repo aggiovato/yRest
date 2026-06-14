@@ -66,13 +66,10 @@ body {
 }
 
 .app-logo {
-  font-family: var(--mono), sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--text);
-}
-.app-logo span {
-  color: var(--blue);
+  height: 22px;
+  width: auto;
+  display: block;
+  mix-blend-mode: screen;
 }
 
 .header-sep {

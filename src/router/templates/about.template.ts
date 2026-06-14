@@ -1,7 +1,20 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { YrestStorage } from "../../storage/types.js";
 import type { YrestOptions } from "../../config/loadOptions.js";
 import type { HandlerMap } from "../../utils/handlers.js";
 import { hasTemplates } from "../../utils/interpolate.js";
+
+const _dir = dirname(fileURLToPath(import.meta.url));
+const LOGO_SRC = (() => {
+  try {
+    const buf = readFileSync(join(_dir, "../../assets/logo-color.png"));
+    return `data:image/png;base64,${buf.toString("base64")}`;
+  } catch {
+    return "";
+  }
+})();
 
 const METHOD_COLOR: Record<string, string> = {
   GET: "#3fb950",
@@ -441,7 +454,11 @@ export function generateAboutHtml(
 
   <div class="banner">
     <div class="banner-inner">
-      <h1><span class="y">y</span><span class="rest">Rest</span></h1>
+      ${
+        LOGO_SRC
+          ? `<img src="${LOGO_SRC}" alt="yRest" height="68" style="display:block;margin-bottom:0px" />`
+          : `<h1><span class="y">y</span><span class="rest">Rest</span></h1>`
+      }
       <p>Zero-config REST API mock server</p>
       <div class="banner-meta">
         <span>URL <strong>${host}</strong></span>

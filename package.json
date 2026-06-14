@@ -52,7 +52,8 @@
     "yrest": "./dist/cli/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "assets"
   ],
   "scripts": {
     "build": "tsup",
