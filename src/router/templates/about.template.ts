@@ -25,8 +25,17 @@ const METHOD_COLOR: Record<string, string> = {
   fn: "#f0883e",
 };
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function badge(label: string, color: string, bg: string): string {
-  return `<span class="badge" style="background:${bg};color:${color};border:1px solid ${color}40">${label}</span>`;
+  return `<span class="badge" style="background:${bg};color:${color};border:1px solid ${color}40">${escapeHtml(label)}</span>`;
 }
 
 function methodBadge(method: string): string {
@@ -38,7 +47,7 @@ function endpointRow(method: string, path: string, desc: string): string {
   return `
     <tr>
       <td class="method-cell">${methodBadge(method)}</td>
-      <td class="path-cell"><code>${path}</code></td>
+      <td class="path-cell"><code>${escapeHtml(path)}</code></td>
       <td class="desc-cell">${desc}</td>
     </tr>`;
 }
@@ -74,7 +83,7 @@ function resourceAccordion(name: string, base: string, isOpen: boolean): string 
   return `
   <details class="resource-card" ${isOpen ? "open" : ""}>
     <summary>
-      <span class="resource-name">/${name}</span>
+      <span class="resource-name">/${escapeHtml(name)}</span>
       <span class="route-count">6 routes</span>
     </summary>
     <table>
@@ -155,7 +164,7 @@ function examplesBlock(
 
   if (firstCustomRoute) {
     const method = firstCustomRoute.method?.toUpperCase() ?? "GET";
-    const fullPath = `${host}${base}${firstCustomRoute.path}`;
+    const fullPath = `${host}${base}${escapeHtml(firstCustomRoute.path ?? "")}`;
     const curlFlag = method === "GET" ? "" : `-X ${method} `;
     examples.push(`# Custom route\ncurl ${curlFlag}${fullPath}`);
   }
@@ -278,9 +287,10 @@ export function generateAboutHtml(
             desc = `Error injection — <code>${r.error}</code>`;
           } else if (r.handler) {
             const found = handlers.has(r.handler);
+            const handlerName = escapeHtml(r.handler);
             desc = found
-              ? `Handler — <code>${r.handler}()</code>`
-              : `Handler — <code>${r.handler}()</code> <span style="color:#f85149">(not loaded)</span>`;
+              ? `Handler — <code>${handlerName}()</code>`
+              : `Handler — <code>${handlerName}()</code> <span style="color:#f85149">(not loaded)</span>`;
           } else if (r.scenarios?.length) {
             const hasTemplateInScenarios =
               r.scenarios.some((s) => s.response.body != null && hasTemplates(s.response.body)) ||

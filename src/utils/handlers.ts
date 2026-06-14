@@ -34,8 +34,17 @@ export type HandlerMap = Map<string, Handler>;
  * @param filePath - Absolute path to the JavaScript handler file.
  * @returns A map of function name → handler for every exported function in the file.
  */
+const ALLOWED_EXTENSIONS = [".js", ".mjs", ".cjs"];
+
 export async function loadHandlers(filePath: string): Promise<HandlerMap> {
   if (!existsSync(filePath)) return new Map();
+
+  if (!ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
+    console.error(
+      `  \x1b[31m[handlers] ${filePath} — only .js, .mjs and .cjs files are allowed\x1b[0m`
+    );
+    return new Map();
+  }
 
   try {
     const mod = (await import(filePath)) as Record<string, unknown>;

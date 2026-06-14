@@ -21,6 +21,8 @@ export function applyOperator(itemValue: unknown, op: Operator, filterValue: str
     case "_start":
       return strItem.toLowerCase().startsWith(filterValue.toLowerCase());
     case "_regex": {
+      // Guard against ReDoS: reject patterns longer than 200 chars before compiling.
+      if (filterValue.length > 200) return false;
       try {
         return new RegExp(filterValue, "i").test(strItem);
       } catch {

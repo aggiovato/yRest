@@ -7,6 +7,16 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.8.1] — 2026-06-14
+
+### Fixed
+
+- **XSS in `/_about`:** all user-controlled strings from YAML (route paths, handler names, resource names) are now HTML-escaped before insertion. Fixed a real injection vector: `firstCustomRoute.path` was rendered unescaped inside the examples `<pre>` block. Also fixed a double-escape bug in the custom routes accordion.
+- **ReDoS via `?field_regex=`:** patterns longer than 200 chars are rejected before `RegExp` compilation; invalid patterns return `false` instead of throwing.
+- **Handler path injection:** `loadHandlers()` now whitelists `.js`, `.mjs`, `.cjs` extensions and rejects any other extension before calling `import()`.
+
+---
+
 ## [0.8.0] — 2026-06-14
 
 ### Added
@@ -185,6 +195,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.8.1]: https://github.com/aggiovato/yRest/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/aggiovato/yRest/releases/tag/v0.8.0
 [0.7.0]: https://github.com/aggiovato/yRest/releases/tag/v0.7.0
 [0.6.0]: https://github.com/aggiovato/yRest/releases/tag/v0.6.0
