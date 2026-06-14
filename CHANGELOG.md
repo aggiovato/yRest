@@ -7,6 +7,36 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.9.0] — 2026-06-14
+
+### Added
+
+- **Explicit relation types in `_rel`:** each field can now be declared as an object with an explicit `type` instead of the legacy string shorthand
+  - `many2one` — foreign key on the child pointing to a parent (same semantics as the previous string shorthand; `userId: users` still works)
+  - `one2one` — one child per parent; `GET /parent/:id/child` returns a single object instead of an array
+  - `many2many` — join through a pivot collection; requires `through`, `foreignKey` and `otherKey` fields
+- **`nested: true` flag:** add `nested: true` to any relation to auto-embed the related data in every GET response without needing `?_expand` or `?_embed`. `many2one`/`one2one` embed the parent object under the derived key (`userId` → `user`, FK preserved); `many2many` embed the resolved target array under the alias key
+- **Bidirectional many2many nested routes:** declaring a `many2many` relation now automatically registers both directions — `GET /posts/:id/tags` and `GET /tags/:id/posts` — from a single `_rel` entry
+- **`parseRelations()` utility** (`src/storage/parseRelations.ts`): normalises raw `_rel` YAML to canonical `RelationDef` objects on startup; string shorthand is transparently upgraded to `{ type: "many2one", target }`. Used by both the file storage and the in-memory programmatic API
+- **`ecommerce` init sample:** `yrest init --sample ecommerce` scaffolds a full e-commerce domain (products, orders, users, reviews, categories, order-items) with all relation types, six `_routes` entries (scenarios, template vars, delay, error injection)
+- **Enriched `basic` and `relational` init samples:** more collections, more fields, query examples in comments, and all three relation types demonstrated in `relational`
+- **`src/router/templates/about.helpers.ts`:** extracted all helper functions from `about.template.ts` into a dedicated module (`escapeHtml`, `badge`, `endpointRow`, `resourceAccordion`, `nestedRoutesAccordion`, `snapshotAccordion`, `customRoutesAccordion`, `handlersAccordion`, `examplesBlock`). `about.template.ts` is now ~200 lines vs ~555 before
+
+### Changed
+
+- `/_about` nested routes accordion now shows:
+  - Both forward and inverse routes for each `many2many` relation (`POST /posts/:id/tags` + `GET /tags/:id/posts`)
+  - Yellow `nested` badge on relations declared with `nested: true`
+  - `one2one` badge in teal for one-to-one relations
+  - `many2many` badge in indigo for pivot-based relations
+- `Relations` type is now `Record<string, Record<string, RelationDef>>` where `RelationDef` is a discriminated union (`many2one | one2one | many2many`), each with an optional `nested?: true` flag
+
+### Fixed
+
+- **`/_about` crash with object-format `_rel`:** in v0.8.1, using the new `one2one` or `many2many` object syntax in `_rel` caused `TypeError: parent.endsWith is not a function` inside the nested-routes loop of `about.template.ts`, returning a 500 for every `/_about` request. Fixed by `parseRelations()` normalising all relation values before they reach the template layer
+
+---
+
 ## [0.8.1] — 2026-06-14
 
 ### Fixed
@@ -195,6 +225,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.9.0]: https://github.com/aggiovato/yRest/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/aggiovato/yRest/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/aggiovato/yRest/releases/tag/v0.8.0
 [0.7.0]: https://github.com/aggiovato/yRest/releases/tag/v0.7.0

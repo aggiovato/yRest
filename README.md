@@ -55,7 +55,9 @@ A YAML-first alternative to json-server for frontend development.
 | Full CRUD                                    |  ✅   |     ✅      |
 | Field operators (`_gte`, `_like`, `_regex`…) |  ✅   |     ⚠️      |
 | Full-text search                             |  ✅   |     ✅      |
-| Relations + nested routes                    |  ✅   |     ✅      |
+| Relations: many2one, one2one, many2many      |  ✅   |     ⚠️      |
+| Nested routes + bidirectional many2many      |  ✅   |     ✅      |
+| Auto-embedding (`nested: true`)              |  ✅   |     ❌      |
 | Field projection (`_fields`)                 |  ✅   |     ❌      |
 | Pageable mode (envelope response)            |  ✅   |     ❌      |
 | Custom static routes (`_routes`)             |  ✅   |     ❌      |
@@ -125,15 +127,16 @@ npx @yrest/cli init --file api.yml             # custom filename
 npx @yrest/cli init --sample relational --file api.yml
 ```
 
-| Flag       | Default  | Description                         |
-| ---------- | -------- | ----------------------------------- |
-| `--file`   | `db.yml` | Output filename                     |
-| `--sample` | `basic`  | Sample data (`basic`, `relational`) |
+| Flag       | Default  | Description                                      |
+| ---------- | -------- | ------------------------------------------------ |
+| `--file`   | `db.yml` | Output filename                                  |
+| `--sample` | `basic`  | Sample data (`basic`, `relational`, `ecommerce`) |
 
 **Samples:**
 
-- `basic` — two independent collections: `users` and `products`
-- `relational` — three collections with `_rel` relationships: `users`, `posts` and `comments`
+- `basic` — three independent collections: `users`, `products` and `categories`
+- `relational` — blog domain with all three relation types: `users`, `posts`, `comments`, `tags` and a pivot table
+- `ecommerce` — e-commerce domain with products, orders, reviews and custom `_routes` (scenarios, template vars, error injection)
 
 ---
 
@@ -392,29 +395,97 @@ Returns the first 5 posts by user 1, sorted alphabetically by title, with the us
 
 ## Relational data
 
-Use `_rel` to declare foreign key relationships between collections:
+Use `_rel` to declare relationships between collections. Three relation types are supported.
+
+### `many2one` (default)
+
+A child record holds a foreign key pointing to a parent. The string shorthand implicitly declares `many2one`:
 
 ```yaml
 _rel:
   posts:
-    userId: users
-
-users:
-  - id: 1
-    name: Ana
-
-posts:
-  - id: 1
-    title: First post
-    userId: 1
+    userId: users # shorthand: many2one
+    # equivalent to:
+    # userId:
+    #   type: many2one
+    #   target: users
 ```
 
-This enables:
+### `one2one`
 
-**Nested routes:**
+One child record belongs to exactly one parent, and a parent has at most one child:
+
+```yaml
+_rel:
+  profiles:
+    userId:
+      type: one2one
+      target: users
+```
+
+### `many2many`
+
+Two collections are linked through a pivot (join) table:
+
+```yaml
+_rel:
+  posts:
+    tags:
+      type: many2many
+      target: tags
+      through: post_tags # pivot collection
+      foreignKey: postId
+      otherKey: tagId
+
+post_tags:
+  - id: 1
+    postId: 1
+    tagId: 2
+```
+
+### Auto-embedding with `nested: true`
+
+Add `nested: true` to any relation to embed the related data automatically in every GET response, without needing `?_expand` or `?_embed`:
+
+```yaml
+_rel:
+  posts:
+    userId:
+      type: many2one
+      target: users
+      nested: true # user object embedded in every /posts response
+    tags:
+      type: many2many
+      target: tags
+      through: post_tags
+      foreignKey: postId
+      otherKey: tagId
+      nested: true # tags array embedded in every /posts response
+```
 
 ```
-GET /users/1/posts    # all posts where userId === 1
+GET /posts/1  →  { id: 1, title: "...", userId: 1, user: { ... }, tags: [...] }
+```
+
+`many2one` / `one2one` with `nested: true` embed the parent object under the derived key (`userId` → `user`). The original FK field is preserved. `many2many` with `nested: true` embeds the resolved target array under the alias key.
+
+### What relations enable
+
+**Nested routes (many2one / one2one):**
+
+```
+GET /users/1/posts         # all posts where userId === 1
+GET /users/1/posts/3       # post 3 only if it belongs to user 1
+GET /users/1/profiles      # profile for user 1 (one2one: returns object, not array)
+```
+
+**Nested routes (many2many — bidirectional):**
+
+Both directions are registered automatically from a single declaration:
+
+```
+GET /posts/1/tags          # all tags linked to post 1 via pivot
+GET /tags/2/posts          # all posts linked to tag 2 via pivot (inverse — auto-created)
 ```
 
 **Embed parent with `?_expand`:**
@@ -426,7 +497,9 @@ GET /posts/1?_expand=user   →  { id: 1, title: "First post", userId: 1, user: 
 **Embed children with `?_embed`:**
 
 ```
-GET /users/1?_embed=posts   →  { id: 1, name: "Ana", posts: [{ id: 1, title: "First post", userId: 1 }] }
+GET /users/1?_embed=posts          →  { id: 1, name: "Ana", posts: [...] }
+GET /posts/1?_embed=tags           →  { id: 1, title: "...", tags: [...] }   # many2many
+GET /users/1?_embed=profiles       →  { id: 1, name: "Ana", profiles: { ... } }  # one2one: object
 ```
 
 ---
@@ -999,6 +1072,9 @@ const server = createYrestServer({
 | Per-route delay (`delay:`)                         | ✅     |
 | Error injection (`error:` in `_routes`)            | ✅     |
 | Configurable ID strategy (`idStrategy`)            | ✅     |
+| Explicit relation types (one2one, many2many)       | ✅     |
+| Bidirectional many2many nested routes              | ✅     |
+| Auto-embedding (`nested: true` in `_rel`)          | ✅     |
 
 ---
 
