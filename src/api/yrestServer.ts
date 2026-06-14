@@ -1,6 +1,7 @@
 import { resolve } from "node:path";
-import type { Data, Relations, CustomRoute, YrestStorage } from "../storage/types.js";
+import type { Data, Relations, CustomRoute, SchemaBlock, YrestStorage } from "../storage/types.js";
 import { parseRelations } from "../storage/parseRelations.js";
+import { parseSchema } from "../storage/parseSchema.js";
 import type { YrestOptions } from "../config/loadOptions.js";
 import { loadHandlers } from "../utils/handlers.js";
 import { deepCopyData } from "../utils/deepCopy.js";
@@ -132,13 +133,15 @@ function buildOptions(opts: YrestServerOptions): YrestOptions {
 
 function createInMemoryStorage(data: Data): YrestStorage {
   const raw = data as Record<string, unknown>;
+  const RESERVED = new Set(["_rel", "_routes", "_schema"]);
 
   const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = Array.isArray(raw["_routes"])
     ? (raw["_routes"] as CustomRoute[])
     : [];
+  const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const collections: Data = Object.fromEntries(
-    Object.entries(raw).filter(([k]) => k !== "_rel" && k !== "_routes")
+    Object.entries(raw).filter(([k]) => !RESERVED.has(k))
   ) as Data;
 
   let snapshot = {
@@ -150,6 +153,7 @@ function createInMemoryStorage(data: Data): YrestStorage {
   return {
     getData: () => collections,
     getRelations: () => relations,
+    getSchema: () => schema,
     getRoutes: () => routes,
     getCollection: (name) => collections[name],
     setCollection: (name, items) => {

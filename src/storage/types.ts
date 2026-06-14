@@ -2,6 +2,50 @@
 export type Resource = Record<string, unknown>;
 
 /**
+ * Descriptor for a single field declared in the `_schema` block.
+ *
+ * All properties are optional — omit what you don't need. Fields not mentioned
+ * in `_schema` are inferred from the collection data and treated as optional.
+ *
+ * Shorthand: `fieldName: required` normalises to `{ required: true }`.
+ */
+export type FieldDef = {
+  /** If `true`, the field is listed in the OpenAPI `required` array and (Phase B) validated on POST/PUT. */
+  required?: boolean;
+  /** Explicit type override. If absent, inferred from the data. */
+  type?: "string" | "integer" | "number" | "boolean" | "object" | "array";
+  /** OpenAPI `format` hint (e.g. `email`, `date`, `uuid`, `uri`, `date-time`). */
+  format?: string;
+  /** Restricts the field to a fixed set of values. */
+  enum?: unknown[];
+  /** Human-readable description included in the OpenAPI spec. */
+  description?: string;
+  /** Default value included in the OpenAPI spec. */
+  default?: unknown;
+};
+
+/**
+ * Field-level schema declarations for one or more collections, parsed from `_schema` in the YAML.
+ *
+ * - Outer key: collection name.
+ * - Inner key: field name within that collection.
+ * - Value: {@link FieldDef} descriptor (or the string shorthand `"required"` / `"optional"`).
+ *
+ * @example
+ * ```yaml
+ * _schema:
+ *   users:
+ *     name: required          # shorthand
+ *     email:
+ *       required: true
+ *       format: email
+ *     age:
+ *       type: integer
+ * ```
+ */
+export type SchemaBlock = Record<string, Record<string, FieldDef>>;
+
+/**
  * The full in-memory database.
  * Keys are collection names (e.g. `"users"`); values are arrays of {@link Resource} items.
  */
@@ -179,6 +223,9 @@ export interface YrestStorage {
 
   /** Returns the relational mappings declared under `_rel`. */
   getRelations(): Relations;
+
+  /** Returns the field-level schema declarations from `_schema`, or `{}` if absent. */
+  getSchema(): SchemaBlock;
 
   /**
    * Returns the items in a named collection, or `undefined` if it does not exist.

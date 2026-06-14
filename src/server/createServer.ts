@@ -5,7 +5,12 @@ import type { YrestOptions } from "../config/loadOptions.js";
 import type { RouteCommand } from "../router/types.js";
 import type { HandlerMap } from "../utils/handlers.js";
 import { buildResourceRouteCommands } from "../router/resource.router.js";
-import { AboutRouteCommand, CustomRouteCommand, SnapshotRouteCommand } from "../router/routes";
+import {
+  AboutRouteCommand,
+  CustomRouteCommand,
+  OpenApiRouteCommand,
+  SnapshotRouteCommand,
+} from "../router/routes";
 
 /** HTTP methods that modify server state. Used by the readonly guard hook. */
 const MUTATING_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
@@ -64,6 +69,7 @@ export async function createServer(
 
   const commands: RouteCommand[] = [
     new AboutRouteCommand(storage, options, handlers),
+    new OpenApiRouteCommand(storage, options),
     ...(options.snapshot ? [new SnapshotRouteCommand(storage)] : []),
     new CustomRouteCommand(storage, options.base, handlers),
     ...buildResourceRouteCommands(storage, options),

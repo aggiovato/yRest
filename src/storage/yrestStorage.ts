@@ -2,8 +2,9 @@ import { readFileSync, writeFileSync, renameSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
-import type { CustomRoute, Data, Relations, YrestStorage } from "./types.js";
+import type { CustomRoute, Data, Relations, SchemaBlock, YrestStorage } from "./types.js";
 import { parseRelations } from "./parseRelations.js";
+import { parseSchema } from "./parseSchema.js";
 import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
@@ -20,12 +21,14 @@ export function createYrestStorage(filePath: string): YrestStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 
+  const RESERVED = new Set(["_rel", "_routes", "_schema"]);
   const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = Array.isArray(raw["_routes"])
     ? (raw["_routes"] as CustomRoute[])
     : [];
+  const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const data: Data = Object.fromEntries(
-    Object.entries(raw).filter(([key]) => key !== "_rel" && key !== "_routes")
+    Object.entries(raw).filter(([key]) => !RESERVED.has(key))
   ) as Data;
 
   let snapshot = {
@@ -41,6 +44,10 @@ export function createYrestStorage(filePath: string): YrestStorage {
 
     getRelations() {
       return relations;
+    },
+
+    getSchema() {
+      return schema;
     },
 
     getRoutes() {
@@ -70,7 +77,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
       const fresh = parse(readFileSync(absPath, "utf8")) ?? {};
       const freshRelations = parseRelations(fresh["_rel"]);
       const freshData = Object.fromEntries(
-        Object.entries(fresh).filter(([key]) => key !== "_rel" && key !== "_routes")
+        Object.entries(fresh).filter(([key]) => !RESERVED.has(key))
       ) as Data;
 
       for (const key of Object.keys(data)) delete data[key];
