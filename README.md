@@ -10,7 +10,7 @@
 [![CI](https://github.com/aggiovato/yRest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yRest/actions)
 [![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
-[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.8.0)](https://socket.dev/npm/package/@yrest/cli)
+[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.8.1)](https://socket.dev/npm/package/@yrest/cli)
 
 YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
 
