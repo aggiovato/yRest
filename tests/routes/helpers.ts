@@ -57,6 +57,65 @@ posts:
     userId: 1
 `;
 
+export const YAML_WITH_ONE2ONE = `
+_rel:
+  profiles:
+    userId:
+      type: one2one
+      target: users
+users:
+  - id: 1
+    name: Ana
+  - id: 2
+    name: Luis
+profiles:
+  - id: 1
+    userId: 1
+    bio: Developer
+  - id: 2
+    userId: 2
+    bio: Designer
+`;
+
+export const YAML_WITH_MANY2MANY = `
+_rel:
+  posts:
+    userId: users
+    tags:
+      type: many2many
+      target: tags
+      through: post_tags
+      foreignKey: postId
+      otherKey: tagId
+users:
+  - id: 1
+    name: Ana
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+  - id: 2
+    title: Second post
+    userId: 1
+tags:
+  - id: 1
+    name: typescript
+  - id: 2
+    name: vitest
+  - id: 3
+    name: fastify
+post_tags:
+  - id: 1
+    postId: 1
+    tagId: 1
+  - id: 2
+    postId: 1
+    tagId: 2
+  - id: 3
+    postId: 2
+    tagId: 3
+`;
+
 export async function createTestServer(yaml: string) {
   const filePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
   writeFileSync(filePath, yaml, "utf8");

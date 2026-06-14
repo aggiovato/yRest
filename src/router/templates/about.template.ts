@@ -4,7 +4,15 @@ import { fileURLToPath } from "node:url";
 import type { YrestStorage } from "../../storage/types.js";
 import type { YrestOptions } from "../../config/loadOptions.js";
 import type { HandlerMap } from "../../utils/handlers.js";
-import { hasTemplates } from "../../utils/interpolate.js";
+import {
+  badge,
+  resourceAccordion,
+  nestedRoutesAccordion,
+  snapshotAccordion,
+  customRoutesAccordion,
+  handlersAccordion,
+  examplesBlock,
+} from "./about.helpers.js";
 
 const _dir = dirname(fileURLToPath(import.meta.url));
 const LOGO_SRC = (() => {
@@ -15,166 +23,6 @@ const LOGO_SRC = (() => {
     return "";
   }
 })();
-
-const METHOD_COLOR: Record<string, string> = {
-  GET: "#3fb950",
-  POST: "#58a6ff",
-  PUT: "#d29922",
-  PATCH: "#a371f7",
-  DELETE: "#f85149",
-  fn: "#f0883e",
-};
-
-function escapeHtml(str: string): string {
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
-}
-
-function badge(label: string, color: string, bg: string): string {
-  return `<span class="badge" style="background:${bg};color:${color};border:1px solid ${color}40">${escapeHtml(label)}</span>`;
-}
-
-function methodBadge(method: string): string {
-  const color = METHOD_COLOR[method] ?? "#7d8590";
-  return badge(method, color, `${color}18`);
-}
-
-function endpointRow(method: string, path: string, desc: string): string {
-  return `
-    <tr>
-      <td class="method-cell">${methodBadge(method)}</td>
-      <td class="path-cell"><code>${escapeHtml(path)}</code></td>
-      <td class="desc-cell">${desc}</td>
-    </tr>`;
-}
-
-function resourceAccordion(name: string, base: string, isOpen: boolean): string {
-  const p = `${base}/${name}`;
-  const singular = name.endsWith("s") ? name.slice(0, -1) : name;
-  const rows = [
-    endpointRow(
-      "GET",
-      p,
-      `List all ${name}. Supports filters, sort, pagination and <code>?_expand</code>.`
-    ),
-    endpointRow(
-      "POST",
-      p,
-      `Create a new ${singular}. Auto-assigns <code>id</code> if not provided.`
-    ),
-    endpointRow("GET", `${p}/:id`, `Get a single ${singular} by id.`),
-    endpointRow(
-      "PUT",
-      `${p}/:id`,
-      `Fully replace a ${singular}. Original <code>id</code> is always preserved.`
-    ),
-    endpointRow(
-      "PATCH",
-      `${p}/:id`,
-      `Partially update a ${singular} — only provided fields change.`
-    ),
-    endpointRow("DELETE", `${p}/:id`, `Delete a ${singular} and return it as confirmation.`),
-  ].join("");
-
-  return `
-  <details class="resource-card" ${isOpen ? "open" : ""}>
-    <summary>
-      <span class="resource-name">/${escapeHtml(name)}</span>
-      <span class="route-count">6 routes</span>
-    </summary>
-    <table>
-      <tbody>${rows}</tbody>
-    </table>
-  </details>`;
-}
-
-function examplesBlock(
-  collections: string[],
-  relations: Record<string, Record<string, string>>,
-  base: string,
-  host: string,
-  options: YrestOptions,
-  firstCustomRoute?: { method?: string; path?: string } | undefined
-): string {
-  const examples: string[] = [];
-  const firstCol = collections[0];
-
-  if (firstCol) {
-    const p = `${host}${base}/${firstCol}`;
-    const singular = firstCol.endsWith("s") ? firstCol.slice(0, -1) : firstCol;
-    examples.push(
-      `# List all ${firstCol}\ncurl ${p}`,
-      `# Filter by field\ncurl "${p}?name=value"`,
-      `# Sort and paginate\ncurl "${p}?_sort=id&_order=desc&_page=1&_limit=5"`,
-      `# Get single ${singular}\ncurl ${p}/1`,
-      `# Create ${singular}\ncurl -X POST ${p} \\\n  -H "Content-Type: application/json" \\\n  -d '{"name":"example"}'`,
-      `# Partially update ${singular}\ncurl -X PATCH ${p}/1 \\\n  -H "Content-Type: application/json" \\\n  -d '{"name":"updated"}'`,
-      `# Delete ${singular}\ncurl -X DELETE ${p}/1`
-    );
-  }
-
-  const firstRel = Object.entries(relations)[0];
-  if (firstRel) {
-    const [child, fields] = firstRel;
-    const fk = Object.keys(fields)[0]!;
-    const expandKey = fk.replace(/Id$/i, "");
-    examples.push(
-      `# Embed parent with ?_expand\ncurl "${host}${base}/${child}/1?_expand=${expandKey}"`
-    );
-  }
-
-  const firstRelEntry = Object.entries(relations)[0];
-  if (firstRelEntry) {
-    const [child, fields] = firstRelEntry;
-    const parent = Object.values(fields)[0];
-    if (parent) {
-      examples.push(`# Nested resource\ncurl ${host}${base}/${parent}/1/${child}`);
-    }
-  }
-
-  if (options.pageable.enabled && firstCol) {
-    examples.push(`# Pageable envelope\ncurl "${host}${base}/${firstCol}?_page=2"`);
-  }
-
-  const firstParentRel = Object.entries(relations).find(([, fields]) =>
-    Object.values(fields).includes(firstCol ?? "")
-  );
-  if (firstCol) {
-    examples.push(
-      `# Project fields with ?_fields\ncurl "${host}${base}/${firstCol}?_fields=id,name"`
-    );
-  }
-
-  if (firstParentRel && firstCol) {
-    const [childName] = firstParentRel;
-    examples.push(
-      `# Embed child collection with ?_embed\ncurl "${host}${base}/${firstCol}/1?_embed=${childName}"`
-    );
-  }
-
-  if (options.snapshot) {
-    examples.push(
-      `# Snapshot endpoints\ncurl ${host}/_snapshot\ncurl -X POST ${host}/_snapshot/save\ncurl -X POST ${host}/_snapshot/reset`
-    );
-  }
-
-  if (firstCustomRoute) {
-    const method = firstCustomRoute.method?.toUpperCase() ?? "GET";
-    const fullPath = `${host}${base}${escapeHtml(firstCustomRoute.path ?? "")}`;
-    const curlFlag = method === "GET" ? "" : `-X ${method} `;
-    examples.push(`# Custom route\ncurl ${curlFlag}${fullPath}`);
-  }
-
-  const highlighted = examples
-    .map((e) => e.replace(/^(#.+)$/gm, '<span class="cm">$1</span>'))
-    .join("\n\n");
-
-  return `<pre>${highlighted}</pre>`;
-}
 
 /**
  * Generates the full HTML string for the `/_about` page.
@@ -194,6 +42,7 @@ export function generateAboutHtml(
 ): string {
   const collections = Object.keys(storage.getData());
   const relations = storage.getRelations();
+  const customRoutes = storage.getRoutes();
   const base = options.base;
   const host = `http://${options.host}:${options.port}`;
 
@@ -209,140 +58,8 @@ export function generateAboutHtml(
   if (options.idStrategy !== "increment")
     modes.push(badge(`id · ${options.idStrategy}`, "#a371f7", "#a371f718"));
 
-  // ── Resource accordions ──────────────────────────────────────────────────────
+  // ── Sections ────────────────────────────────────────────────────────────────
   const accordions = collections.map((col, i) => resourceAccordion(col, base, i === 0)).join("");
-
-  // ── Nested routes accordion ──────────────────────────────────────────────────
-  const nestedRows: string[] = [];
-  for (const [child, fields] of Object.entries(relations)) {
-    for (const [, parent] of Object.entries(fields)) {
-      const nestedPath = `${base}/${parent}/:id/${child}`;
-      const parentSingular = parent.endsWith("s") ? parent.slice(0, -1) : parent;
-      nestedRows.push(
-        endpointRow("GET", nestedPath, `List ${child} belonging to a ${parentSingular}.`)
-      );
-    }
-  }
-
-  const nestedAccordion = nestedRows.length
-    ? `
-  <details class="resource-card nested-card">
-    <summary>
-      <span class="resource-name">Nested routes</span>
-      <span class="route-count">${nestedRows.length} route${nestedRows.length !== 1 ? "s" : ""}</span>
-    </summary>
-    <table><tbody>${nestedRows.join("")}</tbody></table>
-  </details>`
-    : "";
-
-  // ── Snapshot accordion ───────────────────────────────────────────────────────
-  const snapshotAccordion = options.snapshot
-    ? `
-  <details class="resource-card nested-card">
-    <summary>
-      <span class="resource-name">/_snapshot</span>
-      <span class="route-count">3 routes</span>
-    </summary>
-    <table><tbody>
-      ${endpointRow("GET", "/_snapshot", "Returns metadata of the current snapshot: <code>savedAt</code> and item counts per collection.")}
-      ${endpointRow("POST", "/_snapshot/save", "Replaces the stored snapshot with the current database state.")}
-      ${endpointRow("POST", "/_snapshot/reset", "Restores the database to the last saved snapshot and persists to disk.")}
-    </tbody></table>
-  </details>`
-    : "";
-
-  // ── Custom routes accordion ──────────────────────────────────────────────────
-  const customRoutes = storage.getRoutes();
-  const customRoutesAccordion = customRoutes.length
-    ? `
-  <details class="resource-card nested-card">
-    <summary>
-      <span class="resource-name">Custom routes</span>
-      <span class="route-count">${customRoutes.length} route${customRoutes.length !== 1 ? "s" : ""}</span>
-    </summary>
-    <table><tbody>
-      ${customRoutes
-        .map((r) => {
-          const fullPath = `${base}${r.path}`;
-
-          const tags: string[] = [];
-          if (r.error) {
-            tags.push(`<span style="color:#f85149;font-size:11px">error·${r.error}</span>`);
-          }
-          if (r.delay && r.delay > 0) {
-            tags.push(`<span style="color:#fb923c;font-size:11px">delay·${r.delay}ms</span>`);
-          }
-          if (r.scenarios?.length) {
-            const hasOr = r.scenarios.some((s) => Array.isArray(s.when));
-            tags.push(
-              `<span style="color:#a371f7;font-size:11px">scenarios·${r.scenarios.length}${hasOr ? " (OR)" : ""}</span>`
-            );
-          }
-          if (r.otherwise) {
-            tags.push(`<span style="color:var(--text-muted);font-size:11px">otherwise</span>`);
-          }
-
-          let desc: string;
-          if (r.error) {
-            desc = `Error injection — <code>${r.error}</code>`;
-          } else if (r.handler) {
-            const found = handlers.has(r.handler);
-            const handlerName = escapeHtml(r.handler);
-            desc = found
-              ? `Handler — <code>${handlerName}()</code>`
-              : `Handler — <code>${handlerName}()</code> <span style="color:#f85149">(not loaded)</span>`;
-          } else if (r.scenarios?.length) {
-            const hasTemplateInScenarios =
-              r.scenarios.some((s) => s.response.body != null && hasTemplates(s.response.body)) ||
-              (r.otherwise?.body != null && hasTemplates(r.otherwise.body));
-            desc = hasTemplateInScenarios ? `Scenarios — <code>{{…}}</code>` : `Scenarios`;
-          } else if (r.response?.body != null && hasTemplates(r.response.body)) {
-            desc = `Dynamic — <code>{{…}}</code>`;
-          } else {
-            const status = r.response?.status ?? 200;
-            desc = `Static — <code>${status}</code>${r.response?.headers ? ` + headers` : ""}`;
-          }
-
-          if (tags.length) desc += `&ensp;${tags.join("&ensp;")}`;
-          return endpointRow(r.method?.toUpperCase() ?? "GET", fullPath, desc);
-        })
-        .join("")}
-    </tbody></table>
-  </details>`
-    : "";
-
-  // ── Handlers accordion ───────────────────────────────────────────────────────
-  const routesByHandler = new Map<string, { method: string; path: string }[]>();
-  for (const r of customRoutes) {
-    if (r.handler) {
-      const list = routesByHandler.get(r.handler) ?? [];
-      list.push({ method: (r.method ?? "GET").toUpperCase(), path: `${base}${r.path}` });
-      routesByHandler.set(r.handler, list);
-    }
-  }
-  const handlersAccordion =
-    handlers.size > 0
-      ? `
-  <details class="resource-card nested-card">
-    <summary>
-      <span class="resource-name">Handlers</span>
-      <span class="route-count">${handlers.size} function${handlers.size !== 1 ? "s" : ""}</span>
-    </summary>
-    <table><tbody>
-      ${[...handlers.keys()]
-        .map((name) => {
-          const routes = routesByHandler.get(name);
-          const routeDesc = routes
-            ? routes.map((r) => `<code>${r.method} ${r.path}</code>`).join(", ")
-            : `<span style="color:var(--text-muted)">not referenced in _routes</span>`;
-          return endpointRow("fn" as string, name + "()", routeDesc);
-        })
-        .join("")}
-    </tbody></table>
-  </details>`
-      : "";
-
-  // ── Pagination description ───────────────────────────────────────────────────
   const paginationDesc = options.pageable.enabled
     ? `Pageable mode active — default limit <code>${options.pageable.limit}</code>. Response wrapped in <code>{ data, pagination }</code>.`
     : `Returns the requested slice. <code>X-Total-Count</code> header reflects the total before pagination.`;
@@ -497,10 +214,10 @@ export function generateAboutHtml(
     <h2>Endpoints</h2>
     <div class="endpoints-grid">
       ${accordions}
-      ${nestedAccordion}
-      ${snapshotAccordion}
-      ${customRoutesAccordion}
-      ${handlersAccordion}
+      ${nestedRoutesAccordion(relations, base)}
+      ${options.snapshot ? snapshotAccordion() : ""}
+      ${customRoutesAccordion(customRoutes, base, handlers)}
+      ${handlersAccordion(handlers, customRoutes, base)}
     </div>
 
     <h2>Query Parameters</h2>

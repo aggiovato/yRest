@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import type { Data, Relations, CustomRoute, YrestStorage } from "../storage/types.js";
+import { parseRelations } from "../storage/parseRelations.js";
 import type { YrestOptions } from "../config/loadOptions.js";
 import { loadHandlers } from "../utils/handlers.js";
 import { deepCopyData } from "../utils/deepCopy.js";
@@ -132,7 +133,7 @@ function buildOptions(opts: YrestServerOptions): YrestOptions {
 function createInMemoryStorage(data: Data): YrestStorage {
   const raw = data as Record<string, unknown>;
 
-  const relations: Relations = (raw["_rel"] as Relations) ?? {};
+  const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = Array.isArray(raw["_routes"])
     ? (raw["_routes"] as CustomRoute[])
     : [];

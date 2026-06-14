@@ -8,17 +8,48 @@ export type Resource = Record<string, unknown>;
 export type Data = Record<string, Resource[]>;
 
 /**
- * Relational mappings declared under `_rel` in the YAML file.
+ * Canonical descriptor for a single relation declared under `_rel`.
  *
- * - Outer key: child collection name.
- * - Inner key: foreign key field on the child.
- * - Inner value: parent collection name.
+ * The YAML accepts two forms that both normalise to this type:
+ * - **Shorthand string** — `userId: users` → `{ type: "many2one", target: "users" }`
+ * - **Object** — explicit `type` plus the fields required by that type.
+ *
+ * ### Types
+ * - `many2one` — (default) many children share one parent via a FK field.
+ * - `one2one`  — one child belongs to one parent; `?_embed` returns a single object, not an array.
+ * - `many2many` — join through a pivot collection; the relation key is the embed alias.
+ *
+ * @example
+ * // _rel:
+ * //   posts:
+ * //     userId: users                        ← shorthand many2one
+ * //     tags:
+ * //       type: many2many
+ * //       through: post_tags
+ * //       foreignKey: postId
+ * //       otherKey: tagId
+ * //   users:
+ * //     profileId:
+ * //       type: one2one
+ * //       target: profiles
+ */
+export type RelationDef =
+  | { type: "many2one"; target: string }
+  | { type: "one2one"; target: string }
+  | { type: "many2many"; target: string; through: string; foreignKey: string; otherKey: string };
+
+/**
+ * Relational mappings declared under `_rel` in the YAML file, normalised to {@link RelationDef}.
+ *
+ * - Outer key: source collection name (child for many2one/one2one; either side for many2many).
+ * - Inner key: FK field name (many2one/one2one) or embed alias (many2many).
+ * - Inner value: canonical {@link RelationDef}.
  *
  * @example
  * // Given: _rel: { posts: { userId: users } }
  * // GET /users/1/posts → returns posts where userId === "1"
  */
-export type Relations = Record<string, Record<string, string>>;
+export type Relations = Record<string, Record<string, RelationDef>>;
 
 /**
  * A static response block shared by {@link CustomRoute} and {@link Scenario}.

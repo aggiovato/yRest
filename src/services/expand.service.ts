@@ -4,11 +4,6 @@ import type { YrestStorage, Resource } from "../storage/types.js";
  * Embeds a related parent object into a single item based on `?_expand`.
  *
  * Returns the item unchanged if `_expand` is absent or no matching relation is found.
- *
- * @param item     - The item to expand.
- * @param query    - Raw query string params from the request.
- * @param resource - Name of the child collection being queried.
- * @param storage  - Live YAML storage to read parent collections from.
  */
 export function expandItems(
   item: Resource,
@@ -22,18 +17,14 @@ export function expandItems(
  *
  * Accepts both `?_expand=author,category` (comma-separated) and
  * `?_expand=author&_expand=category` (repeated param, parsed as array by Fastify).
- * Mixed forms like `?_expand=author,category&_expand=tags` also work.
  *
  * Resolves relations from `_rel[resource]`. Matching rules for each expand key:
- * - Foreign key field without `Id` suffix equals the key (`userId` → `user`).
- * - Parent collection name equals the key exactly or with `s` appended (`users`, `user`).
+ * - `many2one` / `one2one`: FK field without `Id` suffix equals the key,
+ *   or parent collection name equals the key (with or without trailing `s`).
+ * - `many2many`: not supported for `?_expand` (use `?_embed` instead).
  *
- * Unresolvable expand keys and items missing the foreign key are silently ignored.
- *
- * @param items    - Collection items to expand.
- * @param query    - Raw query string params from the request.
- * @param resource - Name of the child collection being queried.
- * @param storage  - Live YAML storage to read parent collections from.
+ * `one2one` behaves identically to `many2one` for `?_expand` — both embed a single object.
+ * Unresolvable expand keys and items missing the FK are silently ignored.
  */
 export function expandItems(
   items: Resource[],
@@ -58,18 +49,16 @@ export function expandItems(
     .flatMap((v) => v.split(","))
     .map((k) => k.trim())
     .filter(Boolean);
+
   const resourceRelations = storage.getRelations()[resource] ?? {};
 
   const expansions = new Map<string, { field: string; parentCollection: string }>();
   for (const expandKey of keys) {
-    for (const [field, parentCollection] of Object.entries(resourceRelations)) {
+    for (const [field, def] of Object.entries(resourceRelations)) {
+      if (def.type === "many2many") continue;
       const derivedKey = field.replace(/Id$/i, "");
-      if (
-        derivedKey === expandKey ||
-        parentCollection === expandKey ||
-        parentCollection === `${expandKey}s`
-      ) {
-        expansions.set(expandKey, { field, parentCollection });
+      if (derivedKey === expandKey || def.target === expandKey || def.target === `${expandKey}s`) {
+        expansions.set(expandKey, { field, parentCollection: def.target });
         break;
       }
     }
@@ -97,13 +86,12 @@ export function expandItems(
  * Embeds child collections into a single item based on `?_embed`.
  *
  * The inverse of {@link expandItems}: instead of embedding the parent into the child,
- * it embeds an array of children into the parent. Requires `_rel` declarations in the
- * YAML file that reference the current resource as the parent collection.
+ * it embeds related items into the parent.
  *
- * @param item     - The parent item to embed children into.
- * @param query    - Raw query string params from the request.
- * @param resource - Name of the parent collection being queried.
- * @param storage  - Live YAML storage to read child collections from.
+ * - `many2one` / `one2one`: embeds children filtered by FK. `one2one` returns a single
+ *   object instead of an array.
+ * - `many2many`: joins through the declared pivot collection and returns an array of
+ *   matching target items.
  */
 export function embedItems(
   item: Resource,
@@ -117,11 +105,6 @@ export function embedItems(
  *
  * Accepts both `?_embed=posts,comments` (comma-separated) and
  * `?_embed=posts&_embed=comments` (repeated param).
- *
- * @param items    - Parent items to embed children into.
- * @param query    - Raw query string params from the request.
- * @param resource - Name of the parent collection being queried.
- * @param storage  - Live YAML storage to read child collections from.
  */
 export function embedItems(
   items: Resource[],
@@ -149,13 +132,39 @@ export function embedItems(
 
   const relations = storage.getRelations();
 
-  // For each embed key, find the relation where this resource is the parent collection.
-  const embeds = new Map<string, { childCollection: string; fkField: string }>();
+  type EmbedSpec =
+    | { kind: "many2one"; childCollection: string; fkField: string }
+    | { kind: "one2one"; childCollection: string; fkField: string }
+    | { kind: "many2many"; target: string; through: string; foreignKey: string; otherKey: string };
+
+  const embeds = new Map<string, EmbedSpec>();
+
   for (const embedKey of keys) {
+    // Check for many2many declared directly on this resource
+    const ownRelations = relations[resource] ?? {};
+    if (embedKey in ownRelations) {
+      const def = ownRelations[embedKey]!;
+      if (def.type === "many2many") {
+        embeds.set(embedKey, {
+          kind: "many2many",
+          target: def.target,
+          through: def.through,
+          foreignKey: def.foreignKey,
+          otherKey: def.otherKey,
+        });
+        continue;
+      }
+    }
+
+    // Scan other collections for FK pointing at this resource (many2one / one2one)
     outer: for (const [childCollection, fields] of Object.entries(relations)) {
-      for (const [fkField, parentCollection] of Object.entries(fields)) {
-        if (parentCollection === resource && childCollection === embedKey) {
-          embeds.set(embedKey, { childCollection, fkField });
+      for (const [fkField, def] of Object.entries(fields)) {
+        if (
+          (def.type === "many2one" || def.type === "one2one") &&
+          def.target === resource &&
+          childCollection === embedKey
+        ) {
+          embeds.set(embedKey, { kind: def.type, childCollection, fkField });
           break outer;
         }
       }
@@ -166,10 +175,27 @@ export function embedItems(
 
   const result = items.map((item) => {
     const out: Resource = { ...item };
-    for (const [embedKey, { childCollection, fkField }] of embeds) {
-      out[embedKey] = (storage.getCollection(childCollection) ?? []).filter(
-        (child) => String(child[fkField]) === String(item["id"])
-      );
+    for (const [embedKey, spec] of embeds) {
+      if (spec.kind === "many2many") {
+        const pivot = storage.getCollection(spec.through) ?? [];
+        const matchingIds = new Set(
+          pivot
+            .filter((row) => String(row[spec.foreignKey]) === String(item["id"]))
+            .map((row) => String(row[spec.otherKey]))
+        );
+        out[embedKey] = (storage.getCollection(spec.target) ?? []).filter((t) =>
+          matchingIds.has(String(t["id"]))
+        );
+      } else if (spec.kind === "one2one") {
+        out[embedKey] =
+          (storage.getCollection(spec.childCollection) ?? []).find(
+            (child) => String(child[spec.fkField]) === String(item["id"])
+          ) ?? null;
+      } else {
+        out[embedKey] = (storage.getCollection(spec.childCollection) ?? []).filter(
+          (child) => String(child[spec.fkField]) === String(item["id"])
+        );
+      }
     }
     return out;
   });

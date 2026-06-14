@@ -89,7 +89,9 @@ describe("createYrestStorage", () => {
     const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
     writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
     const storage = createYrestStorage(relFilePath);
-    expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
+    expect(storage.getRelations()).toEqual({
+      posts: { userId: { type: "many2one", target: "users" } },
+    });
     unlinkSync(relFilePath);
   });
 
@@ -169,7 +171,9 @@ users:
       const relFilePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
       writeFileSync(relFilePath, SAMPLE_YAML_WITH_REL, "utf8");
       const storage = createYrestStorage(relFilePath);
-      expect(storage.getRelations()).toEqual({ posts: { userId: "users" } });
+      expect(storage.getRelations()).toEqual({
+        posts: { userId: { type: "many2one", target: "users" } },
+      });
 
       writeFileSync(
         relFilePath,

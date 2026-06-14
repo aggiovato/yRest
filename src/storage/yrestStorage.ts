@@ -3,6 +3,7 @@ import { resolve, dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import { parse, stringify } from "yaml";
 import type { CustomRoute, Data, Relations, YrestStorage } from "./types.js";
+import { parseRelations } from "./parseRelations.js";
 import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
@@ -19,7 +20,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 
-  const relations: Relations = (raw["_rel"] as Relations) ?? {};
+  const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = Array.isArray(raw["_routes"])
     ? (raw["_routes"] as CustomRoute[])
     : [];
@@ -67,7 +68,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
 
     reload() {
       const fresh = parse(readFileSync(absPath, "utf8")) ?? {};
-      const freshRelations = (fresh["_rel"] as Relations) ?? {};
+      const freshRelations = parseRelations(fresh["_rel"]);
       const freshData = Object.fromEntries(
         Object.entries(fresh).filter(([key]) => key !== "_rel" && key !== "_routes")
       ) as Data;

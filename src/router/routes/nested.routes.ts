@@ -1,22 +1,28 @@
 import type { FastifyInstance } from "fastify";
-import type { YrestStorage } from "../../storage/types.js";
-import type { Relations } from "../../storage/types.js";
+import type { YrestStorage, Relations } from "../../storage/types.js";
 import type { RouteCommand, ItemParams, NestedItemParams } from "../types.js";
 import { findById } from "../../services/resource.service.js";
 
 /**
  * Registers nested routes derived from the `_rel` block in the YAML file.
  *
- * For each declared relation, registers:
- * GET /{parent}/:id/{child}          — Returns all child items whose FK matches the parent id.
- *                                      Returns 404 if the parent does not exist.
- * GET /{parent}/:id/{child}/:childId — Returns a single child by id scoped to the parent.
- *                                      Returns 404 if the parent or the child does not exist
- *                                      or does not belong to that parent.
+ * ### many2one / one2one
+ * GET /{parent}/:id/{child}          — Returns all children (many2one) or single object (one2one)
+ *                                      whose FK matches the parent id. 404 if parent missing.
+ * GET /{parent}/:id/{child}/:childId — Returns a single child scoped to the parent (many2one only).
  *
- * Example — given `_rel: { posts: { userId: users } }`:
- *   GET /users/1/posts   → all posts where userId === "1"
- *   GET /users/1/posts/2 → post with id 2 only if userId === "1"
+ * ### many2many
+ * GET /{source}/:id/{alias}          — Returns all target items linked via the pivot collection.
+ *                                      404 if source item missing.
+ *
+ * @example
+ * // _rel: { posts: { userId: users } }
+ * // GET /users/1/posts   → all posts where userId === "1"
+ * // GET /users/1/posts/2 → post 2 only if userId === "1"
+ *
+ * @example
+ * // _rel: { posts: { tags: { type: many2many, through: post_tags, foreignKey: postId, otherKey: tagId } } }
+ * // GET /posts/1/tags → all tags linked to post 1 via post_tags
  */
 export class NestedRouteCommand implements RouteCommand {
   constructor(
@@ -26,38 +32,89 @@ export class NestedRouteCommand implements RouteCommand {
   ) {}
 
   register(server: FastifyInstance): void {
-    for (const [child, fields] of Object.entries(this.relations)) {
-      for (const [field, parent] of Object.entries(fields)) {
-        const collectionPath = `${this.base}/${parent}/:id/${child}`;
-        const itemPath = `${this.base}/${parent}/:id/${child}/:childId`;
-
-        // GET /{parent}/:id/{child}
-        server.get<ItemParams>(collectionPath, (req, reply) => {
-          const parentCollection = this.storage.getCollection(parent) ?? [];
-          const parentItem = findById(parentCollection, req.params.id);
-          if (!parentItem) return reply.status(404).send({ error: "Not found" });
-
-          const children = (this.storage.getCollection(child) ?? []).filter(
-            (item) => String(item[field]) === req.params.id
-          );
-          return children;
-        });
-
-        // GET /{parent}/:id/{child}/:childId
-        server.get<NestedItemParams>(itemPath, (req, reply) => {
-          const parentCollection = this.storage.getCollection(parent) ?? [];
-          const parentItem = findById(parentCollection, req.params.id);
-          if (!parentItem) return reply.status(404).send({ error: "Not found" });
-
-          const childItem = (this.storage.getCollection(child) ?? []).find(
-            (item) =>
-              String(item[field]) === req.params.id && String(item["id"]) === req.params.childId
-          );
-          if (!childItem) return reply.status(404).send({ error: "Not found" });
-
-          return childItem;
-        });
+    for (const [source, fields] of Object.entries(this.relations)) {
+      for (const [key, def] of Object.entries(fields)) {
+        if (def.type === "many2many") {
+          this.registerMany2Many(server, source, key, def);
+        } else {
+          this.registerFkRelation(server, source, key, def.target, def.type);
+        }
       }
     }
+  }
+
+  private registerFkRelation(
+    server: FastifyInstance,
+    child: string,
+    fkField: string,
+    parent: string,
+    type: "many2one" | "one2one"
+  ): void {
+    const collectionPath = `${this.base}/${parent}/:id/${child}`;
+    const itemPath = `${this.base}/${parent}/:id/${child}/:childId`;
+
+    // GET /{parent}/:id/{child}
+    server.get<ItemParams>(collectionPath, (req, reply) => {
+      const parentCollection = this.storage.getCollection(parent) ?? [];
+      const parentItem = findById(parentCollection, req.params.id);
+      if (!parentItem) return reply.status(404).send({ error: "Not found" });
+
+      const all = (this.storage.getCollection(child) ?? []).filter(
+        (item) => String(item[fkField]) === req.params.id
+      );
+
+      if (type === "one2one") return all[0] ?? reply.status(404).send({ error: "Not found" });
+      return all;
+    });
+
+    // GET /{parent}/:id/{child}/:childId  (many2one only — one2one has no sub-id route)
+    if (type === "many2one") {
+      server.get<NestedItemParams>(itemPath, (req, reply) => {
+        const parentCollection = this.storage.getCollection(parent) ?? [];
+        const parentItem = findById(parentCollection, req.params.id);
+        if (!parentItem) return reply.status(404).send({ error: "Not found" });
+
+        const childItem = (this.storage.getCollection(child) ?? []).find(
+          (item) =>
+            String(item[fkField]) === req.params.id && String(item["id"]) === req.params.childId
+        );
+        if (!childItem) return reply.status(404).send({ error: "Not found" });
+
+        return childItem;
+      });
+    }
+  }
+
+  private registerMany2Many(
+    server: FastifyInstance,
+    source: string,
+    alias: string,
+    def: {
+      type: "many2many";
+      target: string;
+      through: string;
+      foreignKey: string;
+      otherKey: string;
+    }
+  ): void {
+    const collectionPath = `${this.base}/${source}/:id/${alias}`;
+
+    // GET /{source}/:id/{alias}
+    server.get<ItemParams>(collectionPath, (req, reply) => {
+      const sourceCollection = this.storage.getCollection(source) ?? [];
+      const sourceItem = findById(sourceCollection, req.params.id);
+      if (!sourceItem) return reply.status(404).send({ error: "Not found" });
+
+      const pivot = this.storage.getCollection(def.through) ?? [];
+      const matchingIds = new Set(
+        pivot
+          .filter((row) => String(row[def.foreignKey]) === req.params.id)
+          .map((row) => String(row[def.otherKey]))
+      );
+
+      return (this.storage.getCollection(def.target) ?? []).filter((t) =>
+        matchingIds.has(String(t["id"]))
+      );
+    });
   }
 }
