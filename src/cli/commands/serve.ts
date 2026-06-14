@@ -43,6 +43,11 @@ export function registerServe(program: Command): void {
       "--handlers <file>",
       "Path to a JavaScript file exporting custom route handler functions"
     )
+    .option(
+      "--id-strategy <strategy>",
+      "Id generation strategy for new items: increment (default) or uuid",
+      "increment"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 

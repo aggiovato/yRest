@@ -65,7 +65,8 @@
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepublishOnly": "npm run test:run && npm run build"
+    "prepublishOnly": "npm run test:run && npm run build",
+    "version": "node scripts/update-version-badge.mjs && git add README.md"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
@@ -87,5 +88,10 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "socket": {
+    "allow": {
+      "filesystem": true
+    }
   }
 }

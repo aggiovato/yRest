@@ -48,6 +48,13 @@ export const yrestOptionsSchema = z.object({
       enabled: v !== false,
       limit: v === false || v === true ? 10 : (v as number),
     })),
+  /**
+   * Strategy used to generate `id` values for new items when no `id` is provided in the body.
+   *
+   * - `"increment"` (default) — next integer above the current max id in the collection.
+   * - `"uuid"` — a random UUID v4 string (`crypto.randomUUID()`).
+   */
+  idStrategy: z.enum(["increment", "uuid"]).default("increment"),
 });
 
 /**

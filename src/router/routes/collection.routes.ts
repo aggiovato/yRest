@@ -112,7 +112,12 @@ export class CollectionRouteCommand implements RouteCommand {
       if (!req.body || typeof req.body !== "object" || Array.isArray(req.body)) {
         return reply.status(400).send({ error: "Request body must be a JSON object" });
       }
-      const item = createItem(this.storage, this.resource, req.body as Resource);
+      const item = createItem(
+        this.storage,
+        this.resource,
+        req.body as Resource,
+        this.options.idStrategy
+      );
       return reply.status(201).send(expandItems(item, req.query, this.resource, this.storage));
     });
   }

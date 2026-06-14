@@ -10,6 +10,7 @@
 [![CI](https://github.com/aggiovato/yRest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yRest/actions)
 [![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
+[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.7.0)](https://socket.dev/npm/package/@yrest/cli)
 
 YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
 
@@ -161,6 +162,7 @@ npx @yrest/cli serve db.yml --handlers yrest.handlers.js
 | `--pageable [n]`    | `false`     | Wrap GET collection responses in `{ data, pagination }`. Optional limit |
 | `--snapshot`        | `false`     | Save initial state snapshot and expose `/_snapshot` endpoints           |
 | `--handlers <file>` | _(none)_    | Path to a JS file exporting handler functions for custom routes         |
+| `--id-strategy`     | `increment` | Id generation for new items: `increment` (auto-int) or `uuid`           |
 
 All flags can also be set in `yrest.config.yml` (see below). CLI flags always take priority over the config file.
 
@@ -182,6 +184,7 @@ host: localhost
 # pageable: false   # true (limit 10), or a number (custom limit)
 # snapshot: false
 # handlers: yrest.handlers.js
+# idStrategy: increment   # increment or uuid
 ```
 
 **Priority order** (highest wins): CLI flags → `yrest.config.yml` → schema defaults.
@@ -599,6 +602,36 @@ _routes:
       body: { data: loaded }
 ```
 
+### Error injection
+
+Force a custom route to always return a specific HTTP error, regardless of handlers, scenarios or the static response. Useful for simulating outages, payment failures or auth errors:
+
+```yaml
+_routes:
+  - method: GET
+    path: /payments
+    error: 503
+    errorBody:
+      message: Service temporarily unavailable
+      retryAfter: 30
+
+  - method: POST
+    path: /checkout
+    error: 402
+    errorBody:
+      error: Payment required
+
+  - method: GET
+    path: /slow-failure
+    delay: 400
+    error: 500
+```
+
+- `error` takes priority over `handler`, `scenarios` and `response` — the route always returns this status.
+- `errorBody` is optional. If omitted, the default body is `{ "error": "Forced error NNN" }`.
+- `delay` still applies before the error is returned.
+- Shown in `/_about` with a red `error·NNN` badge.
+
 ### Handler functions
 
 For routes that need real logic (conditional responses, stateful mocks, request inspection), reference a JavaScript function via the `handler:` field:
@@ -964,6 +997,8 @@ const server = createYrestServer({
 | Request validation with JSON Schema                | 🔜     |
 | Conditional scenarios (`scenarios:`, `otherwise:`) | ✅     |
 | Per-route delay (`delay:`)                         | ✅     |
+| Error injection (`error:` in `_routes`)            | ✅     |
+| Configurable ID strategy (`idStrategy`)            | ✅     |
 
 ---
 

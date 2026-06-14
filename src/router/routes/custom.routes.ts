@@ -57,6 +57,11 @@ export class CustomRouteCommand implements RouteCommand {
             await new Promise<void>((resolve) => setTimeout(resolve, route.delay));
           }
 
+          if (route.error) {
+            const body = route.errorBody ?? { error: `Forced error ${route.error}` };
+            return reply.status(route.error).send(body);
+          }
+
           for (const [key, value] of Object.entries(headers)) {
             reply.header(key, value);
           }

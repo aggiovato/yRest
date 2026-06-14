@@ -125,6 +125,7 @@ function buildOptions(opts: YrestServerOptions): YrestOptions {
         : pageable
           ? { enabled: true, limit: 10 }
           : { enabled: false, limit: 10 },
+    idStrategy: "increment",
   };
 }
 

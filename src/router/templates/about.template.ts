@@ -197,6 +197,8 @@ export function generateAboutHtml(
     modes.push(badge(`pageable · limit ${options.pageable.limit}`, "#34d399", "#34d39918"));
   if (options.snapshot) modes.push(badge("snapshot", "#c084fc", "#c084fc18"));
   if (handlers.size > 0) modes.push(badge(`handlers · ${handlers.size}`, "#f0883e", "#f0883e18"));
+  if (options.idStrategy !== "increment")
+    modes.push(badge(`id · ${options.idStrategy}`, "#a371f7", "#a371f718"));
 
   // ── Resource accordions ──────────────────────────────────────────────────────
   const accordions = collections.map((col, i) => resourceAccordion(col, base, i === 0)).join("");
@@ -255,6 +257,9 @@ export function generateAboutHtml(
           const fullPath = `${base}${r.path}`;
 
           const tags: string[] = [];
+          if (r.error) {
+            tags.push(`<span style="color:#f85149;font-size:11px">error·${r.error}</span>`);
+          }
           if (r.delay && r.delay > 0) {
             tags.push(`<span style="color:#fb923c;font-size:11px">delay·${r.delay}ms</span>`);
           }
@@ -269,7 +274,9 @@ export function generateAboutHtml(
           }
 
           let desc: string;
-          if (r.handler) {
+          if (r.error) {
+            desc = `Error injection — <code>${r.error}</code>`;
+          } else if (r.handler) {
             const found = handlers.has(r.handler);
             desc = found
               ? `Handler — <code>${r.handler}()</code>`

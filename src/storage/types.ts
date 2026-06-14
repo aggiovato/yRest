@@ -113,6 +113,19 @@ export type CustomRoute = {
    * Applied before any response is sent, regardless of which path resolved the response.
    */
   delay?: number;
+  /**
+   * Forces this route to always return the given HTTP status code as an error,
+   * bypassing handlers, scenarios and the static response entirely.
+   * Applied after `delay:` so slow-error scenarios still work.
+   *
+   * @example
+   * // Always return 503
+   * error: 503
+   * errorBody: { message: "Service unavailable" }
+   */
+  error?: number;
+  /** Optional body to return alongside `error:`. Defaults to `{ error: "Forced error <status>" }`. */
+  errorBody?: unknown;
 };
 
 /**

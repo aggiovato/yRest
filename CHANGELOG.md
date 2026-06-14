@@ -7,6 +7,30 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.8.0] — 2026-06-14
+
+### Added
+
+- **Error injection (`error:`):** `_routes` entries can declare a fixed HTTP status code that always overrides handlers, scenarios and static responses — useful for simulating outages, payment failures or auth errors
+- **`errorBody:`:** optional custom response body alongside `error:`. Defaults to `{ "error": "Forced error NNN" }` if omitted
+- **`idStrategy` option:** controls how `id` is generated on POST when the body does not include one — `"increment"` (default, next integer) or `"uuid"` (random UUID v4 via `crypto.randomUUID()`)
+- **`--id-strategy` CLI flag** and `idStrategy:` config file key exposing the new option
+- **Socket.dev badge** in README — security audit badge for the published npm package
+- **`scripts/update-version-badge.mjs`:** auto-updates the Socket badge URL in README on every `npm version` bump via the `version` lifecycle hook, so the badge always reflects the latest published version without manual edits
+- **`socket.allow.filesystem`** in `package.json` — declares intentional filesystem access to suppress the Socket.dev security alert (yrest reads and writes `db.yml` by design)
+- Logo assets in `assets/` — four variants: `logo-white`, `logo-color`, `logo-text`, `logo-figure`
+- Full-width banner image in README header
+- Logo embedded as base64 data URI in the `/_about` page — no internet or external files required; falls back to text heading if the asset is missing
+- Logo in demo app header replacing the text-based logo
+
+### Changed
+
+- `/_about` custom routes section: new red `error·NNN` badge for routes with error injection
+- `/_about` active modes: new `id·uuid` badge when `idStrategy` is not the default
+- `assets/` added to `package.json` `"files"` so logo assets ship with the npm package
+
+---
+
 ## [0.7.0] — 2026-06-14
 
 ### Added
@@ -161,6 +185,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.8.0]: https://github.com/aggiovato/yRest/releases/tag/v0.8.0
 [0.7.0]: https://github.com/aggiovato/yRest/releases/tag/v0.7.0
 [0.6.0]: https://github.com/aggiovato/yRest/releases/tag/v0.6.0
 [0.5.3]: https://github.com/aggiovato/yRest/releases/tag/v0.5.3

@@ -1,5 +1,5 @@
 import type { YrestStorage, Resource } from "../storage/types.js";
-import { nextId } from "../utils/params.js";
+import { generateId } from "../utils/params.js";
 
 /**
  * Returns the first item whose `id` matches the given string.
@@ -27,17 +27,23 @@ export function findIndexById(items: Resource[], id: string): number {
 /**
  * Adds a new item to a collection and persists the change to disk.
  *
- * If the body includes an `id` it is used as-is; otherwise a new incremental
- * integer id is assigned. The `id` field is always placed first in the created item.
+ * If the body includes an `id` it is used as-is; otherwise a new id is generated
+ * using the specified `idStrategy`. The `id` field is always placed first in the created item.
  *
- * @param storage  - Storage instance to read from and write to.
- * @param resource - Collection name.
- * @param body     - Fields for the new item.
+ * @param storage    - Storage instance to read from and write to.
+ * @param resource   - Collection name.
+ * @param body       - Fields for the new item.
+ * @param idStrategy - Strategy for generating the id when none is provided in the body.
  */
-export function createItem(storage: YrestStorage, resource: string, body: Resource): Resource {
+export function createItem(
+  storage: YrestStorage,
+  resource: string,
+  body: Resource,
+  idStrategy: "increment" | "uuid" = "increment"
+): Resource {
   const collection = storage.getCollection(resource) ?? [];
   const item: Resource = {
-    id: body["id"] !== undefined ? body["id"] : nextId(collection),
+    id: body["id"] !== undefined ? body["id"] : generateId(collection, idStrategy),
     ...body,
   };
   storage.setCollection(resource, [...collection, item]);
