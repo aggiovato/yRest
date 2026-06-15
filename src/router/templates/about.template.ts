@@ -18,8 +18,8 @@ import { generateERData, erDiagramSection } from "./about.diagram.js";
 const _dir = dirname(fileURLToPath(import.meta.url));
 const LOGO_SRC = (() => {
   try {
-    const buf = readFileSync(join(_dir, "../../assets/logo-color.png"));
-    return `data:image/png;base64,${buf.toString("base64")}`;
+    const buf = readFileSync(join(_dir, "../../assets/yrest-lockup.svg"));
+    return `data:image/svg+xml;base64,${buf.toString("base64")}`;
   } catch {
     return "";
   }
@@ -202,7 +202,7 @@ export function generateAboutHtml(
       <div class="banner-left">
         ${
           LOGO_SRC
-            ? `<img src="${LOGO_SRC}" alt="yRest" height="48" style="display:block;margin-bottom:4px" />`
+            ? `<img src="${LOGO_SRC}" alt="yRest" height="36" style="display:block;margin-bottom:4px" />`
             : `<h1><span class="y">y</span><span class="rest">Rest</span></h1>`
         }
         <p>Zero-config REST API mock server</p>

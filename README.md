@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/yRest-banner.png" alt="yRest" width="100%" />
+  <img src="assets/yrest-banner.png" alt="yRest" width="100%" />
 </div>
 
 <br/>
