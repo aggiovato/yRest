@@ -154,6 +154,31 @@ post_tags:
     tagId: 2
 `;
 
+export const YAML_WITH_DUPLICATE_FK = `
+_rel:
+  routes:
+    areaId: areas
+    startAreaId: areas
+areas:
+  - id: 1
+    name: Downtown
+  - id: 2
+    name: Suburbs
+routes:
+  - id: 1
+    name: Route A
+    areaId: 1
+    startAreaId: 2
+  - id: 2
+    name: Route B
+    areaId: 1
+    startAreaId: 1
+  - id: 3
+    name: Route C
+    areaId: 2
+    startAreaId: 1
+`;
+
 export async function createTestServer(yaml: string) {
   const filePath = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
   writeFileSync(filePath, yaml, "utf8");

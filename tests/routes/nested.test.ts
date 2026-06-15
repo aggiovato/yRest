@@ -6,6 +6,7 @@ import {
   YAML_WITH_ONE2ONE,
   YAML_WITH_MANY2MANY,
   YAML_WITH_NESTED,
+  YAML_WITH_DUPLICATE_FK,
 } from "./helpers";
 import type { createServer } from "../../src/server/createServer";
 
@@ -209,6 +210,51 @@ describe("GET /target/:id/source (many2many inverse nested route)", () => {
     ).toEqual([1, 2]);
     expect(inverse1.json<{ id: number }[]>()[0]!.id).toBe(1);
     expect(inverse2.json<{ id: number }[]>()[0]!.id).toBe(1);
+  });
+});
+
+describe("duplicate FK relations to the same parent (no FST_ERR_DUPLICATED_ROUTE)", () => {
+  let filePath: string;
+  let server: Awaited<ReturnType<typeof createServer>>;
+
+  beforeEach(async () => {
+    ({ server, filePath } = await createTestServer(YAML_WITH_DUPLICATE_FK));
+  });
+
+  afterEach(async () => {
+    await server.close();
+    cleanup(filePath);
+  });
+
+  it("starts without throwing when two FKs in the same collection point to the same parent", async () => {
+    // The server starting at all proves no FST_ERR_DUPLICATED_ROUTE was thrown
+    const res = await server.inject({ method: "GET", url: "/areas" });
+    expect(res.statusCode).toBe(200);
+  });
+
+  it("GET /parent/:id/child responds 200 using the first declared FK", async () => {
+    // First FK declared is areaId, so /areas/1/routes returns routes where areaId === 1
+    const res = await server.inject({ method: "GET", url: "/areas/1/routes" });
+    expect(res.statusCode).toBe(200);
+    const routes = res.json<{ id: number; areaId: number }[]>();
+    expect(Array.isArray(routes)).toBe(true);
+    expect(routes.every((r) => r.areaId === 1)).toBe(true);
+  });
+
+  it("returns 404 for a parent that does not exist", async () => {
+    const res = await server.inject({ method: "GET", url: "/areas/99/routes" });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it("does NOT register the second FK as a separate path", async () => {
+    // Both areaId and startAreaId point to areas — only one /areas/:id/routes path must exist.
+    // The second FK (startAreaId) is silently skipped, not a 500 or duplicated route.
+    const res1 = await server.inject({ method: "GET", url: "/areas/1/routes" });
+    const res2 = await server.inject({ method: "GET", url: "/areas/2/routes" });
+    expect(res1.statusCode).toBe(200);
+    expect(res2.statusCode).toBe(200);
+    // area 2 has one route via areaId (route 3), startAreaId matches are irrelevant
+    expect(res2.json<{ id: number }[]>()).toHaveLength(1);
   });
 });
 

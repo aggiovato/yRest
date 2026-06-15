@@ -32,12 +32,24 @@ export class NestedRouteCommand implements RouteCommand {
   ) {}
 
   register(server: FastifyInstance): void {
+    const registered = new Set<string>();
+
     for (const [source, fields] of Object.entries(this.relations)) {
       for (const [key, def] of Object.entries(fields)) {
         if (def.type === "many2many") {
-          this.registerMany2Many(server, source, key, def);
+          const fwd = `${this.base}/${source}/:id/${key}`;
+          const inv = `${this.base}/${def.target}/:id/${source}`;
+          if (!registered.has(fwd) && !registered.has(inv)) {
+            registered.add(fwd);
+            registered.add(inv);
+            this.registerMany2Many(server, source, key, def);
+          }
         } else {
-          this.registerFkRelation(server, source, key, def.target, def.type);
+          const collPath = `${this.base}/${def.target}/:id/${source}`;
+          if (!registered.has(collPath)) {
+            registered.add(collPath);
+            this.registerFkRelation(server, source, key, def.target, def.type);
+          }
         }
       }
     }
