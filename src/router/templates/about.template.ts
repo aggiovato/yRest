@@ -13,7 +13,8 @@ import {
   handlersAccordion,
   examplesBlock,
 } from "./about.helpers.js";
-import { generateERData, erDiagramSection } from "./about.diagram.js";
+import { generateERData } from "./about.diagram.js";
+import { erDiagramSection } from "./about.diagram.canvas.js";
 
 const _dir = dirname(fileURLToPath(import.meta.url));
 const LOGO_SRC = (() => {
@@ -67,7 +68,7 @@ export function generateAboutHtml(
     ? `Pageable mode active — default limit <code>${options.pageable.limit}</code>. Response wrapped in <code>{ data, pagination }</code>.`
     : `Returns the requested slice. <code>X-Total-Count</code> header reflects the total before pagination.`;
 
-  return `<!DOCTYPE html>
+  return /*html*/ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
