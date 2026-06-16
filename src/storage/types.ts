@@ -78,8 +78,22 @@ export type Data = Record<string, Resource[]>;
  * //       target: profiles
  */
 export type RelationDef =
-  | { type: "many2one"; target: string; nested?: boolean }
-  | { type: "one2one"; target: string; nested?: boolean }
+  | {
+      type: "many2one";
+      target: string;
+      foreignKey?: string;
+      nested?: boolean;
+      carDirect?: string;
+      carInverse?: string;
+    }
+  | {
+      type: "one2one";
+      target: string;
+      foreignKey?: string;
+      nested?: boolean;
+      carDirect?: string;
+      carInverse?: string;
+    }
   | {
       type: "many2many";
       target: string;
@@ -87,6 +101,8 @@ export type RelationDef =
       foreignKey: string;
       otherKey: string;
       nested?: boolean;
+      carDirect?: string;
+      carInverse?: string;
     };
 
 /**

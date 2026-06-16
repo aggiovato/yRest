@@ -46,10 +46,15 @@ function serializeRelationDef(def: RelationDef): unknown {
       _otherKey: def.otherKey,
     };
     if (def.nested) entry._nested = true;
+    if (def.carDirect) entry["_car-direct"] = def.carDirect;
+    if (def.carInverse) entry["_car-inverse"] = def.carInverse;
     return entry;
   }
   const entry: Record<string, unknown> = { _type: def.type, _target: def.target };
+  if (def.foreignKey) entry._foreignKey = def.foreignKey;
   if (def.nested) entry._nested = true;
+  if (def.carDirect) entry["_car-direct"] = def.carDirect;
+  if (def.carInverse) entry["_car-inverse"] = def.carInverse;
   return entry;
 }
 

@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { createYrestStorage } from "../src/storage/yrestStorage";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
 
 const SAMPLE_YAML = `
 users:
