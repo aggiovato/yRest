@@ -4,46 +4,46 @@ import type { createServer } from "../../src/server/createServer";
 
 const YAML = `
 _routes:
-  - method: GET
-    path: /payments
-    error: 503
+  - _method: GET
+    _path: /payments
+    _error: 503
 
-  - method: GET
-    path: /maintenance
-    error: 503
-    errorBody:
+  - _method: GET
+    _path: /maintenance
+    _error: 503
+    _errorBody:
       message: "Service under maintenance"
       retryAfter: 60
 
-  - method: POST
-    path: /checkout
-    error: 402
-    errorBody:
+  - _method: POST
+    _path: /checkout
+    _error: 402
+    _errorBody:
       error: Payment required
 
-  - method: GET
-    path: /slow-error
-    delay: 200
-    error: 500
-    errorBody:
+  - _method: GET
+    _path: /slow-error
+    _delay: 200
+    _error: 500
+    _errorBody:
       error: Internal Server Error
 
-  - method: GET
-    path: /ok
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /ok
+    _response:
+      _status: 200
+      _body:
         ok: true
 
-  - method: POST
-    path: /login
-    error: 401
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /login
+    _error: 401
+    _scenarios:
+      - _when:
           body.key: bypass
-        response:
-          status: 200
-          body: { token: abc }
+        _response:
+          _status: 200
+          _body: { token: abc }
 
 users:
   - id: 1

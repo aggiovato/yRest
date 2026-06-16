@@ -91,17 +91,17 @@ describe("init templates", () => {
 
     it("_rel declares profiles → users as one2one", () => {
       const data = parse(templates.relational);
-      expect(data._rel.profiles.userId).toMatchObject({ type: "one2one", target: "users" });
+      expect(data._rel.profiles.userId).toMatchObject({ _type: "one2one", _target: "users" });
     });
 
     it("_rel declares posts ↔ tags as many2many via post_tags", () => {
       const data = parse(templates.relational);
       expect(data._rel.posts.tags).toMatchObject({
-        type: "many2many",
-        target: "tags",
-        through: "post_tags",
-        foreignKey: "postId",
-        otherKey: "tagId",
+        _type: "many2many",
+        _target: "tags",
+        _through: "post_tags",
+        _foreignKey: "postId",
+        _otherKey: "tagId",
       });
     });
 
@@ -169,17 +169,17 @@ describe("init templates", () => {
     it("_rel declares products ↔ categories as many2many", () => {
       const data = parse(templates.ecommerce);
       expect(data._rel.products.categories).toMatchObject({
-        type: "many2many",
-        target: "categories",
-        through: "product_categories",
-        foreignKey: "productId",
-        otherKey: "categoryId",
+        _type: "many2many",
+        _target: "categories",
+        _through: "product_categories",
+        _foreignKey: "productId",
+        _otherKey: "categoryId",
       });
     });
 
     it("_routes includes login, featured, summary, cancel and error routes", () => {
       const data = parse(templates.ecommerce);
-      const paths = data._routes.map((r: { path: string }) => r.path);
+      const paths = data._routes.map((r: { _path: string }) => r._path);
       expect(paths).toContain("/auth/login");
       expect(paths).toContain("/store/featured");
       expect(paths).toContain("/products/:id/summary");
@@ -189,26 +189,26 @@ describe("init templates", () => {
 
     it("login route has scenarios and otherwise", () => {
       const data = parse(templates.ecommerce);
-      const login = data._routes.find((r: { path: string }) => r.path === "/auth/login");
+      const login = data._routes.find((r: { _path: string }) => r._path === "/auth/login");
       expect(login).toBeDefined();
-      expect(Array.isArray(login.scenarios)).toBe(true);
-      expect(login.scenarios.length).toBeGreaterThanOrEqual(2);
-      expect(login).toHaveProperty("otherwise");
+      expect(Array.isArray(login._scenarios)).toBe(true);
+      expect(login._scenarios.length).toBeGreaterThanOrEqual(2);
+      expect(login).toHaveProperty("_otherwise");
     });
 
     it("cancel route has delay", () => {
       const data = parse(templates.ecommerce);
-      const cancel = data._routes.find((r: { path: string }) => r.path === "/orders/:id/cancel");
+      const cancel = data._routes.find((r: { _path: string }) => r._path === "/orders/:id/cancel");
       expect(cancel).toBeDefined();
-      expect(typeof cancel.delay).toBe("number");
-      expect(cancel.delay).toBeGreaterThan(0);
+      expect(typeof cancel._delay).toBe("number");
+      expect(cancel._delay).toBeGreaterThan(0);
     });
 
     it("inventory/sync route has error injection", () => {
       const data = parse(templates.ecommerce);
-      const sync = data._routes.find((r: { path: string }) => r.path === "/store/inventory/sync");
+      const sync = data._routes.find((r: { _path: string }) => r._path === "/store/inventory/sync");
       expect(sync).toBeDefined();
-      expect(sync.error).toBe(503);
+      expect(sync._error).toBe(503);
     });
 
     it("all product_categories reference existing ids", () => {

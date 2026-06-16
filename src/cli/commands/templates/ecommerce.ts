@@ -15,52 +15,52 @@ _rel:
   # many2many — products belong to multiple categories via pivot
   products:
     categories:
-      type: many2many
-      target: categories
-      through: product_categories
-      foreignKey: productId
-      otherKey: categoryId
+      _type: many2many
+      _target: categories
+      _through: product_categories
+      _foreignKey: productId
+      _otherKey: categoryId
 
 _routes:
   # Login with conditional scenarios
-  - method: POST
-    path: /auth/login
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /auth/login
+    _scenarios:
+      - _when:
           body.email: admin@example.com
           body.password: secret
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-admin-abc123
             role: admin
             userId: 1
-      - when:
+      - _when:
           body.email: user@example.com
           body.password: secret
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-user-xyz789
             role: user
             userId: 2
-    otherwise:
-      status: 401
-      body:
+    _otherwise:
+      _status: 401
+      _body:
         error: Invalid credentials
 
   # Logout — always 204
-  - method: POST
-    path: /auth/logout
-    response:
-      status: 204
+  - _method: POST
+    _path: /auth/logout
+    _response:
+      _status: 204
 
   # Static featured products list
-  - method: GET
-    path: /store/featured
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /store/featured
+    _response:
+      _status: 200
+      _body:
         - id: 1
           name: Laptop Pro 15
           price: 1299.99
@@ -75,31 +75,31 @@ _routes:
           badge: On Sale
 
   # Template variables — echoes the requested product id
-  - method: GET
-    path: /products/:id/summary
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /products/:id/summary
+    _response:
+      _status: 200
+      _body:
         productId: "{{params.id}}"
         requestedAt: "{{now}}"
         source: mock
 
   # Cancel order with simulated latency and template vars
-  - method: POST
-    path: /orders/:id/cancel
-    delay: 500
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /orders/:id/cancel
+    _delay: 500
+    _response:
+      _status: 200
+      _body:
         orderId: "{{params.id}}"
         status: cancelled
         cancelledAt: "{{now}}"
 
   # Simulate a service outage for testing error handling
-  - method: GET
-    path: /store/inventory/sync
-    error: 503
-    errorBody:
+  - _method: GET
+    _path: /store/inventory/sync
+    _error: 503
+    _errorBody:
       message: Inventory service temporarily unavailable
       retryAfter: 30
 

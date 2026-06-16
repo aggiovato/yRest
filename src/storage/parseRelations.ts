@@ -36,27 +36,27 @@ function normaliseRelationDef(key: string, value: unknown): RelationDef | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) return null;
 
   const v = value as Record<string, unknown>;
-  const type = v["type"];
+  const type = v["_type"];
 
-  const nested = v["nested"] === true ? true : undefined;
+  const nested = v["_nested"] === true ? true : undefined;
 
   if (type === "many2one" || type === undefined) {
-    const target = v["target"];
+    const target = v["_target"];
     if (typeof target !== "string") return null;
     return nested ? { type: "many2one", target, nested } : { type: "many2one", target };
   }
 
   if (type === "one2one") {
-    const target = v["target"];
+    const target = v["_target"];
     if (typeof target !== "string") return null;
     return nested ? { type: "one2one", target, nested } : { type: "one2one", target };
   }
 
   if (type === "many2many") {
-    const target = typeof v["target"] === "string" ? v["target"] : key;
-    const through = v["through"];
-    const foreignKey = v["foreignKey"];
-    const otherKey = v["otherKey"];
+    const target = typeof v["_target"] === "string" ? v["_target"] : key;
+    const through = v["_through"];
+    const foreignKey = v["_foreignKey"];
+    const otherKey = v["_otherKey"];
     if (
       typeof through !== "string" ||
       typeof foreignKey !== "string" ||

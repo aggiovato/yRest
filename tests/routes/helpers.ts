@@ -61,8 +61,8 @@ export const YAML_WITH_ONE2ONE = `
 _rel:
   profiles:
     userId:
-      type: one2one
-      target: users
+      _type: one2one
+      _target: users
 users:
   - id: 1
     name: Ana
@@ -82,11 +82,11 @@ _rel:
   posts:
     userId: users
     tags:
-      type: many2many
-      target: tags
-      through: post_tags
-      foreignKey: postId
-      otherKey: tagId
+      _type: many2many
+      _target: tags
+      _through: post_tags
+      _foreignKey: postId
+      _otherKey: tagId
 users:
   - id: 1
     name: Ana
@@ -120,16 +120,16 @@ export const YAML_WITH_NESTED = `
 _rel:
   posts:
     userId:
-      type: many2one
-      target: users
-      nested: true
+      _type: many2one
+      _target: users
+      _nested: true
     tags:
-      type: many2many
-      target: tags
-      through: post_tags
-      foreignKey: postId
-      otherKey: tagId
-      nested: true
+      _type: many2many
+      _target: tags
+      _through: post_tags
+      _foreignKey: postId
+      _otherKey: tagId
+      _nested: true
 users:
   - id: 1
     name: Ana

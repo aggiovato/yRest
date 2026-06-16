@@ -10,11 +10,11 @@ _rel:
     userId: users
     # many2many — posts can have multiple tags via the post_tags pivot
     tags:
-      type: many2many
-      target: tags
-      through: post_tags
-      foreignKey: postId
-      otherKey: tagId
+      _type: many2many
+      _target: tags
+      _through: post_tags
+      _foreignKey: postId
+      _otherKey: tagId
   comments:
     postId: posts
     userId: users
@@ -22,8 +22,8 @@ _rel:
   # one2one — each user has exactly one profile
   profiles:
     userId:
-      type: one2one
-      target: users
+      _type: one2one
+      _target: users
 
 users:
   - id: 1

@@ -10,50 +10,50 @@ import { createTestServer, cleanup } from "./helpers";
 
 const YAML_WITH_TEMPLATES = `
 _routes:
-  - method: GET
-    path: /users/:id/summary
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /users/:id/summary
+    _response:
+      _status: 200
+      _body:
         requestedId: "{{params.id}}"
         message: "Summary for user {{params.id}}"
 
-  - method: POST
-    path: /echo
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /echo
+    _response:
+      _status: 200
+      _body:
         received: "{{body}}"
         requestId: "{{uuid}}"
 
-  - method: POST
-    path: /greet
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /greet
+    _response:
+      _status: 200
+      _body:
         greeting: "Hello, {{body.name}}!"
         email: "{{body.email}}"
 
-  - method: GET
-    path: /search
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /search
+    _response:
+      _status: 200
+      _body:
         query: "{{query.q}}"
         results: []
 
-  - method: GET
-    path: /time
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /time
+    _response:
+      _status: 200
+      _body:
         now: "{{now}}"
 
-  - method: GET
-    path: /id
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /id
+    _response:
+      _status: 200
+      _body:
         id: "{{uuid}}"
 `;
 
@@ -165,18 +165,18 @@ describe("custom routes — template variables", () => {
   it("static routes alongside template routes are unaffected", async () => {
     const { server, filePath: fp } = await createTestServer(`
 _routes:
-  - method: GET
-    path: /static
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /static
+    _response:
+      _status: 200
+      _body:
         value: fixed
 
-  - method: GET
-    path: /dynamic/:id
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /dynamic/:id
+    _response:
+      _status: 200
+      _body:
         id: "{{params.id}}"
 `);
     filePath = fp;

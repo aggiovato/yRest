@@ -14,34 +14,34 @@ users:
     name: Ana
 
 _routes:
-  - method: GET
-    path: /auth/me
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /auth/me
+    _response:
+      _status: 200
+      _body:
         id: 1
         name: Ana
         role: admin
 
-  - method: POST
-    path: /login
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /login
+    _response:
+      _status: 200
+      _body:
         token: fake-jwt-token-abc123
 
-  - method: POST
-    path: /logout
-    response:
-      status: 204
+  - _method: POST
+    _path: /logout
+    _response:
+      _status: 204
 
-  - method: GET
-    path: /dashboard/stats
-    response:
-      status: 200
-      headers:
+  - _method: GET
+    _path: /dashboard/stats
+    _response:
+      _status: 200
+      _headers:
         X-Cache: HIT
-      body:
+      _body:
         users: 150
         orders: 32
 `;

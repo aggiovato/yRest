@@ -11,40 +11,40 @@ import { cleanup } from "./helpers";
 
 const YAML_WITH_HANDLERS = `
 _routes:
-  - method: POST
-    path: /login
-    handler: login
+  - _method: POST
+    _path: /login
+    _handler: login
 
-  - method: GET
-    path: /me
-    handler: me
+  - _method: GET
+    _path: /me
+    _handler: me
 
-  - method: POST
-    path: /crash
-    handler: crashHandler
+  - _method: POST
+    _path: /crash
+    _handler: crashHandler
 
-  - method: GET
-    path: /missing
-    handler: notDefined
+  - _method: GET
+    _path: /missing
+    _handler: notDefined
 
-  - method: GET
-    path: /static
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /static
+    _response:
+      _status: 200
+      _body:
         value: fixed
 
-  - method: GET
-    path: /users/:id/card
-    handler: userCard
+  - _method: GET
+    _path: /users/:id/card
+    _handler: userCard
 
-  - method: GET
-    path: /nocontent
-    handler: noContent
+  - _method: GET
+    _path: /nocontent
+    _handler: noContent
 
-  - method: POST
-    path: /echo-body
-    handler: echoBody
+  - _method: POST
+    _path: /echo-body
+    _handler: echoBody
 `;
 
 async function makeServer(yaml: string, handlerMap: HandlerMap = new Map()) {
@@ -193,9 +193,9 @@ users:
   - id: 1
     name: Ana
 _routes:
-  - method: GET
-    path: /me
-    handler: me
+  - _method: GET
+    _path: /me
+    _handler: me
 `,
       new Map([["me", async () => ({ status: 200, body: { id: 99 } })]])
     );
@@ -213,9 +213,9 @@ _routes:
     const { server, filePath: fp } = await makeServer(
       `
 _routes:
-  - method: GET
-    path: /token
-    handler: withHeader
+  - _method: GET
+    _path: /token
+    _handler: withHeader
 `,
       new Map([
         [

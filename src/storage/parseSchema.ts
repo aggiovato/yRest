@@ -37,16 +37,16 @@ function normaliseFieldDef(value: unknown): FieldDef | null {
   const v = value as Record<string, unknown>;
   const def: FieldDef = {};
 
-  if (v["required"] === true || v["required"] === false) def.required = v["required"] as boolean;
+  if (v["_required"] === true || v["_required"] === false) def.required = v["_required"] as boolean;
   if (
-    typeof v["type"] === "string" &&
-    ["string", "integer", "number", "boolean", "object", "array"].includes(v["type"])
+    typeof v["_type"] === "string" &&
+    ["string", "integer", "number", "boolean", "object", "array"].includes(v["_type"])
   )
-    def.type = v["type"] as FieldDef["type"];
-  if (typeof v["format"] === "string") def.format = v["format"];
-  if (Array.isArray(v["enum"])) def.enum = v["enum"];
-  if (typeof v["description"] === "string") def.description = v["description"];
-  if (v["default"] !== undefined) def.default = v["default"];
+    def.type = v["_type"] as FieldDef["type"];
+  if (typeof v["_format"] === "string") def.format = v["_format"];
+  if (Array.isArray(v["_enum"])) def.enum = v["_enum"];
+  if (typeof v["_description"] === "string") def.description = v["_description"];
+  if (v["_default"] !== undefined) def.default = v["_default"];
 
   return def;
 }

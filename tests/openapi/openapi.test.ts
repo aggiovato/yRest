@@ -9,10 +9,10 @@ _schema:
   users:
     name: required
     email:
-      required: true
-      format: email
+      _required: true
+      _format: email
     age:
-      type: integer
+      _type: integer
 users:
   - id: 1
     name: Ana
@@ -48,11 +48,11 @@ const YAML_WITH_MANY2MANY = `
 _rel:
   posts:
     tags:
-      type: many2many
-      target: tags
-      through: post_tags
-      foreignKey: postId
-      otherKey: tagId
+      _type: many2many
+      _target: tags
+      _through: post_tags
+      _foreignKey: postId
+      _otherKey: tagId
 users:
   - id: 1
     name: Ana
@@ -71,21 +71,21 @@ post_tags:
 
 const YAML_WITH_CUSTOM_ROUTES = `
 _routes:
-  - method: POST
-    path: /login
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /login
+    _response:
+      _status: 200
+      _body:
         token: fake-jwt
-  - method: GET
-    path: /health
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /health
+    _response:
+      _status: 200
+      _body:
         ok: true
-  - method: GET
-    path: /fail
-    error: 503
+  - _method: GET
+    _path: /fail
+    _error: 503
 users:
   - id: 1
     name: Ana

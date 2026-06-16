@@ -4,181 +4,181 @@ import type { createServer } from "../../src/server/createServer";
 
 const YAML_WITH_SCENARIOS = `
 _routes:
-  - method: POST
-    path: /login
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /login
+    _scenarios:
+      - _when:
           body.email: ana@test.com
           body.password: secret
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-ana
-      - when:
+      - _when:
           body.email: admin@test.com
           body.password: admin
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-admin
             role: admin
-    otherwise:
-      status: 401
-      body:
+    _otherwise:
+      _status: 401
+      _body:
         error: Invalid credentials
 
-  - method: POST
-    path: /login-template
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /login-template
+    _scenarios:
+      - _when:
           body.email: ana@test.com
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             message: "Welcome {{body.email}}"
             id: "{{params.id}}"
-    otherwise:
-      status: 401
-      body:
+    _otherwise:
+      _status: 401
+      _body:
         error: "Unknown user: {{body.email}}"
 
-  - method: POST
-    path: /role-check
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /role-check
+    _scenarios:
+      - _when:
           - body.role: admin
           - body.role: superadmin
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             allowed: true
-    otherwise:
-      status: 403
-      body:
+    _otherwise:
+      _status: 403
+      _body:
         allowed: false
 
-  - method: POST
-    path: /multi-or
-    scenarios:
-      - when:
+  - _method: POST
+    _path: /multi-or
+    _scenarios:
+      - _when:
           - body.status: active
             body.verified: "true"
           - body.role: superadmin
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             access: granted
-    otherwise:
-      status: 403
-      body:
+    _otherwise:
+      _status: 403
+      _body:
         access: denied
 
-  - method: POST
-    path: /login-old
-    response:
-      status: 401
-      body:
+  - _method: POST
+    _path: /login-old
+    _response:
+      _status: 401
+      _body:
         error: Invalid credentials
-    scenarios:
-      - when:
+    _scenarios:
+      - _when:
           body.email: ana@test.com
           body.password: secret
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-ana
-      - when:
+      - _when:
           body.email: admin@test.com
           body.password: admin
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             token: tok-admin
             role: admin
 
-  - method: GET
-    path: /users/:id/status
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /users/:id/status
+    _response:
+      _status: 200
+      _body:
         status: unknown
-    scenarios:
-      - when:
+    _scenarios:
+      - _when:
           params.id: "1"
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             status: active
 
-  - method: GET
-    path: /search
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /search
+    _response:
+      _status: 200
+      _body:
         results: []
-    scenarios:
-      - when:
+    _scenarios:
+      - _when:
           query.q: admin
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             results:
               - id: 1
                 name: Admin User
 
-  - method: POST
-    path: /flags
-    response:
-      status: 200
-      body:
+  - _method: POST
+    _path: /flags
+    _response:
+      _status: 200
+      _body:
         matched: none
-    scenarios:
-      - when:
+    _scenarios:
+      - _when:
           body.name_like: ana
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             matched: like
-      - when:
+      - _when:
           body.age_gte: "18"
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             matched: gte
-      - when:
+      - _when:
           body.role_ne: user
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             matched: ne
 
-  - method: POST
-    path: /echo-header
-    response:
-      status: 401
-      body:
+  - _method: POST
+    _path: /echo-header
+    _response:
+      _status: 401
+      _body:
         error: unauthorized
-    scenarios:
-      - when:
+    _scenarios:
+      - _when:
           headers.x-api-key: secret-key
-        response:
-          status: 200
-          body:
+        _response:
+          _status: 200
+          _body:
             ok: true
 
-  - method: GET
-    path: /fast
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /fast
+    _response:
+      _status: 200
+      _body:
         ok: true
 
-  - method: GET
-    path: /slow
-    delay: 300
-    response:
-      status: 200
-      body:
+  - _method: GET
+    _path: /slow
+    _delay: 300
+    _response:
+      _status: 200
+      _body:
         ok: true
 
 users:
