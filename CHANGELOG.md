@@ -7,6 +7,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.11.0] — 2026-06-17
+
+### Added
+
+- **Compact relation DSL:** `_rel` fields now accept a compact string format in addition to the existing shorthand and verbose object forms
+  - `"m2o:target"` — type + target in one string
+  - `"m2o:target[1..1->0..n]"` — with cardinality notation (`carDirect->carInverse`)
+  - `"m2o:target@foreignKey[1..1->0..n]"` — explicit FK when the field name differs from the FK column
+  - `"m2m:target@through(foreignKey,otherKey)[0..n->0..n]"` — many2many compact form
+  - `+nested` suffix on any DSL string — equivalent to `_nested: true`
+  - Type aliases: `m2o` / `many2one`, `o2o` / `one2one`, `m2m` / `many2many`
+- **Cardinality fields on `RelationDef`:** `carDirect` and `carInverse` are now stored on every resolved relation and used by `/_about` E/R diagram to render accurate crow's-foot notation instead of inferring cardinality from relation type
+- **`parseRelations()` DSL parser** (`src/storage/parseRelations.ts`): new `parseDslString()` internal function handles all three DSL levels; all forms expand to the same canonical `RelationDef` at parse time
+- **`parseRoutes.ts`** (`src/storage/parseRoutes.ts`): extracted `_routes` parsing logic from `yrestStorage.ts` into its own module
+- **E/R diagram canvas split** (`src/router/templates/about.diagram.canvas.ts`): the inline JavaScript canvas renderer is now in a dedicated file using the `/*js*/` comment tag for editor syntax highlighting; `about.diagram.ts` retains only TypeScript types and `generateERData()`
+
+### Changed
+
+- **`_` prefix convention enforced on all yrest reserved keys:** verbose relation objects now use `_type`, `_target`, `_foreignKey`, `_otherKey`, `_through`, `_nested`, `_car-direct`, `_car-inverse` (all prefixed with `_`). The previous unprefixed form (`type`, `target`, `nested`, etc.) is no longer supported
+- **`yrestStorage.ts`** now serialises `_foreignKey`, `_car-direct` and `_car-inverse` back to YAML on snapshot/persist
+- `init --sample ecommerce` and `init --sample relational` templates updated to use the `_` prefix convention throughout
+
+### Breaking
+
+- Verbose `_rel` object keys without `_` prefix (`type`, `target`, `nested`, `through`, `foreignKey`, `otherKey`) are no longer parsed. Migrate existing `db.yml` files by adding `_` to each key: `type` → `_type`, `target` → `_target`, `nested` → `_nested`, etc.
+
+---
+
 ## [0.10.0] — 2026-06-14
 
 ### Added
@@ -253,6 +281,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Atomic writes: temp-file-then-rename strategy to prevent corruption
 - CORS enabled by default
 
+[0.11.0]: https://github.com/aggiovato/yRest/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/aggiovato/yRest/compare/v0.9.0...v0.10.0
 [0.9.0]: https://github.com/aggiovato/yRest/compare/v0.8.1...v0.9.0
 [0.8.1]: https://github.com/aggiovato/yRest/compare/v0.8.0...v0.8.1

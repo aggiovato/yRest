@@ -74,6 +74,7 @@ A YAML-first alternative to json-server for frontend development.
 | Programmatic API for test frameworks                |  ✅   |     ❌      |
 | OpenAPI 3.0 spec (`GET /_openapi`, `yrest openapi`) |  ✅   |     ❌      |
 | Field annotations (`_schema`)                       |  ✅   |     ❌      |
+| Compact relation DSL (`m2o:target@fk[card]+nested`) |  ✅   |     ❌      |
 
 ---
 
@@ -472,10 +473,6 @@ A child record holds a foreign key pointing to a parent. The string shorthand im
 _rel:
   posts:
     userId: users # shorthand: many2one
-    # equivalent to:
-    # userId:
-    #   type: many2one
-    #   target: users
 ```
 
 ### `one2one`
@@ -486,8 +483,8 @@ One child record belongs to exactly one parent, and a parent has at most one chi
 _rel:
   profiles:
     userId:
-      type: one2one
-      target: users
+      _type: one2one
+      _target: users
 ```
 
 ### `many2many`
@@ -498,11 +495,11 @@ Two collections are linked through a pivot (join) table:
 _rel:
   posts:
     tags:
-      type: many2many
-      target: tags
-      through: post_tags # pivot collection
-      foreignKey: postId
-      otherKey: tagId
+      _type: many2many
+      _target: tags
+      _through: post_tags # pivot collection
+      _foreignKey: postId
+      _otherKey: tagId
 
 post_tags:
   - id: 1
@@ -510,31 +507,65 @@ post_tags:
     tagId: 2
 ```
 
-### Auto-embedding with `nested: true`
+### Auto-embedding with `_nested: true`
 
-Add `nested: true` to any relation to embed the related data automatically in every GET response, without needing `?_expand` or `?_embed`:
+Add `_nested: true` to any relation to embed the related data automatically in every GET response, without needing `?_expand` or `?_embed`:
 
 ```yaml
 _rel:
   posts:
     userId:
-      type: many2one
-      target: users
-      nested: true # user object embedded in every /posts response
+      _type: many2one
+      _target: users
+      _nested: true # user object embedded in every /posts response
     tags:
-      type: many2many
-      target: tags
-      through: post_tags
-      foreignKey: postId
-      otherKey: tagId
-      nested: true # tags array embedded in every /posts response
+      _type: many2many
+      _target: tags
+      _through: post_tags
+      _foreignKey: postId
+      _otherKey: tagId
+      _nested: true # tags array embedded in every /posts response
 ```
 
 ```
 GET /posts/1  →  { id: 1, title: "...", userId: 1, user: { ... }, tags: [...] }
 ```
 
-`many2one` / `one2one` with `nested: true` embed the parent object under the derived key (`userId` → `user`). The original FK field is preserved. `many2many` with `nested: true` embeds the resolved target array under the alias key.
+`many2one` / `one2one` with `_nested: true` embed the parent object under the derived key (`userId` → `user`). The original FK field is preserved. `many2many` with `_nested: true` embeds the resolved target array under the alias key.
+
+### Compact DSL syntax
+
+Relations can also be declared using a compact string format — useful when you want to express type, target, foreign key and cardinality in a single line:
+
+```yaml
+_rel:
+  payments:
+    bookingId: "m2o:bookings[1..1->0..n]" # type:target[carDirect->carInverse]
+    userId: "m2o:users[1..1->0..n]+nested" # +nested flag auto-embeds on every GET
+
+  profiles:
+    userId: "o2o:users[1..1->1..1]"
+
+  posts:
+    authorId: "m2o:users@userId[1..1->0..n]" # @foreignKey when field name ≠ FK column
+
+  tags:
+    posts: "m2m:posts@post_tags(postId,tagId)[0..n->0..n]" # m2m with pivot
+```
+
+**Type aliases:**
+
+| Alias | Full name   |
+| ----- | ----------- |
+| `m2o` | `many2one`  |
+| `o2o` | `one2one`   |
+| `m2m` | `many2many` |
+
+**Cardinality notation:** `[carDirect->carInverse]` — format `min..max` where min is `0` or `1` and max is `1` or `n`. Both segments are optional: omitting them applies defaults (`1..1->1..n` for `m2o`, `1..1->1..1` for `o2o`, `0..n->0..n` for `m2m`).
+
+**`+nested` flag:** appended at the end of any DSL string, equivalent to `_nested: true`.
+
+The three forms — shorthand string, compact DSL, and verbose object — are fully interchangeable and can be mixed freely within the same `_rel` block.
 
 ### What relations enable
 
