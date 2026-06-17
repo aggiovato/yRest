@@ -7,6 +7,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.11.1] — 2026-06-18
+
+### Added
+
+- **SVG crow's-foot badges via `Path2D`:** cardinality badges on the E/R diagram are now rendered from pre-computed SVG `Path2D` objects for each notation (`1..1`, `0..1`, `1..n`, `0..n`, `n`), replacing the previous hand-drawn arc + stroke approach. Each badge is a filled, resolution-independent icon correctly oriented along the edge direction
+- **Dynamic node widths:** entity boxes now size themselves to fit their content — header text and field names/types are measured with the canvas text API, so long collection or field names no longer overflow or get clipped
+- **Quality selector for PNG export:** a `<select>` dropdown (1×, 2×, 3×, 4×; default 3×) next to the download button lets users choose the export pixel density before downloading the E/R diagram as PNG
+- **SVG cardinality assets** (`assets/svg/`): five SVG files matching each cardinality icon (`0..1.svg`, `0..n.svg`, `1..1.svg`, `1..n.svg`, `n.svg`)
+
+### Fixed
+
+- **Pivot cardinality on many2many edges:** edges through a junction/pivot node now read `fkCarDirect`/`fkCarInverse` and `otherCarDirect`/`otherCarInverse` from the relation data instead of defaulting to `false`/`true`, so the correct notation is shown on both sides of the pivot
+- **Edge label rotation:** relation labels are now rotated to follow the edge direction (with a readability flip at ±90°) and alternate above/below the line for parallel edges, instead of being placed at a fixed perpendicular offset
+- **Legend badges:** the legend strip now renders the same SVG `Path2D` icons as the diagram edges, so the legend accurately reflects the actual badge shapes
+
+---
+
 ## [0.11.0] — 2026-06-17
 
 ### Added
