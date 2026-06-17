@@ -26,6 +26,11 @@ export type ERRelation = {
   otherKey?: string;
   carDirect?: string;
   carInverse?: string;
+  // Cardinality for the two pivot edges, read from the pivot table's own _rel declarations
+  fkCarDirect?: string; // pivot.foreignKey → source: carDirect  (1 source per pivot row)
+  fkCarInverse?: string; // pivot.foreignKey → source: carInverse (n pivot rows per source)
+  otherCarDirect?: string; // pivot.otherKey   → target: carDirect
+  otherCarInverse?: string; // pivot.otherKey   → target: carInverse
 };
 
 export type ERData = {
@@ -50,9 +55,16 @@ export function generateERData(storage: YrestStorage): ERData {
   const schema = storage.getSchema();
 
   const pivotTables = new Set<string>();
+  // FK keys on each pivot table that are already represented by many2many edges
+  const pivotFKs = new Map<string, Set<string>>();
   for (const fields of Object.values(relations)) {
     for (const def of Object.values(fields)) {
-      if (def.type === "many2many") pivotTables.add(def.through);
+      if (def.type === "many2many") {
+        pivotTables.add(def.through);
+        if (!pivotFKs.has(def.through)) pivotFKs.set(def.through, new Set());
+        pivotFKs.get(def.through)!.add(def.foreignKey);
+        pivotFKs.get(def.through)!.add(def.otherKey);
+      }
     }
   }
 
@@ -94,6 +106,9 @@ export function generateERData(storage: YrestStorage): ERData {
   for (const [source, fields] of Object.entries(relations)) {
     for (const [key, def] of Object.entries(fields)) {
       if (def.type === "many2many") {
+        const throughRels = relations[def.through] ?? {};
+        const fkRel = throughRels[def.foreignKey];
+        const otherRel = throughRels[def.otherKey];
         erRelations.push({
           source,
           target: def.target,
@@ -102,8 +117,14 @@ export function generateERData(storage: YrestStorage): ERData {
           through: def.through,
           foreignKey: def.foreignKey,
           otherKey: def.otherKey,
+          fkCarDirect: fkRel?.carDirect,
+          fkCarInverse: fkRel?.carInverse,
+          otherCarDirect: otherRel?.carDirect,
+          otherCarInverse: otherRel?.carInverse,
         });
       } else {
+        // Skip FK relations on pivot tables already covered by their many2many edge
+        if (pivotFKs.get(source)?.has(key)) continue;
         erRelations.push({
           source,
           target: def.target,
