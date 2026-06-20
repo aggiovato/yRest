@@ -43,6 +43,27 @@ export function buildCollectionSchema(
     if (def?.description) prop.description = def.description;
     if (def?.enum) prop.enum = def.enum;
     if (def?.default !== undefined) prop.default = def.default;
+    if (def?.example !== undefined) prop.example = def.example;
+    if (def?.nullable) prop.nullable = def.nullable;
+    // String constraints
+    if (def?.minLength !== undefined) prop.minLength = def.minLength;
+    if (def?.maxLength !== undefined) prop.maxLength = def.maxLength;
+    if (def?.pattern) prop.pattern = def.pattern;
+    // Number / integer constraints
+    if (def?.minimum !== undefined) prop.minimum = def.minimum;
+    if (def?.maximum !== undefined) prop.maximum = def.maximum;
+    if (def?.exclusiveMinimum !== undefined) prop.exclusiveMinimum = def.exclusiveMinimum;
+    if (def?.exclusiveMaximum !== undefined) prop.exclusiveMaximum = def.exclusiveMaximum;
+    if (def?.multipleOf !== undefined) prop.multipleOf = def.multipleOf;
+    // Array constraints
+    if (def?.items) prop.items = def.items as SchemaObject;
+    if (def?.minItems !== undefined) prop.minItems = def.minItems;
+    if (def?.maxItems !== undefined) prop.maxItems = def.maxItems;
+    if (def?.uniqueItems !== undefined) prop.uniqueItems = def.uniqueItems;
+    // OpenAPI meta
+    if (def?.deprecated) prop.deprecated = def.deprecated;
+    if (def?.readOnly) prop.readOnly = def.readOnly;
+    if (def?.writeOnly) prop.writeOnly = def.writeOnly;
 
     properties[field] = prop;
 

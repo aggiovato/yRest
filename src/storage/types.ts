@@ -7,21 +7,91 @@ export type Resource = Record<string, unknown>;
  * All properties are optional — omit what you don't need. Fields not mentioned
  * in `_schema` are inferred from the collection data and treated as optional.
  *
+ * In the YAML file every property uses the `_` prefix convention:
+ * `_type`, `_required`, `_format`, `_enum`, `_description`, `_default`, etc.
+ *
  * Shorthand: `fieldName: required` normalises to `{ required: true }`.
+ *
+ * @example
+ * ```yaml
+ * _schema:
+ *   users:
+ *     name:
+ *       _type: string
+ *       _required: true
+ *       _minLength: 2
+ *       _maxLength: 100
+ *     email:
+ *       _type: string
+ *       _required: true
+ *       _format: email
+ *     age:
+ *       _type: integer
+ *       _minimum: 0
+ *       _maximum: 120
+ *       _nullable: true
+ *     role:
+ *       _type: string
+ *       _enum: [admin, editor, viewer]
+ *       _default: viewer
+ *     tags:
+ *       _type: array
+ *       _items:
+ *         _type: string
+ *       _uniqueItems: true
+ * ```
  */
 export type FieldDef = {
-  /** If `true`, the field is listed in the OpenAPI `required` array and (Phase B) validated on POST/PUT. */
+  /** If `true`, the field is listed in the OpenAPI `required` array. */
   required?: boolean;
   /** Explicit type override. If absent, inferred from the data. */
   type?: "string" | "integer" | "number" | "boolean" | "object" | "array";
-  /** OpenAPI `format` hint (e.g. `email`, `date`, `uuid`, `uri`, `date-time`). */
+  /** OpenAPI `format` hint (e.g. `email`, `date`, `uuid`, `uri`, `date-time`, `binary`). */
   format?: string;
-  /** Restricts the field to a fixed set of values. */
+  /** Restricts the field to a fixed set of allowed values. */
   enum?: unknown[];
   /** Human-readable description included in the OpenAPI spec. */
   description?: string;
   /** Default value included in the OpenAPI spec. */
   default?: unknown;
+  /** Example value included in the OpenAPI spec. */
+  example?: unknown;
+  /** If `true`, the field may be `null` in addition to its declared type. */
+  nullable?: boolean;
+  // ── String constraints ────────────────────────────────────────────────────
+  /** Minimum string length (inclusive). Applies when `type` is `string`. */
+  minLength?: number;
+  /** Maximum string length (inclusive). Applies when `type` is `string`. */
+  maxLength?: number;
+  /** Regex pattern the string value must match. Applies when `type` is `string`. */
+  pattern?: string;
+  // ── Number / integer constraints ──────────────────────────────────────────
+  /** Minimum numeric value (inclusive). Applies when `type` is `number` or `integer`. */
+  minimum?: number;
+  /** Maximum numeric value (inclusive). Applies when `type` is `number` or `integer`. */
+  maximum?: number;
+  /** Exclusive lower bound. Applies when `type` is `number` or `integer`. */
+  exclusiveMinimum?: number;
+  /** Exclusive upper bound. Applies when `type` is `number` or `integer`. */
+  exclusiveMaximum?: number;
+  /** Value must be a multiple of this number. */
+  multipleOf?: number;
+  // ── Array constraints ─────────────────────────────────────────────────────
+  /** Schema descriptor for the items of an array field. */
+  items?: Pick<FieldDef, "type" | "format" | "enum">;
+  /** Minimum number of items in the array. */
+  minItems?: number;
+  /** Maximum number of items in the array. */
+  maxItems?: number;
+  /** If `true`, all array items must be unique. */
+  uniqueItems?: boolean;
+  // ── OpenAPI meta ──────────────────────────────────────────────────────────
+  /** If `true`, marks the field as deprecated in the OpenAPI spec. */
+  deprecated?: boolean;
+  /** If `true`, the field is only returned in responses (excluded from request bodies). */
+  readOnly?: boolean;
+  /** If `true`, the field is only accepted in request bodies (excluded from responses). */
+  writeOnly?: boolean;
 };
 
 /**

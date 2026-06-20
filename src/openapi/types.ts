@@ -23,7 +23,28 @@ export type SchemaObject = {
   items?: SchemaObject;
   enum?: unknown[];
   default?: unknown;
+  example?: unknown;
   $ref?: string;
+  // Nullability
+  nullable?: boolean;
+  // String constraints
+  minLength?: number;
+  maxLength?: number;
+  pattern?: string;
+  // Number / integer constraints
+  minimum?: number;
+  maximum?: number;
+  exclusiveMinimum?: number;
+  exclusiveMaximum?: number;
+  multipleOf?: number;
+  // Array constraints
+  minItems?: number;
+  maxItems?: number;
+  uniqueItems?: boolean;
+  // Meta
+  deprecated?: boolean;
+  readOnly?: boolean;
+  writeOnly?: boolean;
 };
 
 export type PathItem = {
