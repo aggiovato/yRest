@@ -69,7 +69,7 @@
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepublishOnly": "npm run test:preflight && npm run build",
+    "prepublishOnly": "npm run build && npm run test:preflight",
     "version": "node scripts/update-version-badge.mjs && git add README.md"
   },
   "dependencies": {
