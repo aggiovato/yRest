@@ -11,6 +11,7 @@ import {
   snapshotAccordion,
   customRoutesAccordion,
   handlersAccordion,
+  sseRoutesAccordion,
   examplesBlock,
 } from "./about.helpers.js";
 import { generateERData } from "./about.diagram.js";
@@ -45,6 +46,7 @@ export function generateAboutHtml(
   const collections = Object.keys(storage.getData());
   const relations = storage.getRelations();
   const customRoutes = storage.getRoutes();
+  const sseRoutes = storage.getSseRoutes();
   const base = options.base;
   const host = `http://${options.host}:${options.port}`;
   const swaggerUrl = `https://petstore.swagger.io/?url=${encodeURIComponent(`${host}/_openapi.json`)}`;
@@ -237,6 +239,7 @@ export function generateAboutHtml(
           ${accordions}
           ${nestedRoutesAccordion(relations, base)}
           ${options.snapshot ? snapshotAccordion() : ""}
+          ${sseRoutesAccordion(sseRoutes, base)}
           ${customRoutesAccordion(customRoutes, base, handlers)}
           ${handlersAccordion(handlers, customRoutes, base)}
         </div>

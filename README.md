@@ -10,7 +10,7 @@
 [![CI](https://github.com/aggiovato/yRest/actions/workflows/ci.yml/badge.svg)](https://github.com/aggiovato/yRest/actions)
 [![Node](https://img.shields.io/node/v/@yrest/cli)](https://www.npmjs.com/package/@yrest/cli)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ready-blue)](https://www.typescriptlang.org/)
-[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.11.2)](https://socket.dev/npm/package/@yrest/cli)
+[![Socket](https://badge.socket.dev/npm/package/@yrest/cli/0.12.0)](https://socket.dev/npm/package/@yrest/cli)
 
 YAML-powered json-server alternative. Zero-config REST API mock server with full CRUD, relations, filters and snapshots from a `db.yml` file.
 
@@ -75,6 +75,7 @@ A YAML-first alternative to json-server for frontend development.
 | OpenAPI 3.0 spec (`GET /_openapi`, `yrest openapi`) |  ✅   |     ❌      |
 | Field annotations (`_schema`)                       |  ✅   |     ❌      |
 | Compact relation DSL (`m2o:target@fk[card]+nested`) |  ✅   |     ❌      |
+| SSE stream routes (`_method: SSE`)                  |  ✅   |     ❌      |
 
 ---
 
@@ -935,6 +936,76 @@ type Handler = (req: HandlerRequest) => HandlerResponse | Promise<HandlerRespons
 
 If a named handler is not found in the file, the server returns `501`. If the handler throws, it returns `500`. If a `response:` block is defined alongside `handler:`, it is used as fallback only when the handler itself throws.
 
+### SSE streams
+
+Mock Server-Sent Events streams by adding `_method: SSE` and an `_sse` block to a `_routes` entry. Clients connect with a regular `GET` request and receive a continuous stream of events until the connection is closed.
+
+```yaml
+_routes:
+  - _method: SSE
+    _path: /events/orders
+    _sse:
+      _interval: 1500 # ms between frames (default: 1000)
+      _loop: true # restart after last event (default: true)
+      _repeat: 3 # stop after N full cycles (omit = infinite)
+      _events:
+        - _event: update
+          _data:
+            orderId: 1
+            status: processing
+        - _event: update
+          _data:
+            orderId: 1
+            status: shipped
+        - _event: done
+          _data:
+            orderId: 1
+            status: delivered
+```
+
+**`_sse` options:**
+
+| Key         | Default | Description                                                                                          |
+| ----------- | ------- | ---------------------------------------------------------------------------------------------------- |
+| `_interval` | `1000`  | Milliseconds between frames                                                                          |
+| `_loop`     | `true`  | Restart the sequence after the last frame. Set to `false` to close after one cycle                   |
+| `_repeat`   | —       | Stop after N complete cycles and close the stream. Omit for infinite                                 |
+| `_events`   | —       | Ordered list of frames. Each entry needs `_data` (required) and optionally `_event` (SSE event name) |
+
+**Template variables** — resolved per frame at emit time, so each event gets a fresh value:
+
+```yaml
+_events:
+  - _event: tick
+    _data:
+      ts: "{{now}}" # ISO timestamp, unique per frame
+      id: "{{uuid}}" # random UUID v4
+      channel: "{{params.channel}}" # from URL params
+      filter: "{{query.filter}}" # from query string
+```
+
+**Consuming from the browser:**
+
+```js
+const es = new EventSource("http://localhost:3070/events/orders");
+
+es.addEventListener("update", (e) => console.log(JSON.parse(e.data)));
+es.addEventListener("done", (e) => {
+  console.log(JSON.parse(e.data));
+  es.close();
+});
+```
+
+**Consuming from the terminal:**
+
+```bash
+curl -N http://localhost:3070/events/orders
+```
+
+The `-N` flag disables curl's output buffering, which is required to see SSE frames as they arrive.
+
+A keep-alive comment (`: ping`) is sent every 15 s to prevent proxy timeouts. SSE routes are shown in `/_about` under their own **SSE streams** accordion with a sky-blue `SSE` badge.
+
 ---
 
 ## Server modes
@@ -1252,6 +1323,9 @@ const server = createYrestServer({
 | Explicit relation types (one2one, many2many)       | ✅     |
 | Bidirectional many2many nested routes              | ✅     |
 | Auto-embedding (`nested: true` in `_rel`)          | ✅     |
+| SSE stream routes (`_method: SSE`)                 | ✅     |
+| WebSocket mock channels (`_method: WS`)            | 🔜     |
+| TypeScript handlers + typed collections            | 🔜     |
 
 ---
 

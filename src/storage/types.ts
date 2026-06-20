@@ -296,6 +296,44 @@ export type CustomRoute = {
   errorBody?: unknown;
 };
 
+/** A single event in an SSE stream declared under `_sse._events`. */
+export type SseEvent = {
+  /** SSE event name emitted as `event: <name>`. Omit for unnamed events. */
+  event?: string;
+  /** Payload serialised as JSON in the `data:` line. Supports `{{}}` templates. */
+  data: unknown;
+};
+
+/**
+ * A Server-Sent Events stream route declared under `_routes` with an `_sse` block.
+ *
+ * @example
+ * ```yaml
+ * _routes:
+ *   - _method: GET
+ *     _path: /events/orders
+ *     _sse:
+ *       _interval: 1500
+ *       _loop: true
+ *       _repeat: 5
+ *       _events:
+ *         - _event: update
+ *           _data: { orderId: 1, status: processing }
+ * ```
+ */
+export type SseRoute = {
+  /** URL path. May include Fastify path params (e.g. `/events/:id`). */
+  path: string;
+  /** Milliseconds between frames. Default: `1000`. */
+  interval: number;
+  /** Restart the sequence after the last event. Default: `true`. */
+  loop: boolean;
+  /** Stop after this many full cycles. Omit for infinite. */
+  repeat?: number;
+  /** Ordered list of events to emit. */
+  events: SseEvent[];
+};
+
 /**
  * In-memory store backed by a YAML file.
  *
@@ -355,6 +393,12 @@ export interface YrestStorage {
    * Returns an empty array if no `_routes` block is present.
    */
   getRoutes(): CustomRoute[];
+
+  /**
+   * Returns the SSE stream routes declared under `_routes` (entries with an `_sse` block).
+   * Returns an empty array if none are present.
+   */
+  getSseRoutes(): SseRoute[];
 
   /**
    * Returns the saved snapshot: a frozen copy of `data` and `relations` taken

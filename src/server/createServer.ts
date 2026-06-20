@@ -10,6 +10,7 @@ import {
   CustomRouteCommand,
   OpenApiRouteCommand,
   SnapshotRouteCommand,
+  SSERouteCommand,
 } from "../router/routes";
 
 /** HTTP methods that modify server state. Used by the readonly guard hook. */
@@ -71,6 +72,7 @@ export async function createServer(
     new AboutRouteCommand(storage, options, handlers),
     new OpenApiRouteCommand(storage, options),
     ...(options.snapshot ? [new SnapshotRouteCommand(storage)] : []),
+    new SSERouteCommand(storage, options.base),
     new CustomRouteCommand(storage, options.base, handlers),
     ...buildResourceRouteCommands(storage, options),
   ];

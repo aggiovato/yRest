@@ -22,6 +22,8 @@ function normaliseRoute(raw: unknown): CustomRoute | null {
   const v = raw as Record<string, unknown>;
 
   const method = v["_method"];
+  if (typeof method === "string" && method.toUpperCase() === "SSE") return null;
+  if ("_sse" in v) return null;
   const path = v["_path"];
   if (typeof method !== "string" || typeof path !== "string") return null;
 

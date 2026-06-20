@@ -186,6 +186,109 @@ projects:
     deadline: "2024-08-31"
     budget: 210000
 
+# ── Custom routes (SSE streams) ───────────────────────────────────────────────
+
+_routes:
+  # Stream 1: dashboard metrics — loops forever, updates every 2s
+  - _method: SSE
+    _path: /events/dashboard
+    _sse:
+      _interval: 2000
+      _loop: true
+      _events:
+        - _event: metrics
+          _data:
+            activeProjects: 3
+            totalHeadcount: 6
+            budgetUsed: 47
+            ts: "{{now}}"
+        - _event: metrics
+          _data:
+            activeProjects: 3
+            totalHeadcount: 6
+            budgetUsed: 51
+            ts: "{{now}}"
+        - _event: metrics
+          _data:
+            activeProjects: 3
+            totalHeadcount: 6
+            budgetUsed: 55
+            ts: "{{now}}"
+        - _event: alert
+          _data:
+            level: warning
+            message: "Project Drift is approaching budget limit (80%)"
+            ts: "{{now}}"
+
+  # Stream 2: project lifecycle — finite, closes after one cycle
+  - _method: SSE
+    _path: /events/projects/:id/status
+    _sse:
+      _interval: 1500
+      _loop: false
+      _events:
+        - _event: status
+          _data:
+            projectId: "{{params.id}}"
+            status: planning
+            progress: 0
+            ts: "{{now}}"
+        - _event: status
+          _data:
+            projectId: "{{params.id}}"
+            status: active
+            progress: 25
+            ts: "{{now}}"
+        - _event: status
+          _data:
+            projectId: "{{params.id}}"
+            status: active
+            progress: 60
+            ts: "{{now}}"
+        - _event: status
+          _data:
+            projectId: "{{params.id}}"
+            status: active
+            progress: 90
+            ts: "{{now}}"
+        - _event: completed
+          _data:
+            projectId: "{{params.id}}"
+            status: completed
+            progress: 100
+            ts: "{{now}}"
+
+  # Stream 3: team notifications — repeats 3 times then closes
+  - _method: SSE
+    _path: /events/notifications
+    _sse:
+      _interval: 1800
+      _loop: true
+      _repeat: 3
+      _events:
+        - _event: notification
+          _data:
+            type: assignment
+            message: "Bob García assigned to project Compass as Mobile Engineer"
+            employeeId: 2
+            projectId: 3
+            ts: "{{now}}"
+        - _event: notification
+          _data:
+            type: status_change
+            message: "Project Beacon moved to review"
+            projectId: 2
+            ts: "{{now}}"
+        - _event: notification
+          _data:
+            type: new_employee
+            message: "New team member joined Engineering"
+            departmentId: 1
+            ts: "{{now}}"
+        - _event: ping
+          _data:
+            ts: "{{now}}"
+
 # Pivot: employee × project  (+ business fields: assignedRole, allocation %)
 project_assignments:
   - id: 1

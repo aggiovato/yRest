@@ -1,6 +1,14 @@
 import { resolve } from "node:path";
-import type { Data, Relations, CustomRoute, SchemaBlock, YrestStorage } from "../storage/types.js";
+import type {
+  Data,
+  Relations,
+  CustomRoute,
+  SchemaBlock,
+  SseRoute,
+  YrestStorage,
+} from "../storage/types.js";
 import { parseRelations } from "../storage/parseRelations.js";
+import { parseSseRoutes } from "../storage/parseSseRoutes.js";
 import { parseSchema } from "../storage/parseSchema.js";
 import type { YrestOptions } from "../config/loadOptions.js";
 import { loadHandlers } from "../utils/handlers.js";
@@ -139,6 +147,7 @@ function createInMemoryStorage(data: Data): YrestStorage {
   const routes: CustomRoute[] = Array.isArray(raw["_routes"])
     ? (raw["_routes"] as CustomRoute[])
     : [];
+  const sseRoutes: SseRoute[] = parseSseRoutes(raw["_routes"]);
   const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const collections: Data = Object.fromEntries(
     Object.entries(raw).filter(([k]) => !RESERVED.has(k))
@@ -155,6 +164,7 @@ function createInMemoryStorage(data: Data): YrestStorage {
     getRelations: () => relations,
     getSchema: () => schema,
     getRoutes: () => routes,
+    getSseRoutes: () => sseRoutes,
     getCollection: (name) => collections[name],
     setCollection: (name, items) => {
       collections[name] = items;

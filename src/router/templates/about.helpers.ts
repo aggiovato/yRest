@@ -1,8 +1,7 @@
-import type { Relations } from "../../storage/types.js";
+import type { CustomRoute, Relations, SseRoute } from "../../storage/types.js";
 import type { YrestOptions } from "../../config/loadOptions.js";
 import { hasTemplates } from "../../utils/interpolate.js";
 import type { HandlerMap } from "../../utils/handlers.js";
-import type { CustomRoute } from "../../storage/types.js";
 
 const METHOD_COLOR: Record<string, string> = {
   GET: "#3fb950",
@@ -10,6 +9,8 @@ const METHOD_COLOR: Record<string, string> = {
   PUT: "#d29922",
   PATCH: "#a371f7",
   DELETE: "#f85149",
+  SSE: "#0ea5e9",
+  WS: "#8b5cf6",
   fn: "#f0883e",
 };
 
@@ -239,6 +240,34 @@ export function handlersAccordion(
     <summary>
       <span class="resource-name">Handlers</span>
       <span class="route-count">${handlers.size} function${handlers.size !== 1 ? "s" : ""}</span>
+    </summary>
+    <table><tbody>
+      ${rows.join("")}
+    </tbody></table>
+  </details>`;
+}
+
+export function sseRoutesAccordion(routes: SseRoute[], base: string): string {
+  if (!routes.length) return "";
+
+  const rows = routes.map((r) => {
+    const tags: string[] = [
+      `<span style="color:#0ea5e9;font-size:11px">interval·${r.interval}ms</span>`,
+      `<span style="color:var(--text-muted);font-size:11px">${r.events.length} event${r.events.length !== 1 ? "s" : ""}</span>`,
+    ];
+    if (!r.loop) tags.push(`<span style="color:var(--text-muted);font-size:11px">no·loop</span>`);
+    if (r.repeat !== undefined)
+      tags.push(`<span style="color:var(--text-muted);font-size:11px">repeat·${r.repeat}×</span>`);
+
+    const desc = `SSE stream&ensp;${tags.join("&ensp;")}`;
+    return endpointRow("SSE", `${base}${r.path}`, desc);
+  });
+
+  return `
+  <details class="resource-card nested-card">
+    <summary>
+      <span class="resource-name">SSE streams</span>
+      <span class="route-count">${routes.length} stream${routes.length !== 1 ? "s" : ""}</span>
     </summary>
     <table><tbody>
       ${rows.join("")}

@@ -7,6 +7,56 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.12.0] — 2026-06-21
+
+### Added
+
+- **SSE stream routes (`_method: SSE`):** entries in `_routes` with `_method: SSE` and an `_sse` block are registered as Server-Sent Events streams. The server pushes frames over the raw socket using Fastify's `reply.hijack()` — no new dependencies, no extra peer deps. Clients connect with a standard `GET` request and receive events in the SSE wire format (`event: …\ndata: …\n\n`).
+
+  YAML syntax:
+
+  ```yaml
+  _routes:
+    - _method: SSE
+      _path: /events/orders
+      _sse:
+        _interval: 1500 # ms between frames (default: 1000)
+        _loop: true # restart after last event (default: true)
+        _repeat: 3 # stop after N full cycles (omit = infinite)
+        _events:
+          - _event: update
+            _data: { orderId: 1, status: processing }
+          - _event: done
+            _data: { orderId: 1, status: delivered }
+  ```
+
+  Options:
+
+  | Key         | Default | Description                                                                 |
+  | ----------- | ------- | --------------------------------------------------------------------------- |
+  | `_interval` | `1000`  | Milliseconds between frames                                                 |
+  | `_loop`     | `true`  | Restart the event sequence after the last frame                             |
+  | `_repeat`   | —       | Stop after N complete cycles. Omit for an infinite stream                   |
+  | `_events`   | —       | Ordered list of frames. Each has `_data` (required) and `_event` (optional) |
+
+  Template variables (`{{now}}`, `{{uuid}}`, `{{params.X}}`, `{{query.X}}`) are resolved **per frame at emit time**, so each event carries a fresh timestamp or unique ID. A keep-alive comment (`: ping`) is sent every 15 s to prevent proxy timeouts. The stream is cleaned up automatically when the client disconnects.
+
+- **`getSseRoutes()` on `YrestStorage`:** the storage interface exposes parsed SSE routes separately from regular HTTP custom routes (`getRoutes()`). Both the file-backed and in-memory storage implementations are updated.
+- **`/_about` SSE streams accordion:** SSE endpoints appear in their own accordion section with a sky-blue **SSE** badge (distinct from the green GET badge), showing interval, event count and `no·loop` / `repeat·N×` modifiers when applicable.
+- **`SSE` and `WS` colours pre-registered** in `METHOD_COLOR` in `about.helpers.ts`. `WS` is registered ahead of the Phase 10B WebSocket implementation.
+
+### Internal
+
+- `src/storage/parseSseRoutes.ts` — new module; extracts `_method: SSE` entries from the raw `_routes` array and normalises them into `SseRoute` objects.
+- `src/router/routes/sse.routes.ts` — new `SSERouteCommand`: registers one GET endpoint per SSE route, drives the frame loop with recursive `setTimeout`, and clears the keep-alive interval on disconnect.
+- `src/storage/parseRoutes.ts` — skips entries where `_method` is `SSE` (case-insensitive) so they are not registered as regular HTTP routes.
+
+### Tests
+
+- `tests/routes/sse.test.ts` — 7 E2E tests using a real bound port (`listen({ port: 0 })`): frames emitted in order, `_loop: false` closes the stream, `_repeat: N` stops after N cycles, `{{params.X}}` and `{{now}}` resolved per frame, `Content-Type: text/event-stream` header, coexistence with collection routes, `_method: GET` entries not mistaken for SSE routes.
+
+---
+
 ## [0.11.2] — 2026-06-20
 
 ### Added

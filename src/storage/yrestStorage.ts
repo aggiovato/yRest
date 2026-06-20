@@ -8,10 +8,12 @@ import type {
   RelationDef,
   Relations,
   SchemaBlock,
+  SseRoute,
   YrestStorage,
 } from "./types.js";
 import { parseRelations } from "./parseRelations.js";
 import { parseRoutes } from "./parseRoutes.js";
+import { parseSseRoutes } from "./parseSseRoutes.js";
 import { parseSchema } from "./parseSchema.js";
 import { parseData, hasDataBlock } from "./parseData.js";
 import { deepCopyData } from "../utils/deepCopy.js";
@@ -91,6 +93,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
 
   const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = parseRoutes(raw["_routes"]);
+  const sseRoutes: SseRoute[] = parseSseRoutes(raw["_routes"]);
   const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const dataBlock = hasDataBlock(raw);
   const data: Data = parseData(raw);
@@ -116,6 +119,10 @@ export function createYrestStorage(filePath: string): YrestStorage {
 
     getRoutes() {
       return routes;
+    },
+
+    getSseRoutes() {
+      return sseRoutes;
     },
 
     getCollection(name) {
