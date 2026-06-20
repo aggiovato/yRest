@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
-import { writeFileSync, unlinkSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -192,6 +192,48 @@ posts:
       storage.reload();
       expect(storage.getRelations()).toEqual({});
       unlinkSync(relFilePath);
+    });
+
+    it("reload picks up changes inside _data block", () => {
+      const path = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(path, `\n_data:\n  users:\n    - id: 1\n      name: Ana\n`, "utf8");
+      const storage = createYrestStorage(path);
+      expect(storage.getCollection("users")).toHaveLength(1);
+
+      writeFileSync(
+        path,
+        `\n_data:\n  users:\n    - id: 1\n      name: Ana\n    - id: 2\n      name: Luis\n`,
+        "utf8"
+      );
+      storage.reload();
+      expect(storage.getCollection("users")).toHaveLength(2);
+      unlinkSync(path);
+    });
+  });
+
+  describe("_data block — persist format", () => {
+    it("persist preserves _data block format", () => {
+      const path = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(path, `\n_data:\n  users:\n    - id: 1\n      name: Ana\n`, "utf8");
+      const storage = createYrestStorage(path);
+      storage.setCollection("users", [{ id: 99, name: "Updated" }]);
+      storage.persist();
+
+      expect(readFileSync(path, "utf8")).toContain("_data:");
+      const reloaded = createYrestStorage(path);
+      expect(reloaded.getCollection("users")?.[0]).toMatchObject({ name: "Updated" });
+      unlinkSync(path);
+    });
+
+    it("persist preserves flat format when no _data block was used", () => {
+      const path = join(tmpdir(), `yrest-test-${randomUUID()}.yml`);
+      writeFileSync(path, SAMPLE_YAML, "utf8");
+      const storage = createYrestStorage(path);
+      storage.setCollection("users", [{ id: 99, name: "Updated" }]);
+      storage.persist();
+
+      expect(readFileSync(path, "utf8")).not.toContain("_data:");
+      unlinkSync(path);
     });
   });
 });

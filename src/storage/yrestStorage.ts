@@ -13,6 +13,7 @@ import type {
 import { parseRelations } from "./parseRelations.js";
 import { parseRoutes } from "./parseRoutes.js";
 import { parseSchema } from "./parseSchema.js";
+import { parseData, hasDataBlock } from "./parseData.js";
 import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
@@ -88,13 +89,11 @@ export function createYrestStorage(filePath: string): YrestStorage {
   const absPath = resolve(filePath);
   const raw = parse(readFileSync(absPath, "utf8")) ?? {};
 
-  const RESERVED = new Set(["_rel", "_routes", "_schema"]);
   const relations: Relations = parseRelations(raw["_rel"]);
   const routes: CustomRoute[] = parseRoutes(raw["_routes"]);
   const schema: SchemaBlock = parseSchema(raw["_schema"]);
-  const data: Data = Object.fromEntries(
-    Object.entries(raw).filter(([key]) => !RESERVED.has(key))
-  ) as Data;
+  const dataBlock = hasDataBlock(raw);
+  const data: Data = parseData(raw);
 
   let snapshot = {
     data: deepCopyData(data),
@@ -132,7 +131,12 @@ export function createYrestStorage(filePath: string): YrestStorage {
       if (Object.keys(relations).length > 0) payload._rel = serializeRelations(relations);
       // _routes is static config — never modified at runtime, always round-tripped as-is.
       if (routes.length > 0) payload._routes = serializeRoutes(routes);
-      Object.assign(payload, data);
+      // Preserve the original file format: _data block or flat root-level collections.
+      if (dataBlock) {
+        payload._data = data;
+      } else {
+        Object.assign(payload, data);
+      }
       const tmp = resolve(dirname(absPath), `.yrest-${randomUUID()}.tmp`);
       writeFileSync(tmp, stringify(payload), "utf8");
       renameSync(tmp, absPath);
@@ -141,9 +145,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
     reload() {
       const fresh = parse(readFileSync(absPath, "utf8")) ?? {};
       const freshRelations = parseRelations(fresh["_rel"]);
-      const freshData = Object.fromEntries(
-        Object.entries(fresh).filter(([key]) => !RESERVED.has(key))
-      ) as Data;
+      const freshData = parseData(fresh);
 
       for (const key of Object.keys(data)) delete data[key];
       Object.assign(data, freshData);

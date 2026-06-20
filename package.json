@@ -60,12 +60,16 @@
     "dev": "tsup --watch",
     "test": "vitest",
     "test:run": "vitest run",
+    "test:unit": "vitest run tests/config tests/cli tests/storage tests/utils",
+    "test:integration": "vitest run tests/routes tests/openapi tests/security tests/api",
+    "test:e2e": "vitest run tests/e2e",
+    "test:preflight": "vitest run",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepublishOnly": "npm run test:run && npm run build",
+    "prepublishOnly": "npm run test:preflight && npm run build",
     "version": "node scripts/update-version-badge.mjs && git add README.md"
   },
   "dependencies": {

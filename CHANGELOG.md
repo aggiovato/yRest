@@ -7,6 +7,31 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.11.2] — 2026-06-20
+
+### Added
+
+- **`_data` block support:** collections can now be grouped under a top-level `_data:` key in `db.yml`. Both flat format and `_data` block format are equivalent; they can be mixed (root-level entries win on name conflict). The file is persisted in whichever format it was originally written (`parseData.ts`, `hasDataBlock()`)
+- **Full OpenAPI 3.0 property set in `_schema`:** field annotations now support all standard OpenAPI property keys via `_`-prefixed convention — `_nullable`, `_example`, `_minLength`, `_maxLength`, `_pattern`, `_minimum`, `_maximum`, `_exclusiveMinimum`, `_exclusiveMaximum`, `_multipleOf`, `_items` (with `_type`/`_format`/`_enum`), `_minItems`, `_maxItems`, `_uniqueItems`, `_deprecated`, `_readOnly`, `_writeOnly`
+- **`_body.X` / `_params.X` / `_query.X` / `_headers.X` condition prefixes:** `_when` condition keys now accept both bare form (`body.email`) and `_`-prefixed form (`_body.email`), in line with the Phase 11A reserved-word convention. Both forms are equivalent at runtime
+
+### Internal
+
+- **`parseData.ts`** (`src/storage/parseData.ts`): extracted `_data` block parsing from `yrestStorage.ts` into its own module, consistent with the `parseRelations` / `parseRoutes` / `parseSchema` pattern
+- **`buildServeOptions()`** (`src/cli/commands/serve.ts`): extracted the three-layer option merge from the `serve` command action handler into a pure, testable function
+
+### Tests
+
+- Unit/integration/E2E test separation with dedicated npm scripts: `test:unit`, `test:integration`, `test:e2e`
+- **E2E test suite** (`tests/e2e/serve.e2e.test.ts`): 36 tests spawning real `yrest serve` processes, covering all 6 CRUD endpoints, all major CLI flags (`--readonly`, `--delay`, `--pageable`, `--snapshot`, `--base`, `--id-strategy`), custom `_routes`, relations, query parameters and meta endpoints (`/_about`, `/_openapi`)
+- **`parseData.test.ts`**: 19 unit tests for flat format, `_data` block, mixed coexistence and `hasDataBlock()` edge cases (including `null`)
+- **`parseSchema.test.ts`**: 61 unit tests covering all 23 `_schema` DSL keys across all property categories
+- **`conditions.test.ts`**: 22 unit tests for `findMatchingScenario` with both bare and `_`-prefixed condition keys (`_body.*`, `_params.*`, `_query.*`, `_headers.*`) and operator suffixes
+- **`serve.options.test.ts`**: 19 unit tests for `buildServeOptions()` three-layer merge priority
+- Test file reorganisation: root-level tests moved into logical subdirectories (`tests/config/`, `tests/cli/`, `tests/storage/`, `tests/utils/`)
+
+---
+
 ## [0.11.1] — 2026-06-18
 
 ### Added

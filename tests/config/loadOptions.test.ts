@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { yrestOptionsSchema } from "../src/config/loadOptions";
+import { yrestOptionsSchema } from "../../src/config/loadOptions";
 
 describe("yrestOptionsSchema", () => {
   it("applies default port 3070", () => {

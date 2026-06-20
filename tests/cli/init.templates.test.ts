@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { parse } from "yaml";
-import { templates, SAMPLES } from "../src/cli/commands/templates/index";
+import { templates, SAMPLES } from "../../src/cli/commands/templates/index";
 
 describe("init templates", () => {
   describe("SAMPLES enum", () => {

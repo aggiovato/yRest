@@ -4,8 +4,34 @@ import type { Command } from "commander";
 import { createYrestStorage } from "../../storage/yrestStorage.js";
 import { createYrestServerFromStorage } from "../../server/index.js";
 import { yrestOptionsSchema } from "../../config/loadOptions.js";
+import type { YrestOptions } from "../../config/loadOptions.js";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
 import { loadHandlers } from "../../utils/handlers.js";
+
+/**
+ * Merges options from three sources in ascending priority order:
+ * schema defaults → `yrest.config.yml` → explicit CLI flags.
+ *
+ * @param file - The YAML file path (positional CLI argument or default "db.yml").
+ * @param fileConfig - Values loaded from `yrest.config.yml` (may be empty).
+ * @param cliOverrides - Only the flags the user explicitly set on the CLI.
+ * @param fileArgIsExplicit - Whether the user explicitly passed a file positional argument.
+ *   When true, the positional file path re-asserts after fileConfig so it wins over
+ *   any `file:` key in the config file.
+ */
+export function buildServeOptions(
+  file: string,
+  fileConfig: Record<string, unknown>,
+  cliOverrides: Record<string, unknown>,
+  fileArgIsExplicit = false
+): YrestOptions {
+  return yrestOptionsSchema.parse({
+    file,
+    ...fileConfig,
+    ...(fileArgIsExplicit ? { file } : {}),
+    ...cliOverrides,
+  });
+}
 
 /**
  * Registers the `serve` command with the CLI program.
@@ -56,14 +82,7 @@ export function registerServe(program: Command): void {
         Object.entries(flags).filter(([key]) => cmd.getOptionValueSource(key) === "cli")
       );
 
-      const merged = {
-        file,
-        ...fileConfig,
-        ...(cmd.args.length > 0 ? { file } : {}),
-        ...cliOverrides,
-      };
-
-      const options = yrestOptionsSchema.parse(merged);
+      const options = buildServeOptions(file, fileConfig, cliOverrides, cmd.args.length > 0);
 
       let storage;
       try {

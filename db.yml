@@ -13,11 +13,8 @@
 
 _rel:
   employees:
-    # Each employee belongs to exactly one department (auto-embedded on GET)
     departmentId: "m2o:departments[1..1->0..n]+nested"
-    # Each employee has exactly one profile
     profileId: "o2o:profiles[1..1->1..1]"
-    # An employee can participate in 0..n projects (and vice versa)
     projects: "m2m:projects@project_assignments(employeeId,projectId)[0..n->0..n]"
 
   project_assignments:

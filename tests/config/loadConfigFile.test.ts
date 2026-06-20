@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { loadConfigFile } from "../src/config/loadConfigFile";
+import { loadConfigFile } from "../../src/config/loadConfigFile";
 
 function tmpConfig(content: string): string {
   const path = join(tmpdir(), `yrest-config-${randomUUID()}.yml`);

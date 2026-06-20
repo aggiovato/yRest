@@ -17,15 +17,19 @@ function resolveRequestPath(dotPath: string, req: HandlerRequest): unknown {
 
   let value: unknown;
   switch (root) {
+    case "_body":
     case "body":
       value = req.body;
       break;
+    case "_params":
     case "params":
       value = req.params;
       break;
+    case "_query":
     case "query":
       value = req.query;
       break;
+    case "_headers":
     case "headers":
       value = req.headers;
       break;

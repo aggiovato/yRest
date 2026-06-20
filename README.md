@@ -241,26 +241,59 @@ posts:
 
 Each top-level key becomes a resource with full CRUD endpoints.
 
+Alternatively, collections can be grouped under a `_data` block:
+
+```yaml
+_data:
+  users:
+    - id: 1
+      name: Ana
+  posts:
+    - id: 1
+      title: First post
+      userId: 1
+```
+
+Both formats are equivalent. You can also mix them — if the same collection name appears both inside `_data` and at the root level, the root-level entry wins. The file is persisted in whichever format it was originally written.
+
 ---
 
 ## Field annotations (`_schema`)
 
 Add a `_schema` block to `db.yml` to declare field-level metadata per collection. Used by the OpenAPI generator to produce accurate schemas — has no effect on runtime CRUD behavior.
 
+All keys inside `_schema` field objects use the `_` prefix convention. Two shorthand strings are also accepted at the field level:
+
 ```yaml
 _schema:
   users:
-    name: required # shorthand: marks field as required
+    name: required # shorthand → { _required: true }
     email:
-      required: true
-      format: email
+      _required: true
+      _type: string
+      _format: email
+      _minLength: 5
+      _maxLength: 100
     age:
-      type: integer
+      _type: integer
+      _minimum: 0
+      _maximum: 150
+      _nullable: true
     role:
-      type: string
-      enum: [admin, editor, viewer]
-      default: viewer
-      description: User role
+      _type: string
+      _enum: [admin, editor, viewer]
+      _default: viewer
+      _description: User role
+    tags:
+      _type: array
+      _items:
+        _type: string
+      _minItems: 1
+      _uniqueItems: true
+    createdAt:
+      _type: string
+      _format: date-time
+      _readOnly: true
 
 users:
   - id: 1
@@ -270,14 +303,53 @@ users:
     role: admin
 ```
 
-| Key           | Type      | Description                                                                               |
-| ------------- | --------- | ----------------------------------------------------------------------------------------- |
-| `required`    | `boolean` | Marks the field as required in the OpenAPI schema                                         |
-| `type`        | `string`  | Overrides the inferred type (`string`, `integer`, `number`, `boolean`, `array`, `object`) |
-| `format`      | `string`  | OpenAPI format hint (`email`, `date`, `date-time`, `uuid`, `uri`, …)                      |
-| `enum`        | `array`   | Restricts the field to a fixed set of values                                              |
-| `description` | `string`  | Field description included in the OpenAPI schema                                          |
-| `default`     | `any`     | Default value shown in the OpenAPI schema                                                 |
+**Core**
+
+| Key            | Type      | Description                                                                               |
+| -------------- | --------- | ----------------------------------------------------------------------------------------- |
+| `_required`    | `boolean` | Marks the field as required in the OpenAPI schema                                         |
+| `_type`        | `string`  | Overrides the inferred type (`string`, `integer`, `number`, `boolean`, `array`, `object`) |
+| `_format`      | `string`  | OpenAPI format hint (`email`, `date`, `date-time`, `uuid`, `uri`, …)                      |
+| `_enum`        | `array`   | Restricts the field to a fixed set of values                                              |
+| `_description` | `string`  | Field description included in the OpenAPI schema                                          |
+| `_default`     | `any`     | Default value shown in the OpenAPI schema                                                 |
+| `_example`     | `any`     | Example value shown in the OpenAPI schema                                                 |
+| `_nullable`    | `boolean` | Allows the field to be `null`                                                             |
+
+**String constraints**
+
+| Key          | Type     | Description                          |
+| ------------ | -------- | ------------------------------------ |
+| `_minLength` | `number` | Minimum string length                |
+| `_maxLength` | `number` | Maximum string length                |
+| `_pattern`   | `string` | Regex pattern the value must satisfy |
+
+**Number / integer constraints**
+
+| Key                 | Type     | Description                   |
+| ------------------- | -------- | ----------------------------- |
+| `_minimum`          | `number` | Inclusive lower bound         |
+| `_maximum`          | `number` | Inclusive upper bound         |
+| `_exclusiveMinimum` | `number` | Exclusive lower bound         |
+| `_exclusiveMaximum` | `number` | Exclusive upper bound         |
+| `_multipleOf`       | `number` | Value must be a multiple of N |
+
+**Array constraints**
+
+| Key            | Type      | Description                                                  |
+| -------------- | --------- | ------------------------------------------------------------ |
+| `_minItems`    | `number`  | Minimum number of array items                                |
+| `_maxItems`    | `number`  | Maximum number of array items                                |
+| `_uniqueItems` | `boolean` | All items must be unique                                     |
+| `_items`       | `object`  | Schema for array items — accepts `_type`, `_format`, `_enum` |
+
+**OpenAPI meta**
+
+| Key           | Type      | Description                             |
+| ------------- | --------- | --------------------------------------- |
+| `_deprecated` | `boolean` | Marks the field as deprecated           |
+| `_readOnly`   | `boolean` | Field is read-only (excluded from POST) |
+| `_writeOnly`  | `boolean` | Field is write-only (excluded from GET) |
 
 Fields not listed in `_schema` are inferred from the first items in the collection and treated as optional. `_schema` itself is excluded from the generated REST resources.
 
@@ -722,14 +794,14 @@ when:
   - body.role: superadmin
 ```
 
-Condition keys use dot-notation to address request data:
+Condition keys use dot-notation to address request data. Both bare and `_`-prefixed forms are accepted:
 
-| Prefix      | Example             | Resolves to                |
-| ----------- | ------------------- | -------------------------- |
-| `body.X`    | `body.email`        | `req.body.email`           |
-| `params.X`  | `params.id`         | `req.params.id`            |
-| `query.X`   | `query.page`        | `req.query.page`           |
-| `headers.X` | `headers.x-api-key` | `req.headers["x-api-key"]` |
+| Prefix                     | Example             | Resolves to                |
+| -------------------------- | ------------------- | -------------------------- |
+| `body.X` / `_body.X`       | `body.email`        | `req.body.email`           |
+| `params.X` / `_params.X`   | `params.id`         | `req.params.id`            |
+| `query.X` / `_query.X`     | `query.page`        | `req.query.page`           |
+| `headers.X` / `_headers.X` | `headers.x-api-key` | `req.headers["x-api-key"]` |
 
 Field operator suffixes (`_ne`, `_like`, `_start`, `_regex`, `_gte`, `_lte`) work on condition keys exactly as they do on query params:
 
