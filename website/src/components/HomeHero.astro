@@ -1,0 +1,274 @@
+---
+import logo from '../assets/yrest-logo.png';
+
+const orbitIcons = [
+  { label: 'Zero config',   dur: '22s', delay: '0s',      r: '115px', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
+  { label: 'Full CRUD',     dur: '22s', delay: '-7.33s',  r: '115px', d: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' },
+  { label: 'Query power',   dur: '22s', delay: '-14.67s', r: '115px', d: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', d2: 'M21 21l-4.35-4.35' },
+  { label: 'Relations',     dur: '30s', delay: '-5s',     r: '165px', d: 'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9' },
+  { label: 'Custom routes', dur: '30s', delay: '-15s',    r: '165px', d: 'M16 18l6-6-6-6M8 6L2 12l6 6' },
+  { label: 'Test-ready',    dur: '30s', delay: '-25s',    r: '165px', d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
+];
+---
+
+<div class="yr-home-hero">
+  <div class="yr-bg" aria-hidden="true">
+    <div class="yr-orb yr-orb-1"></div>
+    <div class="yr-orb yr-orb-2"></div>
+  </div>
+
+  <div class="yr-inner">
+    <div class="yr-left">
+      <h2 class="yr-title">y<span class="yr-blue">Rest</span></h2>
+      <p class="yr-tagline">
+        Zero-config REST API mock server from a single YAML file.
+        Think json-server, but YAML-powered — with relations, SSE streams,
+        handler functions and OpenAPI export.
+      </p>
+      <div class="yr-actions">
+        <a href="/quick-start/" class="yr-btn yr-btn-primary">Quick Start</a>
+        <a href="https://github.com/aggiovato/yRest" class="yr-btn yr-btn-ghost">GitHub</a>
+      </div>
+    </div>
+
+    <div class="yr-right" aria-hidden="true">
+      <div class="yr-stage">
+        <div class="yr-ring yr-ring-1"></div>
+        <div class="yr-ring yr-ring-2"></div>
+
+        {orbitIcons.map(icon => (
+          <div
+            class="yr-arm"
+            style={`--dur:${icon.dur};--delay:${icon.delay};--r:${icon.r};`}
+            title={icon.label}
+          >
+            <div class="yr-bob">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d={icon.d} />
+                {icon.d2 && <path d={icon.d2} />}
+              </svg>
+            </div>
+          </div>
+        ))}
+
+        <div class="yr-center">
+          <div class="yr-glow"></div>
+          <img src={logo.src} alt="yRest" class="yr-logo" />
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  .sl-container:has(.yr-home-hero) h1 { display: none; }
+</style>
+
+<style>
+  .yr-home-hero {
+    position: relative;
+    overflow: hidden;
+    background: #0d1117;
+    margin-top: -1.5rem;
+    margin-inline: calc(-1 * var(--sl-content-pad-x, 1rem));
+    padding: clamp(2.5rem, 6vw, 4.5rem) clamp(1.5rem, 5vw, 4rem);
+    border-bottom: 1px solid #21262d;
+    min-height: 440px;
+  }
+
+  .yr-bg { position: absolute; inset: 0; pointer-events: none; }
+
+  .yr-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    will-change: transform;
+  }
+  .yr-orb-1 {
+    width: 520px; height: 520px;
+    background: radial-gradient(circle, #1F72F51e 0%, transparent 70%);
+    top: -160px; right: 5%;
+    animation: yr-drift 14s ease-in-out infinite alternate;
+  }
+  .yr-orb-2 {
+    width: 340px; height: 340px;
+    background: radial-gradient(circle, #0A4EBA14 0%, transparent 70%);
+    bottom: -100px; left: 3%;
+    animation: yr-drift 19s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes yr-drift {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(28px, 18px); }
+  }
+
+  .yr-inner {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    max-width: 1100px;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  .yr-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+
+  .yr-title {
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #e6edf3;
+    margin: 0;
+    border: none;
+    padding: 0;
+  }
+
+  .yr-blue { color: #58a6ff; }
+
+  .yr-tagline {
+    font-size: clamp(0.875rem, 1.6vw, 1rem);
+    color: #8b949e;
+    line-height: 1.75;
+    max-width: 46ch;
+    margin: 0;
+  }
+
+  .yr-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .yr-btn {
+    display: inline-block;
+    padding: 0.55em 1.5em;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.12s;
+    white-space: nowrap;
+  }
+  .yr-btn:hover { transform: translateY(-1px); }
+
+  .yr-btn-primary {
+    border: 1.5px solid #58a6ff;
+    color: #58a6ff;
+    background: rgba(88, 166, 255, 0.06);
+  }
+  .yr-btn-primary:hover {
+    background: rgba(88, 166, 255, 0.14);
+    box-shadow: 0 0 0 1px #58a6ff40, 0 4px 16px rgba(88, 166, 255, 0.15);
+    color: #a8d4ff;
+  }
+
+  .yr-btn-ghost {
+    border: 1.5px solid #30363d;
+    color: #8b949e;
+    background: transparent;
+  }
+  .yr-btn-ghost:hover {
+    border-color: #58a6ff;
+    color: #58a6ff;
+  }
+
+  .yr-right {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .yr-stage {
+    position: relative;
+    width: 340px;
+    height: 340px;
+    flex-shrink: 0;
+  }
+
+  .yr-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(88, 166, 255, 0.07);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .yr-ring-1 { width: 250px; height: 250px; }
+  .yr-ring-2 { width: 336px; height: 336px; }
+
+  .yr-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .yr-logo {
+    width: 100px;
+    height: 100px;
+    object-fit: contain;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 0 22px rgba(88, 166, 255, 0.4));
+  }
+
+  .yr-glow {
+    position: absolute;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(88, 166, 255, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  .yr-arm {
+    position: absolute;
+    inset: 0;
+    animation: yr-spin var(--dur) linear infinite;
+    animation-delay: var(--delay);
+  }
+
+  .yr-bob {
+    position: absolute;
+    top: 50%;
+    left: calc(50% + var(--r) - 18px);
+    margin-top: -18px;
+    width: 36px;
+    height: 36px;
+    background: rgba(88, 166, 255, 0.08);
+    border: 1px solid rgba(88, 166, 255, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #58a6ff;
+    animation: yr-counter var(--dur) linear infinite;
+    animation-delay: var(--delay);
+  }
+
+  .yr-bob svg { width: 18px; height: 18px; }
+
+  @keyframes yr-spin    { to { transform: rotate(360deg);  } }
+  @keyframes yr-counter { to { transform: rotate(-360deg); } }
+
+  @media (max-width: 58rem) {
+    .yr-inner {
+      grid-template-columns: 1fr;
+      text-align: center;
+    }
+    .yr-left { align-items: center; }
+    .yr-tagline { max-width: 100%; }
+    .yr-right { order: -1; }
+    .yr-stage { width: 260px; height: 260px; transform: scale(0.85); }
+  }
+</style>

@@ -1,0 +1,335 @@
+---
+const slides = [
+  [
+    {
+      title: 'Zero config',
+      body: 'Point it at a db.yml file and get a full REST API instantly — no code, no config files required.',
+      path: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z',
+    },
+    {
+      title: 'Full CRUD',
+      body: 'GET, POST, PUT, PATCH and DELETE for every collection. Auto-incremental IDs. Atomic writes.',
+      path: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z',
+    },
+  ],
+  [
+    {
+      title: 'Query power',
+      body: 'Field filters, operators (_gte, _like, _regex), full-text search, sorting, pagination and field projection.',
+      path: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z',
+      path2: 'M21 21l-4.35-4.35',
+    },
+    {
+      title: 'Relations',
+      body: 'many2one, one2one and many2many via a compact DSL. Auto-embedding, nested routes and bidirectional many2many.',
+      path: 'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9',
+    },
+  ],
+  [
+    {
+      title: 'Custom routes',
+      body: 'Static responses, template variables, conditional scenarios, handler functions and SSE streams — all from YAML.',
+      path: 'M16 18l6-6-6-6M8 6L2 12l6 6',
+    },
+    {
+      title: 'Test-ready',
+      body: 'Programmatic API for Vitest and Playwright. Snapshot endpoints for clean test resets. OpenAPI 3.0 export.',
+      path: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3',
+    },
+  ],
+];
+---
+
+<div class="yr-carousel">
+  <div class="yr-viewport">
+    <div class="yr-track" id="yr-track">
+      {slides.map(pair => (
+        <div class="yr-slide">
+          {pair.map(card => (
+            <div class="yr-card">
+              <div class="yr-card-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d={card.path} />
+                  {card.path2 && <path d={card.path2} />}
+                </svg>
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.body}</p>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="yr-nav">
+    <button class="yr-ctrl" id="yr-prev" aria-label="Previous slide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+    </button>
+    <div class="yr-dots" role="tablist">
+      {slides.map((_, i) => (
+        <button
+          role="tab"
+          class={`yr-dot${i === 0 ? ' yr-dot--active' : ''}`}
+          data-idx={i}
+          aria-label={`Slide ${i + 1}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+        ></button>
+      ))}
+    </div>
+    <button class="yr-ctrl" id="yr-next" aria-label="Next slide">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M9 18l6-6-6-6" />
+      </svg>
+    </button>
+  </div>
+</div>
+
+<script>
+  function initCarousel() {
+    const track = document.getElementById('yr-track');
+    const dots  = document.querySelectorAll('.yr-dot');
+    const prev  = document.getElementById('yr-prev');
+    const next  = document.getElementById('yr-next');
+    if (!track) return;
+    const el: HTMLElement = track;
+
+    const total = 3;
+    let current = 0;
+    let timer: ReturnType<typeof setInterval>;
+
+    function goTo(idx: number) {
+      current = ((idx % total) + total) % total;
+      el.style.transform = `translateX(${(-current * 100) / total}%)`;
+      dots.forEach((d, i) => {
+        d.classList.toggle('yr-dot--active', i === current);
+        d.setAttribute('aria-selected', String(i === current));
+      });
+    }
+
+    function restart() {
+      clearInterval(timer);
+      timer = setInterval(() => goTo(current + 1), 5000);
+    }
+
+    prev?.addEventListener('click', () => { goTo(current - 1); restart(); });
+    next?.addEventListener('click', () => { goTo(current + 1); restart(); });
+    dots.forEach(d => d.addEventListener('click', () => {
+      goTo(Number((d as HTMLElement).dataset.idx));
+      restart();
+    }));
+
+    restart();
+    return () => clearInterval(timer);
+  }
+
+  initCarousel();
+  document.addEventListener('astro:page-load', initCarousel);
+</script>
+
+<style>
+  /* ── Carousel wrapper ── */
+  .yr-carousel {
+    margin-top: 0;
+    border-top: 1px solid #21262d;
+    padding-top: 2.2rem;
+    padding-bottom: 2rem;
+  }
+
+  /* ── Viewport — clips horizontal overflow, small top/bottom margin
+     so the card border-top doesn't clip on hover shadow ── */
+  .yr-viewport {
+    overflow: hidden;
+    margin-block: -2px;
+    padding-block: 2px;
+  }
+
+  /* ── Track: 3 slides side by side, slides left on advance ── */
+  .yr-track {
+    display: flex;
+    width: 300%;
+    align-items: stretch;
+    transition: transform 0.65s ease-in-out;
+    will-change: transform;
+  }
+
+  /* ── Slide: CSS Grid — guarantees equal column widths and equal row heights ── */
+  .yr-slide {
+    flex: 0 0 calc(100% / 3);
+    width: calc(100% / 3);
+
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 1rem;
+
+    align-items: stretch;
+  }
+
+  .yr-card {
+    box-sizing: border-box;
+    min-height: 160px;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+
+    padding: 1.2rem;
+    background: linear-gradient(150deg, #161b22 0%, #0f1419 100%);
+    border: 1px solid #2d333b;
+    border-radius: 10px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.22s, box-shadow 0.22s;
+    cursor: default;
+  }
+
+  /* Top shimmer */
+  .yr-card::before {
+    content: '';
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(88, 166, 255, 0.4), transparent);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  /* Radial glow */
+  .yr-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 18% 0%, rgba(88, 166, 255, 0.07) 0%, transparent 55%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .yr-card:hover {
+    border-color: #3a4a5e;
+    box-shadow: 0 0 0 1px rgba(88, 166, 255, 0.1), 0 4px 24px rgba(0, 0, 0, 0.4);
+  }
+  .yr-card:hover::before { opacity: 1; }
+  .yr-card:hover::after  { opacity: 1; }
+
+  .yr-track > .yr-slide,
+  .yr-slide > .yr-card {
+    margin-block-start: 0 !important;
+  }
+
+  /* ── Icon ── */
+  .yr-card-icon {
+    flex-shrink: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(88, 166, 255, 0.14), rgba(88, 166, 255, 0.05));
+    border: 1px solid rgba(88, 166, 255, 0.26);
+    border-radius: 8px;
+    color: #58a6ff;
+    transition: box-shadow 0.22s, border-color 0.22s;
+  }
+
+  .yr-card:hover .yr-card-icon {
+    border-color: rgba(88, 166, 255, 0.45);
+    box-shadow: 0 0 10px rgba(88, 166, 255, 0.18);
+  }
+
+  .yr-card-icon svg {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  /* ── Typography ── */
+  .yr-card h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #e6edf3;
+    margin: 0;
+    padding: 0;
+    border: none;
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+
+  .yr-card p {
+    font-size: 0.875rem;
+    color: #7d8590;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* ── Navigation ── */
+  .yr-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  .yr-ctrl {
+    flex-shrink: 0;
+    box-sizing: border-box;
+    padding: 0;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: 1px solid #2d333b;
+    border-radius: 8px;
+    color: #6e7681;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+
+  .yr-ctrl:hover {
+    border-color: #58a6ff;
+    color: #58a6ff;
+    background: rgba(88, 166, 255, 0.07);
+  }
+
+  .yr-dots {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 2.25rem; /* match button height so vertical center is shared */
+  }
+
+  .yr-dot {
+    height: 10px;
+    width: 10px;
+    border-radius: 4px;
+    background: #2d333b;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.25s, width 0.25s;
+    flex-shrink: 0;
+  }
+
+  .yr-dot--active {
+    background: #58a6ff;
+    height: 8px;
+    width: 50px;
+  }
+
+  .yr-nav > *,
+  .yr-dots,
+  .yr-dots > * {
+    margin-block-start: 0 !important;
+    margin-block-end: 0 !important;
+  }
+
+  @media (max-width: 50rem) {
+    .yr-slide { grid-template-columns: 1fr; }
+  }
+</style>

@@ -1,0 +1,393 @@
+/* ═══════════════════════════════════════════════════════════
+   yRest Docs — Custom theme matching the demo design system
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Design tokens ── */
+:root {
+  /* Starlight color overrides */
+  --sl-color-accent-low: #0c2340;
+  --sl-color-accent: #287cdc;
+  --sl-color-accent-high: #4c95f5;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e6edf3;
+  --sl-color-gray-2: #8b949e;
+  --sl-color-gray-3: #484f58;
+  --sl-color-gray-4: #30363d;
+  --sl-color-gray-5: #21262d;
+  --sl-color-gray-6: #161b22;
+  --sl-color-black: #0d1117;
+
+  /* Fonts */
+  --sl-font: "Ubuntu", system-ui, sans-serif;
+  --sl-font-mono: "JetBrains Mono", "SFMono-Regular", monospace;
+
+  /* Heading sizes — reduce from Starlight's large defaults */
+  --sl-text-h1: 1.75rem;
+  --sl-text-h2: 1.3rem;
+  --sl-text-h3: 1.1rem;
+  --sl-text-h4: 1rem;
+
+  /* Local design tokens */
+  --yr-bg: #0d1117;
+  --yr-surface: #161b22;
+  --yr-surface2: #21262d;
+  --yr-border: #30363d;
+  --yr-text: #e6edf3;
+  --yr-muted: #8b949e;
+  --yr-blue: #58a6ff;
+  --yr-radius: 6px;
+}
+
+/* ── Prevent layout shift from scrollbar ── */
+html {
+  overflow-y: scroll;
+}
+
+/* ── Header ── */
+header.header {
+  background: var(--yr-surface) !important;
+  border-bottom: 1px solid var(--yr-border) !important;
+}
+
+/* Logo only — fit nav height, blend on dark bg */
+.site-title img {
+  height: 1.9rem;
+  width: auto;
+}
+
+/* ── Sidebar ── */
+.sidebar-pane {
+  background: var(--yr-bg) !important;
+  border-inline-end: 1px solid var(--yr-border) !important;
+}
+
+/* Smooth transition when sidebar opens/closes */
+.main-frame {
+  transition: padding-inline-start 0.22s ease;
+}
+
+/* Sidebar closed state:
+   - hide the fixed sidebar pane
+   - zero the main-frame left padding (was pushing content right of fixed sidebar)
+   - center the content within the expanded main pane */
+html.yr-sidebar-closed .sidebar-pane {
+  display: none !important;
+}
+html.yr-sidebar-closed .main-frame {
+  padding-inline-start: 0 !important;
+}
+html.yr-sidebar-closed .main-pane {
+  --sl-content-margin-inline: auto !important;
+}
+
+/* Active sidebar item — no background fill, blue text + semibold */
+.sidebar-content a[aria-current="page"],
+.sidebar-content a[aria-current="page"]:hover,
+.sidebar-content a[aria-current="page"]:focus {
+  background: none !important;
+  color: #58a6ff !important;
+  font-weight: 600 !important;
+}
+
+/* Sidebar links — smooth hover transition to blue */
+.sidebar-content a {
+  transition: color 0.15s ease !important;
+}
+.sidebar-content a:hover,
+.sidebar-content a:focus {
+  color: #58a6ff !important;
+}
+
+/* Section group labels — same scale as links, muted color, not caps */
+.sidebar-content .group-label .large {
+  font-weight: 600 !important;
+  font-size: var(--sl-text-sm) !important;
+  color: #6e7681 !important;
+  text-transform: none !important;
+  letter-spacing: 0;
+}
+
+/* Root-level sidebar links (a.large) — same visual level as section sub-items */
+.sidebar-content a.large {
+  font-size: var(--sl-text-sm) !important;
+  font-weight: 400 !important;
+}
+
+/* NEW badge — solid blue (primary color), centered text */
+.sidebar-content .sl-badge.success {
+  display: inline-flex !important;
+  align-items: center !important;
+  background: #1f6feb !important;
+  border-color: #1f6feb !important;
+  color: #fff !important;
+  font-size: 9px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em;
+  padding: 2px 5px !important;
+  text-transform: uppercase;
+  border-radius: 3px !important;
+  line-height: 1 !important;
+  vertical-align: middle;
+}
+
+/* ── Home page layout ── */
+
+/* Hide Starlight's auto-generated PageTitle panel on the home page.
+   Structure: ContentPanel(PageTitle) + ContentPanel(MDX with HomeHero).
+   The first panel is hidden; remove the border that would appear above the hero. */
+.content-panel:has(+ .content-panel .yr-home-hero) {
+  display: none;
+}
+.content-panel:has(.yr-home-hero) {
+  border-top: none;
+}
+
+/* Home page: allow the hero + card grid container to use more horizontal space.
+   Default --sl-content-width is 45rem which is too narrow with a sidebar. */
+.sl-container:has(.yr-home-hero) {
+  max-width: 1300px;
+}
+
+/* ── Doc pages: narrower TOC, centered content ── */
+
+/* Reduce the right sidebar TOC width — default formula makes it ~300px+ */
+@media (min-width: 72rem) {
+  .right-sidebar-container {
+    width: 15rem;
+  }
+  [data-has-sidebar][data-has-toc] .main-pane {
+    width: calc(100% - 15rem);
+  }
+  /* Center content in its space — only for main pane, NOT the right sidebar sl-container */
+  [data-has-sidebar][data-has-toc] .main-pane .sl-container {
+    margin-inline: auto;
+  }
+}
+
+/* ── TOC: vertical timeline style ── */
+
+/* Title "On this page" */
+.right-sidebar-panel starlight-toc h2 {
+  font-size: 0.69rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+  color: var(--sl-color-gray-3) !important;
+  margin: 0 0 0.75rem 1.25rem !important;
+  line-height: 1 !important;
+}
+
+/*
+  Layout maths:
+  - ul padding-left: 20px  → creates space for the dot on the left of text
+  - line at left: 5px      → sits in the padding area
+  - a::before (dot 8×8px): left: -19px from <a> → center at -19+4 = -15px from <a>
+    in ul-space: -15 + 20 = 5px = line position ✓
+*/
+.right-sidebar-panel starlight-toc nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 20px;
+  position: relative;
+}
+
+/* Vertical connecting line in the padding area */
+.right-sidebar-panel starlight-toc nav ul::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: var(--yr-border, #30363d);
+  z-index: 0;
+}
+
+/* Links — keep display:block (PageSidebar sets it already) */
+.right-sidebar-panel starlight-toc nav a {
+  display: block !important;
+  position: relative;
+  padding: 5px 4px !important;
+  font-size: var(--sl-text-xs, 0.8125rem) !important;
+  color: var(--yr-muted, #8b949e) !important;
+  text-decoration: none;
+  line-height: 1.35;
+  transition: color 0.15s;
+}
+
+/* Dot pseudo-element, centered on the line */
+.right-sidebar-panel starlight-toc nav a::before {
+  content: "";
+  position: absolute;
+  left: -19px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--yr-bg, #0d1117);
+  border: 1.5px solid var(--yr-border, #30363d);
+  z-index: 1;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+/* Hover */
+.right-sidebar-panel starlight-toc nav a:hover {
+  color: var(--yr-blue, #58a6ff) !important;
+}
+.right-sidebar-panel starlight-toc nav a:hover::before {
+  border-color: var(--yr-blue, #58a6ff);
+}
+
+/* Active (set by Starlight's starlight-toc.ts via aria-current) */
+.right-sidebar-panel starlight-toc nav a[aria-current="true"] {
+  color: var(--yr-blue, #58a6ff) !important;
+  font-weight: 600 !important;
+}
+.right-sidebar-panel starlight-toc nav a[aria-current="true"]::before {
+  background: var(--yr-blue, #58a6ff);
+  border-color: var(--yr-blue, #58a6ff);
+  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+/* Nested items (h3 inside h2 section) — slightly smaller, indented */
+.right-sidebar-panel starlight-toc nav ul ul {
+  padding-left: 14px;
+}
+.right-sidebar-panel starlight-toc nav ul ul a {
+  color: var(--sl-color-gray-3, #484f58) !important;
+  font-size: calc(var(--sl-text-xs, 0.8125rem) - 0.05rem) !important;
+}
+.right-sidebar-panel starlight-toc nav ul ul a::before {
+  width: 6px;
+  height: 6px;
+  left: -16px;
+}
+
+/* ── Card grid ── */
+
+/* Override Starlight's rotating card color vars */
+.card-grid .card {
+  --sl-card-border: var(--yr-border);
+  --sl-card-bg: rgba(88, 166, 255, 0.06);
+
+  background-color: var(--yr-surface) !important;
+  border-color: var(--yr-border) !important;
+  border-radius: var(--yr-radius) !important;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    transform 0.15s;
+}
+
+.card-grid .card:hover {
+  border-color: var(--yr-blue) !important;
+  box-shadow:
+    0 0 0 1px rgba(88, 166, 255, 0.15),
+    0 4px 20px rgba(88, 166, 255, 0.06);
+  transform: translateY(-2px);
+}
+
+/* Card icons — bigger and more visible */
+.card-grid .card .icon {
+  color: var(--yr-blue) !important;
+  border-color: rgba(88, 166, 255, 0.25) !important;
+  background-color: rgba(88, 166, 255, 0.08) !important;
+  border-radius: var(--yr-radius) !important;
+  padding: 0.3em !important;
+  /* force a bigger render size */
+  --sl-icon-size: 1.3em !important;
+  width: 1.75em;
+  height: 1.75em;
+}
+
+.card-grid .card .title {
+  gap: 1.3rem;
+  align-items: center;
+}
+
+.card-grid .card .body {
+  color: var(--yr-muted);
+}
+
+/* Card entrance animation */
+.card-grid .card {
+  animation: yr-card-rise 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.card-grid > article:nth-child(1) {
+  animation-delay: 0.04s;
+}
+.card-grid > article:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.card-grid > article:nth-child(3) {
+  animation-delay: 0.16s;
+}
+.card-grid > article:nth-child(4) {
+  animation-delay: 0.22s;
+}
+.card-grid > article:nth-child(5) {
+  animation-delay: 0.28s;
+}
+.card-grid > article:nth-child(6) {
+  animation-delay: 0.34s;
+}
+
+@keyframes yr-card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Code blocks ── */
+.expressive-code pre,
+pre {
+  background: #020a17 !important;
+  border: 1px solid var(--yr-border) !important;
+  border-radius: var(--yr-radius) !important;
+  font-family: var(--sl-font-mono) !important;
+}
+
+/* ── Inline code ── */
+.sl-markdown-content :not(pre) > code {
+  background: rgba(88, 166, 255, 0.08);
+  color: var(--yr-blue);
+  border: 1px solid var(--yr-border);
+  border-radius: 4px;
+  font-family: var(--sl-font-mono);
+}
+
+/* ── Aside blocks ── */
+.starlight-aside {
+  border-radius: var(--yr-radius);
+  border-color: var(--yr-border);
+  background: var(--yr-surface);
+}
+
+/* ── Tables ── */
+.sl-markdown-content table {
+  border-radius: var(--yr-radius);
+  overflow: hidden;
+}
+.sl-markdown-content table th {
+  background: var(--yr-surface2);
+  color: var(--yr-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--sl-font);
+}
+.sl-markdown-content table td {
+  border-color: var(--yr-border);
+}
+.sl-markdown-content table tr:hover td {
+  background: var(--yr-surface2);
+}
