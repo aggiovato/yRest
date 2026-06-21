@@ -5,7 +5,7 @@
 /* ── Design tokens ── */
 :root {
   /* Starlight color overrides */
-  --sl-color-accent-low: #0c2340;
+  --sl-color-accent-low: #161718;
   --sl-color-accent: #287cdc;
   --sl-color-accent-high: #4c95f5;
   --sl-color-white: #ffffff;
@@ -20,6 +20,9 @@
   /* Fonts */
   --sl-font: "Ubuntu", system-ui, sans-serif;
   --sl-font-mono: "JetBrains Mono", "SFMono-Regular", monospace;
+
+  /* Content width — Starlight default is 45rem (~720px), increase for doc pages */
+  --sl-content-width: 55rem;
 
   /* Heading sizes — reduce from Starlight's large defaults */
   --sl-text-h1: 1.75rem;
@@ -350,7 +353,7 @@ html.yr-sidebar-closed .main-pane {
 /* ── Code blocks ── */
 .expressive-code pre,
 pre {
-  background: #020a17 !important;
+  background: #2a364262 !important;
   border: 1px solid var(--yr-border) !important;
   border-radius: var(--yr-radius) !important;
   font-family: var(--sl-font-mono) !important;
@@ -373,9 +376,17 @@ pre {
 }
 
 /* ── Tables ── */
+
+/* Base table styles — border-collapse:collapse ensures td borders span full width.
+   overflow:hidden on <table> does NOT work with collapsed borders in any browser.
+   Corner clipping is handled by the .yr-compare-wrap <div> wrapper for MDX tables.
+   For plain markdown tables (no wrapper), clip-path is used as a fallback. */
 .sl-markdown-content table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--yr-border);
   border-radius: var(--yr-radius);
-  overflow: hidden;
+  clip-path: inset(0 round var(--yr-radius));
 }
 .sl-markdown-content table th {
   background: var(--yr-surface2);
@@ -384,10 +395,48 @@ pre {
   text-transform: uppercase;
   letter-spacing: 0.06em;
   font-family: var(--sl-font);
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--yr-border);
 }
 .sl-markdown-content table td {
-  border-color: var(--yr-border);
+  border-bottom: 1px solid var(--yr-border);
+  padding: 0.55rem 1rem;
+}
+.sl-markdown-content table tr:last-child td {
+  border-bottom: none;
 }
 .sl-markdown-content table tr:hover td {
   background: var(--yr-surface2);
+}
+
+/* ── HTML table wrapper (MDX pages) ──
+   overflow:hidden on a <div> DOES clip children to border-radius — reliably,
+   regardless of border-collapse. The table inside has no border of its own. */
+.yr-compare-wrap {
+  margin-inline: auto;
+  width: fit-content;
+  margin-block: 1.5rem;
+  border: 1px solid var(--yr-border);
+  border-radius: var(--yr-radius);
+  overflow: hidden;
+}
+.yr-compare-wrap table {
+  border: none;
+  border-radius: 0;
+  clip-path: none;
+  min-width: 480px;
+}
+.yr-compare-wrap td:not(:first-child),
+.yr-compare-wrap th:not(:first-child) {
+  text-align: center;
+}
+
+/* Full-width variant — overrides fit-content for wider data tables */
+.yr-table-full {
+  width: 100%;
+  max-width: 100%;
+}
+.yr-table-full table {
+  min-width: 0;
+  width: 100%;
 }
