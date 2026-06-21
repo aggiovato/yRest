@@ -1,0 +1,57 @@
+---
+title: yRest
+description: Server REST API mock basato su YAML. CRUD zero-config, relazioni, filtri, SSE e route personalizzate da un file db.yml.
+tableOfContents: false
+editUrl: false
+---
+
+import HomeHero from "../../../components/HomeHero.astro";
+import FeatureCarousel from "../../../components/FeatureCarousel.astro";
+
+<HomeHero
+  tagline="Server REST API mock senza configurazione da un singolo file YAML. Come json-server, ma con YAML — con relazioni, stream SSE, funzioni handler ed export OpenAPI."
+  cta="Avvio rapido"
+  ctaHref="/it/getting-started/quick-start/"
+/>
+
+<FeatureCarousel
+  slides={[
+    [
+      {
+        title: "Zero config",
+        body: "Punta a un file db.yml e ottieni subito una REST API completa — nessun codice, nessun file di configurazione.",
+        path: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+      },
+      {
+        title: "CRUD completo",
+        body: "GET, POST, PUT, PATCH e DELETE per ogni collection. ID auto-incrementali. Scritture atomiche.",
+        path: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z",
+      },
+    ],
+    [
+      {
+        title: "Query potenti",
+        body: "Filtri di campo, operatori (_gte, _like, _regex), ricerca full-text, ordinamento, paginazione e proiezione di campi.",
+        path: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
+        path2: "M21 21l-4.35-4.35",
+      },
+      {
+        title: "Relazioni",
+        body: "many2one, one2one e many2many tramite un DSL compatto. Auto-embedding, route annidate e many2many bidirezionale.",
+        path: "M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9",
+      },
+    ],
+    [
+      {
+        title: "Route personalizzate",
+        body: "Risposte statiche, variabili di template, scenari condizionali, funzioni handler e stream SSE — tutto da YAML.",
+        path: "M16 18l6-6-6-6M8 6L2 12l6 6",
+      },
+      {
+        title: "Pronto per i test",
+        body: "API programmatica per Vitest e Playwright. Endpoint snapshot per reset di test puliti. Export OpenAPI 3.0.",
+        path: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
+      },
+    ],
+  ]}
+/>

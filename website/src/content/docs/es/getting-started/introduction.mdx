@@ -1,0 +1,130 @@
+---
+title: Introducción
+description: Qué es yRest y cuándo utilizarlo
+---
+
+export const Y = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#3fb950"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-label="Sí"
+  >
+    <polyline points="20 6 9 17 4 12" />
+  </svg>
+);
+
+export const N = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#f85149"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-label="No"
+  >
+    <line x1="18" y1="6" x2="6" y2="18" />
+    <line x1="6" y1="6" x2="18" y2="18" />
+  </svg>
+);
+
+export const W = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="17"
+    height="17"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="#d29922"
+    strokeWidth="2.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-label="Parcial"
+  >
+    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+    <line x1="12" y1="9" x2="12" y2="13" />
+    <line x1="12" y1="17" x2="12.01" y2="17" />
+  </svg>
+);
+
+**yRest** es un servidor REST API mock sin configuración para desarrolladores frontend. Lee un archivo `db.yml` y expone automáticamente una API REST CRUD completa — incluyendo relaciones, parámetros de consulta, paginación, flujos SSE y rutas estáticas personalizadas — sin necesidad de backend.
+
+```bash
+npx @yrest/cli serve db.yml
+# → REST API en http://localhost:3070
+```
+
+## Cuándo usarlo
+
+- Estás construyendo un frontend y necesitas una API realista antes de que el backend esté listo.
+- Necesitas un mock predecible para tests de integración (Vitest, Playwright, Cypress).
+- Quieres hacer una demo de un flujo de UI sin mantener un servidor real.
+- Necesitas SSE o un comportamiento de endpoint personalizado que `json-server` no puede manejar.
+
+## Comparativa
+
+Tanto yRest como `json-server` comparten la misma filosofía sin configuración — apúntalos a un archivo de datos y obtén una API REST al instante. La diferencia está en hasta dónde llega cada uno. yRest extiende el modelo con un sistema de relaciones más rico, operadores de consulta tipados, flujos SSE, escenarios de mock condicionales y una API programática completa. Si `json-server` cubre tus necesidades, sigue usándolo. Si has llegado a sus límites, yRest es el siguiente paso.
+
+<div class="yr-compare-wrap">
+<table>
+<thead>
+<tr>
+<th>Característica</th>
+<th>yRest</th>
+<th>json-server</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Base de datos YAML</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Sin configuración</td><td><Y /></td><td><Y /></td></tr>
+<tr><td>CRUD completo</td><td><Y /></td><td><Y /></td></tr>
+<tr><td>Operadores de campo (<code>_gte</code>, <code>_like</code>, <code>_regex</code>…)</td><td><Y /></td><td><W /></td></tr>
+<tr><td>Relaciones: many2one, one2one, many2many</td><td><Y /></td><td><W /></td></tr>
+<tr><td>Auto-embedding (<code>_nested: true</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Proyección de campos (<code>_fields</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Modo paginable (respuesta envelope)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Rutas personalizadas (<code>_routes</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Variables de plantilla (<code>{"{{"}}params.id{"}}"}</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Escenarios condicionales</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Funciones handler</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Rutas SSE (<code>_method: SSE</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Endpoints de snapshot</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Exportación OpenAPI 3.0</td><td><Y /></td><td><N /></td></tr>
+<tr><td>API programática para frameworks de test</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Tipos TypeScript</td><td><Y /></td><td><N /></td></tr>
+</tbody>
+</table>
+</div>
+
+## Instalación
+
+Añade yRest a tu proyecto como dependencia de desarrollo:
+
+```bash
+npm install -D @yrest/cli
+```
+
+O ejecútalo directamente sin instalar — útil para una prueba rápida:
+
+```bash
+npx @yrest/cli serve db.yml
+```
+
+Una vez instalado, crea los archivos de inicio y arranca el servidor:
+
+```bash
+npx @yrest/cli init          # crea db.yml + yrest.config.yml en el directorio actual
+npx @yrest/cli serve db.yml  # → REST API en http://localhost:3070
+```
+
+El servidor observa los cambios en `db.yml` y se recarga automáticamente. Consulta [Inicio rápido](/es/getting-started/quick-start/) para un tutorial paso a paso con un ejemplo real.

@@ -1,6 +1,18 @@
 ---
 import logo from '../assets/yrest-logo.png';
 
+interface Props {
+  tagline?: string;
+  cta?: string;
+  ctaHref?: string;
+}
+
+const {
+  tagline = "Zero-config REST API mock server from a single YAML file. Think json-server, but YAML-powered — with relations, SSE streams, handler functions and OpenAPI export.",
+  cta = "Quick Start",
+  ctaHref = "/getting-started/quick-start/",
+} = Astro.props;
+
 const orbitIcons = [
   { label: 'Zero config',   dur: '22s', delay: '0s',      r: '115px', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
   { label: 'Full CRUD',     dur: '22s', delay: '-7.33s',  r: '115px', d: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' },
@@ -20,13 +32,9 @@ const orbitIcons = [
   <div class="yr-inner">
     <div class="yr-left">
       <h2 class="yr-title">y<span class="yr-blue">Rest</span></h2>
-      <p class="yr-tagline">
-        Zero-config REST API mock server from a single YAML file.
-        Think json-server, but YAML-powered — with relations, SSE streams,
-        handler functions and OpenAPI export.
-      </p>
+      <p class="yr-tagline">{tagline}</p>
       <div class="yr-actions">
-        <a href="/quick-start/" class="yr-btn yr-btn-primary">Quick Start</a>
+        <a href={ctaHref} class="yr-btn yr-btn-primary">{cta}</a>
         <a href="https://github.com/aggiovato/yRest" class="yr-btn yr-btn-ghost">GitHub</a>
       </div>
     </div>

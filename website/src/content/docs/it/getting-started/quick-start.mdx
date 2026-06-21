@@ -1,0 +1,269 @@
+---
+title: Avvio rapido
+description: Metti in funzione una REST API mock in meno di un minuto
+---
+
+:::note[Cosa copre questa guida]
+Questa guida mostra yRest in **modalità mock standalone** — lo esegui con `npx`, punti a un file YAML e ottieni subito una REST API. Nessuna installazione, nessun codice backend.
+
+Se vuoi incorporare yRest in una suite di test (Vitest, Playwright, Cypress), consulta invece l'[API programmatica](/reference/programmatic-api/).
+:::
+
+## 1. Crea il tuo file di database
+
+Il comando `init` genera un `db.yml` pronto all'uso e un `yrest.config.yml` nella directory corrente:
+
+```bash
+npx @yrest/cli init
+```
+
+Sono disponibili tre template tramite `--sample`:
+
+<div class="yr-compare-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Template</th>
+        <th>Contenuto</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>basic</code> <em>(predefinito)</em>
+        </td>
+        <td>
+          Collection <code>users</code> e <code>posts</code> — ideale per una prima occhiata
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>relational</code>
+        </td>
+        <td>
+          <code>users</code>, <code>posts</code>, <code>comments</code> con link <code>_rel</code>{" "}
+          tra loro
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>ecommerce</code>
+        </td>
+        <td>
+          <code>products</code>, <code>orders</code>, <code>customers</code> con schemi di campo più
+          ricchi
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+```bash
+npx @yrest/cli init --sample relational   # template relazionale
+npx @yrest/cli init --sample ecommerce    # template e-commerce
+npx @yrest/cli init --file api.yml        # nome file personalizzato
+```
+
+Puoi anche saltare `init` e scrivere il file manualmente — il formato è semplice YAML:
+
+```yaml
+# db.yml
+users:
+  - id: 1
+    name: Ana
+    email: ana@test.com
+  - id: 2
+    name: Luis
+    email: luis@test.com
+
+posts:
+  - id: 1
+    title: First post
+    userId: 1
+```
+
+Qualsiasi chiave di primo livello che non inizia con `_` diventa una collection con route CRUD complete.
+
+## 2. Avvia il server
+
+```bash
+npx @yrest/cli serve db.yml
+```
+
+```
+yrest  ·  http://localhost:3070
+
+Collections (base: /):
+  CRUD  /users
+  CRUD  /posts
+
+Meta:
+  GET  /_about
+```
+
+La porta predefinita è **3070**. È stata scelta per evitare conflitti con le porte di sviluppo più comuni (3000, 3001, 4000, 8080, 8000), così puoi eseguire yRest insieme al tuo server di sviluppo frontend senza toccare alcuna configurazione.
+
+**Opzioni disponibili:**
+
+<div class="yr-compare-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Flag</th>
+        <th>Predefinito</th>
+        <th>Descrizione</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <code>-p, --port &lt;n&gt;</code>
+        </td>
+        <td>
+          <code>3070</code>
+        </td>
+        <td>Porta su cui ascoltare</td>
+      </tr>
+      <tr>
+        <td>
+          <code>-H, --host &lt;host&gt;</code>
+        </td>
+        <td>
+          <code>localhost</code>
+        </td>
+        <td>
+          Host a cui collegarsi (usa <code>0.0.0.0</code> per esporre sulla LAN)
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>-b, --base &lt;path&gt;</code>
+        </td>
+        <td>
+          <em>(nessuno)</em>
+        </td>
+        <td>
+          Prefissa tutte le route — es. <code>--base /api/v1</code>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>-w, --watch</code>
+        </td>
+        <td>off</td>
+        <td>
+          Ricarica <code>db.yml</code> automaticamente quando cambia
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>-r, --readonly</code>
+        </td>
+        <td>off</td>
+        <td>Rifiuta tutte le scritture (POST/PUT/PATCH/DELETE → 405)</td>
+      </tr>
+      <tr>
+        <td>
+          <code>-d, --delay &lt;ms&gt;</code>
+        </td>
+        <td>
+          <code>0</code>
+        </td>
+        <td>Aggiunge una latenza fissa a ogni risposta</td>
+      </tr>
+      <tr>
+        <td>
+          <code>--pageable [limit]</code>
+        </td>
+        <td>off</td>
+        <td>
+          Avvolge le liste in <code>{"{ data, pagination }"}</code>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--snapshot</code>
+        </td>
+        <td>off</td>
+        <td>
+          Espone <code>POST /_snapshot</code> per salvare lo stato corrente su disco
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--handlers &lt;file&gt;</code>
+        </td>
+        <td>
+          <em>(nessuno)</em>
+        </td>
+        <td>
+          Percorso a un file <code>yrest.handlers.js</code> con logica personalizzata
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <code>--id-strategy &lt;s&gt;</code>
+        </td>
+        <td>
+          <code>increment</code>
+        </td>
+        <td>
+          <code>increment</code> (1, 2, 3…) o <code>uuid</code>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Le opzioni possono anche essere impostate in `yrest.config.yml` così non devi ripeterle ad ogni avvio. I flag CLI hanno sempre la precedenza sul file di configurazione.
+
+## 3. Usa l'API
+
+Ogni collection ottiene automaticamente la superficie REST completa. Ecco le operazioni più comuni sulla collection `users` dell'esempio sopra:
+
+```bash
+# Elencare tutti gli utenti
+curl http://localhost:3070/users
+
+# Ottenere un utente per id
+curl http://localhost:3070/users/1
+
+# Filtrare per valore di campo
+curl "http://localhost:3070/users?name_like=ana"
+
+# Paginare
+curl "http://localhost:3070/users?_page=1&_limit=10"
+
+# Ordinare
+curl "http://localhost:3070/users?_sort=name&_order=asc"
+
+# Creare un nuovo utente (l'id viene assegnato automaticamente)
+curl -X POST http://localhost:3070/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Carlos","email":"carlos@test.com"}'
+
+# Aggiornamento parziale
+curl -X PATCH http://localhost:3070/users/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ana Aggiornata"}'
+
+# Eliminare
+curl -X DELETE http://localhost:3070/users/1
+```
+
+Le modifiche effettuate tramite POST/PUT/PATCH/DELETE vengono salvate in `db.yml` in tempo reale. Riavvia il server per tornare ai dati originali, oppure abilita `--snapshot` e chiama `POST /_snapshot` per salvare lo stato corrente esplicitamente.
+
+## 4. Esplora il riepilogo dell'API
+
+Apri [`http://localhost:3070/_about`](http://localhost:3070/_about) nel tuo browser.
+
+Questa pagina integrata mostra tutti gli endpoint generati raggruppati per collection, le modalità server attive, le route personalizzate definite in `_routes` ed esempi `curl` pronti all'uso per ogni operazione. Si aggiorna automaticamente quando il server si ricarica — utile come riferimento rapido mentre costruisci il tuo frontend.
+
+## Prossimi passi
+
+- [Configurazione](/getting-started/configuration/) — tutte le opzioni di `yrest.config.yml`
+- [Formato database](/database/format/) — impara lo schema YAML completo
+- [Parametri di query](/database/query-params/) — filtri, ordinamento, paginazione, proiezioni
+- [Relazioni](/database/relations/) — collega le collection con `_rel`
+- [Route personalizzate](/routes/static/) — aggiungi endpoint non-CRUD
+- [API programmatica](/reference/programmatic-api/) — usa con Vitest e Playwright

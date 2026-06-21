@@ -1,0 +1,57 @@
+---
+title: yRest
+description: Serveur REST API mock basé sur YAML. CRUD sans configuration, relations, filtres, SSE et routes personnalisées depuis un fichier db.yml.
+tableOfContents: false
+editUrl: false
+---
+
+import HomeHero from "../../../components/HomeHero.astro";
+import FeatureCarousel from "../../../components/FeatureCarousel.astro";
+
+<HomeHero
+  tagline="Serveur REST API mock sans configuration depuis un seul fichier YAML. Comme json-server, mais YAML — avec des relations, des flux SSE, des fonctions handler et l'export OpenAPI."
+  cta="Démarrage rapide"
+  ctaHref="/fr/getting-started/quick-start/"
+/>
+
+<FeatureCarousel
+  slides={[
+    [
+      {
+        title: "Zéro config",
+        body: "Pointez vers un fichier db.yml et obtenez une API REST complète instantanément — aucun code, aucun fichier de configuration requis.",
+        path: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+      },
+      {
+        title: "CRUD complet",
+        body: "GET, POST, PUT, PATCH et DELETE pour chaque collection. IDs auto-incrémentaux. Écritures atomiques.",
+        path: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z",
+      },
+    ],
+    [
+      {
+        title: "Requêtes puissantes",
+        body: "Filtres de champs, opérateurs (_gte, _like, _regex), recherche plein texte, tri, pagination et projection de champs.",
+        path: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
+        path2: "M21 21l-4.35-4.35",
+      },
+      {
+        title: "Relations",
+        body: "many2one, one2one et many2many via un DSL compact. Auto-embedding, routes imbriquées et many2many bidirectionnel.",
+        path: "M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9",
+      },
+    ],
+    [
+      {
+        title: "Routes personnalisées",
+        body: "Réponses statiques, variables de modèle, scénarios conditionnels, fonctions handler et flux SSE — tout depuis YAML.",
+        path: "M16 18l6-6-6-6M8 6L2 12l6 6",
+      },
+      {
+        title: "Prêt pour les tests",
+        body: "API programmatique pour Vitest et Playwright. Endpoints snapshot pour des réinitialisations propres. Export OpenAPI 3.0.",
+        path: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
+      },
+    ],
+  ]}
+/>

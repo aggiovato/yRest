@@ -1,5 +1,16 @@
 ---
-const slides = [
+interface SlideCard {
+  title: string;
+  body: string;
+  path: string;
+  path2?: string;
+}
+
+interface Props {
+  slides?: SlideCard[][];
+}
+
+const defaultSlides: SlideCard[][] = [
   [
     {
       title: 'Zero config',
@@ -38,6 +49,8 @@ const slides = [
     },
   ],
 ];
+
+const { slides = defaultSlides } = Astro.props;
 ---
 
 <div class="yr-carousel">

@@ -1,0 +1,57 @@
+---
+title: yRest
+description: Servidor REST API mock basado en YAML. CRUD sin configuración, relaciones, filtros, SSE y rutas personalizadas desde un archivo db.yml.
+tableOfContents: false
+editUrl: false
+---
+
+import HomeHero from "../../../components/HomeHero.astro";
+import FeatureCarousel from "../../../components/FeatureCarousel.astro";
+
+<HomeHero
+  tagline="Servidor REST API mock sin configuración desde un único archivo YAML. Como json-server, pero con YAML — con relaciones, flujos SSE, funciones handler y exportación OpenAPI."
+  cta="Inicio rápido"
+  ctaHref="/es/getting-started/quick-start/"
+/>
+
+<FeatureCarousel
+  slides={[
+    [
+      {
+        title: "Sin configuración",
+        body: "Apunta a un archivo db.yml y obtén una API REST completa al instante — sin código, sin archivos de configuración.",
+        path: "M13 2L3 14h9l-1 8 10-12h-9l1-8z",
+      },
+      {
+        title: "CRUD completo",
+        body: "GET, POST, PUT, PATCH y DELETE para cada colección. IDs auto-incrementales. Escrituras atómicas.",
+        path: "M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z",
+      },
+    ],
+    [
+      {
+        title: "Consultas potentes",
+        body: "Filtros de campo, operadores (_gte, _like, _regex), búsqueda de texto completo, ordenación, paginación y proyección de campos.",
+        path: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
+        path2: "M21 21l-4.35-4.35",
+      },
+      {
+        title: "Relaciones",
+        body: "many2one, one2one y many2many mediante un DSL compacto. Auto-embedding, rutas anidadas y many2many bidireccional.",
+        path: "M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9",
+      },
+    ],
+    [
+      {
+        title: "Rutas personalizadas",
+        body: "Respuestas estáticas, variables de plantilla, escenarios condicionales, funciones handler y flujos SSE — todo desde YAML.",
+        path: "M16 18l6-6-6-6M8 6L2 12l6 6",
+      },
+      {
+        title: "Listo para tests",
+        body: "API programática para Vitest y Playwright. Endpoints de snapshot para resets limpios. Exportación OpenAPI 3.0.",
+        path: "M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3",
+      },
+    ],
+  ]}
+/>

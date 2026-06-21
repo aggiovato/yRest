@@ -7,6 +7,14 @@ export default defineConfig({
       title: "yRest",
       description:
         "YAML-powered REST API mock server. Zero-config CRUD, relations, filters, SSE and custom routes from a db.yml file.",
+      defaultLocale: "root",
+      locales: {
+        root: { label: "English", lang: "en" },
+        es: { label: "Español", lang: "es" },
+        de: { label: "Deutsch", lang: "de" },
+        fr: { label: "Français", lang: "fr" },
+        it: { label: "Italiano", lang: "it" },
+      },
       logo: {
         src: "./src/assets/yrest-logo.png",
         alt: "yRest",
@@ -101,51 +109,228 @@ export default defineConfig({
       },
       customCss: ["./src/styles/custom.css"],
       sidebar: [
-        { label: "Home", link: "/" },
+        {
+          label: "Home",
+          translations: { es: "Inicio", de: "Start", fr: "Accueil", it: "Home" },
+          link: "/",
+        },
         {
           label: "Getting Started",
+          translations: {
+            es: "Primeros pasos",
+            de: "Erste Schritte",
+            fr: "Pour commencer",
+            it: "Per iniziare",
+          },
           items: [
-            { label: "Introduction", slug: "introduction" },
-            { label: "Quick Start", slug: "quick-start" },
-            { label: "Configuration", slug: "configuration" },
-          ],
-        },
-        {
-          label: "Database",
-          items: [
-            { label: "YAML Format", slug: "database/format" },
-            { label: "Field Schema", slug: "database/schema" },
-            { label: "Relations", slug: "database/relations" },
-          ],
-        },
-        {
-          label: "Custom Routes",
-          items: [
-            { label: "Static & Templates", slug: "routes/static" },
-            { label: "Scenarios", slug: "routes/scenarios" },
-            { label: "Handler Functions", slug: "routes/handlers" },
             {
-              label: "SSE Streams",
-              slug: "routes/sse",
-              badge: { text: "NEW", variant: "success" },
+              label: "Introduction",
+              translations: {
+                es: "Introducción",
+                de: "Einführung",
+                fr: "Introduction",
+                it: "Introduzione",
+              },
+              slug: "getting-started/introduction",
+            },
+            {
+              label: "Quick Start",
+              translations: {
+                es: "Inicio rápido",
+                de: "Schnellstart",
+                fr: "Démarrage rapide",
+                it: "Avvio rapido",
+              },
+              slug: "getting-started/quick-start",
+            },
+            {
+              label: "Configuration",
+              translations: {
+                es: "Configuración",
+                de: "Konfiguration",
+                fr: "Configuration",
+                it: "Configurazione",
+              },
+              slug: "getting-started/configuration",
             },
           ],
         },
         {
-          label: "Query Parameters",
-          slug: "query-params",
+          label: "Database",
+          translations: {
+            es: "Base de datos",
+            de: "Datenbank",
+            fr: "Base de données",
+            it: "Database",
+          },
+          items: [
+            {
+              label: "YAML Format",
+              translations: {
+                es: "Formato YAML",
+                de: "YAML-Format",
+                fr: "Format YAML",
+                it: "Formato YAML",
+              },
+              slug: "database/format",
+            },
+            {
+              label: "Field Schema",
+              translations: {
+                es: "Esquema de campos",
+                de: "Feld-Schema",
+                fr: "Schéma de champs",
+                it: "Schema dei campi",
+              },
+              slug: "database/schema",
+            },
+            {
+              label: "Relations",
+              translations: {
+                es: "Relaciones",
+                de: "Relationen",
+                fr: "Relations",
+                it: "Relazioni",
+              },
+              slug: "database/relations",
+            },
+            {
+              label: "Query Parameters",
+              translations: {
+                es: "Parámetros de consulta",
+                de: "Abfrageparameter",
+                fr: "Paramètres de requête",
+                it: "Parametri di query",
+              },
+              slug: "database/query-params",
+            },
+          ],
         },
         {
-          label: "Server Modes",
-          slug: "server-modes",
+          label: "Custom Routes",
+          translations: {
+            es: "Rutas personalizadas",
+            de: "Benutzerdefinierte Routen",
+            fr: "Routes personnalisées",
+            it: "Route personalizzate",
+          },
+          items: [
+            {
+              label: "Static Routes",
+              translations: {
+                es: "Rutas estáticas",
+                de: "Statische Routen",
+                fr: "Routes statiques",
+                it: "Route statiche",
+              },
+              slug: "routes/static",
+            },
+            {
+              label: "Template Variables",
+              translations: {
+                es: "Variables de plantilla",
+                de: "Template-Variablen",
+                fr: "Variables de modèle",
+                it: "Variabili di template",
+              },
+              slug: "routes/templates",
+            },
+            {
+              label: "Scenarios",
+              translations: { es: "Escenarios", de: "Szenarien", fr: "Scénarios", it: "Scenari" },
+              slug: "routes/scenarios",
+            },
+            {
+              label: "Handler Functions",
+              translations: {
+                es: "Funciones handler",
+                de: "Handler-Funktionen",
+                fr: "Fonctions handler",
+                it: "Funzioni handler",
+              },
+              slug: "routes/handlers",
+            },
+            {
+              label: "SSE Streams",
+              translations: {
+                es: "Flujos SSE",
+                de: "SSE-Streams",
+                fr: "Flux SSE",
+                it: "Stream SSE",
+              },
+              slug: "routes/sse",
+              badge: { text: "NEW", variant: "success" },
+            },
+            {
+              label: "WebSocket",
+              translations: { es: "WebSocket", de: "WebSocket", fr: "WebSocket", it: "WebSocket" },
+              slug: "routes/websocket",
+              badge: { text: "SOON", variant: "caution" },
+            },
+          ],
         },
         {
-          label: "Programmatic API",
-          slug: "programmatic-api",
+          label: "Server",
+          translations: { es: "Servidor", de: "Server", fr: "Serveur", it: "Server" },
+          items: [
+            {
+              label: "Server Modes",
+              translations: {
+                es: "Modos de servidor",
+                de: "Server-Modi",
+                fr: "Modes serveur",
+                it: "Modalità server",
+              },
+              slug: "reference/server-modes",
+            },
+          ],
         },
         {
-          label: "CLI Reference",
-          slug: "cli-reference",
+          label: "API & CLI",
+          translations: { es: "API & CLI", de: "API & CLI", fr: "API & CLI", it: "API & CLI" },
+          items: [
+            {
+              label: "Programmatic API",
+              translations: {
+                es: "API programática",
+                de: "Programmatische API",
+                fr: "API programmatique",
+                it: "API programmatica",
+              },
+              slug: "reference/programmatic-api",
+            },
+            {
+              label: "CLI Reference",
+              translations: {
+                es: "Referencia CLI",
+                de: "CLI-Referenz",
+                fr: "Référence CLI",
+                it: "Riferimento CLI",
+              },
+              slug: "reference/cli-reference",
+            },
+          ],
+        },
+        {
+          label: "Integrations",
+          translations: {
+            es: "Integraciones",
+            de: "Integrationen",
+            fr: "Intégrations",
+            it: "Integrazioni",
+          },
+          items: [
+            {
+              label: "OpenAPI Export",
+              translations: {
+                es: "Exportación OpenAPI",
+                de: "OpenAPI-Export",
+                fr: "Export OpenAPI",
+                it: "Export OpenAPI",
+              },
+              slug: "integrations/openapi",
+            },
+          ],
         },
       ],
     }),
