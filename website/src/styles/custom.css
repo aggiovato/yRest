@@ -397,13 +397,17 @@ pre {
 /* Base table styles — border-collapse:collapse ensures td borders span full width.
    overflow:hidden on <table> does NOT work with collapsed borders in any browser.
    Corner clipping is handled by the .yr-compare-wrap <div> wrapper for MDX tables.
-   For plain markdown tables (no wrapper), clip-path is used as a fallback. */
+   For plain markdown tables (no wrapper), clip-path is used as a fallback.
+   display:table overrides Starlight's display:block which prevents cells from
+   filling the full row width. */
 .sl-markdown-content table {
+  display: table;
   width: 100%;
   border-collapse: collapse;
   border: 1px solid var(--yr-border);
   border-radius: var(--yr-radius);
   clip-path: inset(0 round var(--yr-radius));
+  overflow: visible;
 }
 .sl-markdown-content table th {
   background: var(--yr-surface2);
