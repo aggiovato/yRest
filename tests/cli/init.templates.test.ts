@@ -1,6 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { parse } from "yaml";
+import { writeFileSync, unlinkSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { randomUUID } from "node:crypto";
 import { templates, SAMPLES } from "../../src/cli/commands/templates/index";
+import { createYrestStorage } from "../../src/storage/yrestStorage";
+
+const tmpFiles: string[] = [];
+
+function templateStorage(template: string) {
+  const filePath = join(tmpdir(), `yrest-tpl-${randomUUID()}.yml`);
+  writeFileSync(filePath, template, "utf8");
+  tmpFiles.push(filePath);
+  return createYrestStorage(filePath);
+}
+
+afterEach(() => {
+  for (const f of tmpFiles.splice(0)) {
+    try {
+      unlinkSync(f);
+    } catch {
+      /* ignore */
+    }
+  }
+});
 
 describe("init templates", () => {
   describe("SAMPLES enum", () => {
@@ -106,36 +130,40 @@ describe("init templates", () => {
     });
 
     it("all posts reference existing user ids", () => {
-      const data = parse(templates.relational);
-      const userIds = data.users.map((u: { id: number }) => u.id);
-      for (const post of data.posts) {
-        expect(userIds).toContain(post.userId);
+      const storage = templateStorage(templates.relational);
+      const data = storage.getData();
+      const userIds = new Set(data["users"]!.map((u) => u["id"]));
+      for (const post of data["posts"]!) {
+        expect(userIds.has(post["userId"])).toBe(true);
       }
     });
 
     it("all comments reference existing post ids", () => {
-      const data = parse(templates.relational);
-      const postIds = data.posts.map((p: { id: number }) => p.id);
-      for (const comment of data.comments) {
-        expect(postIds).toContain(comment.postId);
+      const storage = templateStorage(templates.relational);
+      const data = storage.getData();
+      const postIds = new Set(data["posts"]!.map((p) => p["id"]));
+      for (const comment of data["comments"]!) {
+        expect(postIds.has(comment["postId"])).toBe(true);
       }
     });
 
     it("all post_tags reference existing post and tag ids", () => {
-      const data = parse(templates.relational);
-      const postIds = new Set(data.posts.map((p: { id: number }) => p.id));
-      const tagIds = new Set(data.tags.map((t: { id: number }) => t.id));
-      for (const pt of data.post_tags) {
-        expect(postIds.has(pt.postId)).toBe(true);
-        expect(tagIds.has(pt.tagId)).toBe(true);
+      const storage = templateStorage(templates.relational);
+      const data = storage.getData();
+      const postIds = new Set(data["posts"]!.map((p) => p["id"]));
+      const tagIds = new Set(data["tags"]!.map((t) => t["id"]));
+      for (const pt of data["post_tags"]!) {
+        expect(postIds.has(pt["postId"])).toBe(true);
+        expect(tagIds.has(pt["tagId"])).toBe(true);
       }
     });
 
     it("all profiles reference existing user ids", () => {
-      const data = parse(templates.relational);
-      const userIds = new Set(data.users.map((u: { id: number }) => u.id));
-      for (const profile of data.profiles) {
-        expect(userIds.has(profile.userId)).toBe(true);
+      const storage = templateStorage(templates.relational);
+      const data = storage.getData();
+      const userIds = new Set(data["users"]!.map((u) => u["id"]));
+      for (const profile of data["profiles"]!) {
+        expect(userIds.has(profile["userId"])).toBe(true);
       }
     });
   });

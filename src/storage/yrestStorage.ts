@@ -16,6 +16,7 @@ import { parseRoutes } from "./parseRoutes.js";
 import { parseSseRoutes } from "./parseSseRoutes.js";
 import { parseSchema } from "./parseSchema.js";
 import { parseData, hasDataBlock } from "./parseData.js";
+import { resolveDirectives } from "./resolveDirectives.js";
 import { deepCopyData } from "../utils/deepCopy.js";
 
 /**
@@ -97,6 +98,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
   const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const dataBlock = hasDataBlock(raw);
   const data: Data = parseData(raw);
+  const directivesModified = resolveDirectives(data);
 
   let snapshot = {
     data: deepCopyData(data),
@@ -104,7 +106,7 @@ export function createYrestStorage(filePath: string): YrestStorage {
     savedAt: new Date(),
   };
 
-  return {
+  const storage: YrestStorage = {
     getData() {
       return data;
     },
@@ -158,6 +160,8 @@ export function createYrestStorage(filePath: string): YrestStorage {
       Object.assign(data, freshData);
       for (const key of Object.keys(relations)) delete relations[key];
       Object.assign(relations, freshRelations);
+
+      if (resolveDirectives(data)) storage.persist();
     },
 
     getSnapshot() {
@@ -181,4 +185,8 @@ export function createYrestStorage(filePath: string): YrestStorage {
       this.persist();
     },
   };
+
+  if (directivesModified) storage.persist();
+
+  return storage;
 }

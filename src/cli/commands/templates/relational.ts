@@ -1,6 +1,7 @@
 /** YAML template for the `relational` sample — blog domain showcasing all three relation types. */
 export const relationalTemplate = `# yrest relational sample — blog
 # Demonstrates: many2one, one2one and many2many relationships
+# Also shows __uuid_gen and __fk directives for UUID-based IDs
 # Run: npx @yrest/cli serve db.yml
 # Docs: GET http://localhost:3070/_about
 
@@ -25,33 +26,36 @@ _rel:
       _type: one2one
       _target: users
 
+# __uuid_gen:alias generates a UUID and registers it under that alias.
+# __fk.collection:alias resolves to the UUID registered in that collection.
+# yRest rewrites this file on first run, replacing all directives with real values.
 users:
-  - id: 1
+  - id: __uuid_gen:ana
     name: Ana García
     email: ana@example.com
     role: author
-  - id: 2
+  - id: __uuid_gen:luis
     name: Luis Martínez
     email: luis@example.com
     role: author
-  - id: 3
+  - id: __uuid_gen:sara
     name: Sara López
     email: sara@example.com
     role: reader
 
 profiles:
-  - id: 1
-    userId: 1
+  - id: __uuid_gen
+    userId: __fk.users:ana
     bio: Full-stack developer and open-source enthusiast
     avatar: https://i.pravatar.cc/150?img=1
     website: https://ana.dev
-  - id: 2
-    userId: 2
+  - id: __uuid_gen
+    userId: __fk.users:luis
     bio: Backend engineer, coffee addict
     avatar: https://i.pravatar.cc/150?img=2
     website: https://luisdev.io
-  - id: 3
-    userId: 3
+  - id: __uuid_gen
+    userId: __fk.users:sara
     bio: Designer turned frontend developer
     avatar: https://i.pravatar.cc/150?img=3
     website: null
@@ -74,75 +78,75 @@ tags:
     color: "#ef4444"
 
 posts:
-  - id: 1
+  - id: __uuid_gen:post-ts
     title: Getting started with TypeScript
     slug: getting-started-typescript
     body: TypeScript adds static typing to JavaScript, catching errors at compile time...
-    userId: 1
+    userId: __fk.users:ana
     published: true
     views: 1420
     createdAt: "2024-11-01"
-  - id: 2
+  - id: __uuid_gen:post-fastify
     title: Building REST APIs with Fastify
     slug: rest-apis-fastify
     body: Fastify is the fastest Node.js web framework, perfect for building APIs...
-    userId: 1
+    userId: __fk.users:ana
     published: true
     views: 980
     createdAt: "2024-11-15"
-  - id: 3
+  - id: __uuid_gen:post-testing
     title: Testing strategies for modern apps
     slug: testing-strategies-modern
     body: A solid test strategy covers unit, integration and end-to-end scenarios...
-    userId: 2
+    userId: __fk.users:luis
     published: true
     views: 640
     createdAt: "2024-12-03"
-  - id: 4
+  - id: __uuid_gen:post-yaml
     title: YAML as a database format
     slug: yaml-database-format
     body: YAML is human-readable and expressive enough for mock data during development...
-    userId: 2
+    userId: __fk.users:luis
     published: false
     views: 0
     createdAt: "2025-01-10"
 
 # pivot table for posts ↔ tags (many2many)
 post_tags:
-  - { id: 1, postId: 1, tagId: 1 }
-  - { id: 2, postId: 1, tagId: 2 }
-  - { id: 3, postId: 2, tagId: 2 }
-  - { id: 4, postId: 2, tagId: 4 }
-  - { id: 5, postId: 3, tagId: 3 }
-  - { id: 6, postId: 3, tagId: 1 }
-  - { id: 7, postId: 4, tagId: 5 }
-  - { id: 8, postId: 4, tagId: 2 }
+  - { id: 1, postId: __fk.posts:post-ts,      tagId: 1 }
+  - { id: 2, postId: __fk.posts:post-ts,      tagId: 2 }
+  - { id: 3, postId: __fk.posts:post-fastify, tagId: 2 }
+  - { id: 4, postId: __fk.posts:post-fastify, tagId: 4 }
+  - { id: 5, postId: __fk.posts:post-testing, tagId: 3 }
+  - { id: 6, postId: __fk.posts:post-testing, tagId: 1 }
+  - { id: 7, postId: __fk.posts:post-yaml,    tagId: 5 }
+  - { id: 8, postId: __fk.posts:post-yaml,    tagId: 2 }
 
 comments:
   - id: 1
     body: Great introduction! This helped me a lot.
-    postId: 1
-    userId: 3
+    postId: __fk.posts:post-ts
+    userId: __fk.users:sara
     likes: 5
   - id: 2
     body: Could you cover generics in a follow-up post?
-    postId: 1
-    userId: 2
+    postId: __fk.posts:post-ts
+    userId: __fk.users:luis
     likes: 3
   - id: 3
     body: Fastify is indeed much faster than Express in my benchmarks.
-    postId: 2
-    userId: 3
+    postId: __fk.posts:post-fastify
+    userId: __fk.users:sara
     likes: 8
   - id: 4
     body: Do you have a GitHub repo with these examples?
-    postId: 2
-    userId: 1
+    postId: __fk.posts:post-fastify
+    userId: __fk.users:ana
     likes: 1
   - id: 5
     body: E2E tests are underrated. Solid post!
-    postId: 3
-    userId: 1
+    postId: __fk.posts:post-testing
+    userId: __fk.users:ana
     likes: 4
 
 # Try these queries:

@@ -74,6 +74,10 @@ export function registerServe(program: Command): void {
       "Id generation strategy for new items: increment (default) or uuid",
       "increment"
     )
+    .option(
+      "--uuid",
+      "Shorthand for --id-strategy uuid: assign UUID ids to new items created via POST"
+    )
     .action(async (file: string, flags: Record<string, string | boolean>, cmd: Command) => {
       const fileConfig = loadConfigFile(join(process.cwd(), "yrest.config.yml"));
 
@@ -81,6 +85,12 @@ export function registerServe(program: Command): void {
       const cliOverrides = Object.fromEntries(
         Object.entries(flags).filter(([key]) => cmd.getOptionValueSource(key) === "cli")
       );
+
+      // --uuid is a shorthand for --id-strategy uuid
+      if (cliOverrides["uuid"] === true) {
+        cliOverrides["idStrategy"] = "uuid";
+        delete cliOverrides["uuid"];
+      }
 
       const options = buildServeOptions(file, fileConfig, cliOverrides, cmd.args.length > 0);
 

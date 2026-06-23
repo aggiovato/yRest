@@ -257,6 +257,31 @@ _data:
 
 Both formats are equivalent. You can also mix them — if the same collection name appears both inside `_data` and at the root level, the root-level entry wins. The file is persisted in whichever format it was originally written.
 
+### Data directives (`__uuid_gen`, `__fk`)
+
+Use `__uuid_gen` and `__fk` directives to generate UUID-based IDs and cross-collection references automatically. yRest resolves all directives on first load and rewrites the file with real values — subsequent restarts are stable.
+
+```yaml
+users:
+  - id: __uuid_gen:ana # generates a UUID and registers alias "ana"
+    name: Ana
+  - id: __uuid_gen:luis # generates a UUID and registers alias "luis"
+    name: Luis
+
+posts:
+  - id: __uuid_gen # generates a UUID (no alias needed)
+    title: Hello World
+    userId: __fk.users:ana # resolves to the UUID registered as "ana" in users
+```
+
+| Directive               | Meaning                                                          |
+| ----------------------- | ---------------------------------------------------------------- |
+| `__uuid_gen`            | Generate a UUID v4 for this field                                |
+| `__uuid_gen:alias`      | Generate a UUID and register it under `alias` in this collection |
+| `__fk.collection:alias` | Resolve to the UUID registered as `alias` in `collection`        |
+
+Aliases are scoped to their collection — `__uuid_gen:ale` in `users` and `__uuid_gen:ale` in `categories` are independent.
+
 ---
 
 ## Field annotations (`_schema`)

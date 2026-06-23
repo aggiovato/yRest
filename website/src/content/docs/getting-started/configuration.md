@@ -248,6 +248,14 @@ Use `uuid` when your frontend code expects string IDs, when you need IDs that ar
 idStrategy: uuid
 ```
 
+`--uuid` is a shorthand CLI flag for `--id-strategy uuid`:
+
+```bash
+npx @yrest/cli serve db.yml --uuid
+```
+
+This flag only affects IDs assigned to **new items created via POST**. To pre-populate your `db.yml` with UUID-based IDs from the start, use the [`__uuid_gen` directive](/database/format/#data-directives) in the file instead.
+
 ---
 
 ### handlers

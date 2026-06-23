@@ -7,6 +7,50 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.13.0] — 2026-06-23
+
+### Added
+
+- **`__uuid_gen` directive — UUID generation in `db.yml`:** setting any string field to `__uuid_gen` (or `__uuid_gen:alias`) causes yRest to replace it with a randomly generated UUID v4 at load time. yRest then rewrites `db.yml` with the resolved values so IDs are stable across restarts — no manual UUID copy-paste required.
+
+  ```yaml
+  users:
+    - id: __uuid_gen:ana # generates a UUID, registers alias "ana"
+      name: Ana
+    - id: __uuid_gen:luis # generates a UUID, registers alias "luis"
+      name: Luis
+  ```
+
+- **`__fk` directive — cross-collection UUID references:** setting a field to `__fk.<collection>:<alias>` resolves it to the UUID registered under that alias in the named collection. This wires FK relationships between collections whose IDs are generated at load time.
+
+  ```yaml
+  posts:
+    - id: __uuid_gen
+      title: Hello World
+      userId: __fk.users:ana # → same UUID as users[alias=ana].id
+  ```
+
+  Resolution runs in two passes — all `__uuid_gen` values first, then all `__fk` references — so order in the file does not matter. Unresolvable aliases emit a console warning and leave the field value unchanged.
+
+- **`--uuid` CLI flag:** shorthand for `--id-strategy uuid` on `yrest serve`. Applies to new items created via `POST` (not to the initial data in `db.yml`).
+
+  ```bash
+  npx @yrest/cli serve db.yml --uuid
+  ```
+
+### Internal
+
+- `src/storage/resolveDirectives.ts` — new module; two-pass resolver operating on the parsed `Data` object. Returns `true` when any directive was resolved so callers know whether to persist.
+- `yrestStorage.ts` — calls `resolveDirectives(data)` after `parseData()` in both `createYrestStorage` and `reload()`. Triggers `persist()` immediately if `modified = true`.
+- `relational` init template updated to demonstrate `__uuid_gen:alias` and `__fk` across all collections (users, profiles, posts, post_tags, comments).
+
+### Tests
+
+- `tests/storage/resolveDirectives.test.ts` — 19 unit tests: UUID generation, alias registration, FK resolution, cross-collection scope isolation, unresolvable alias warning, non-string field pass-through, nested object non-recursion.
+- `tests/routes/directives.test.ts` — 6 integration tests: GET returns UUID IDs, single-item GET by generated UUID, write-back on disk after first load, FK consistency between collections, no re-write on second load of resolved file.
+
+---
+
 ## [0.12.0] — 2026-06-21
 
 ### Added
