@@ -332,6 +332,17 @@ export default defineConfig({
             },
           ],
         },
+        {
+          label: "Playground",
+          translations: {
+            es: "Playground",
+            de: "Playground",
+            fr: "Playground",
+            it: "Playground",
+          },
+          link: "/playground/",
+          badge: { text: "NEW", variant: "success" },
+        },
       ],
     }),
   ],
