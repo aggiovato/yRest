@@ -69,6 +69,14 @@ header.header {
   transition: padding-inline-start 0.22s ease;
 }
 
+/* Hide Starlight's native mobile hamburger — our custom yr-hamburger handles both
+   mobile and desktop. The <starlight-menu-button> element itself must stay in the
+   DOM (Starlight's CSS uses [aria-expanded=true] ~ .sidebar-pane to show it on mobile),
+   but we hide the button inside it. */
+starlight-menu-button button {
+  display: none !important;
+}
+
 /* Sidebar closed state:
    - hide the fixed sidebar pane
    - zero the main-frame left padding (was pushing content right of fixed sidebar)
@@ -367,13 +375,22 @@ html.yr-sidebar-closed .main-pane {
   }
 }
 
-/* ── Code blocks ── */
+/* ── Code blocks — exclude .not-content (playground, etc.) ── */
 .expressive-code pre,
-pre {
-  background: #2a364262 !important;
+pre:not(:where(.not-content *)) {
+  background: var(--yr-surface2) !important;
   border: 1px solid var(--yr-border) !important;
   border-radius: var(--yr-radius) !important;
   font-family: var(--sl-font-mono) !important;
+}
+
+/* Copy button — reduce from default 2rem/2.5rem to something smaller */
+.expressive-code .copy button {
+  width: 1.6rem !important;
+  height: 1.6rem !important;
+}
+.expressive-code .copy button::after {
+  margin: 0.3rem !important;
 }
 
 /* ── Inline code ── */
@@ -394,20 +411,31 @@ pre {
 
 /* ── Tables ── */
 
-/* Base table styles — border-collapse:collapse ensures td borders span full width.
-   overflow:hidden on <table> does NOT work with collapsed borders in any browser.
-   Corner clipping is handled by the .yr-compare-wrap <div> wrapper for MDX tables.
-   For plain markdown tables (no wrapper), clip-path is used as a fallback.
-   display:table overrides Starlight's display:block which prevents cells from
-   filling the full row width. */
+/* Base table styles — display:block enables overflow-x:auto for horizontal scroll
+   on narrow viewports without making the whole page scroll.
+   clip-path handles rounded corners since overflow:hidden doesn't work with
+   border-collapse:collapse in any browser. */
 .sl-markdown-content table {
   display: table;
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-collapse: collapse;
   border: 1px solid var(--yr-border);
   border-radius: var(--yr-radius);
   clip-path: inset(0 round var(--yr-radius));
-  overflow: visible;
+}
+
+/* Hide header rows whose th cells are all empty (markdown tables with blank header) */
+.sl-markdown-content table thead tr:has(th:empty):not(:has(th:not(:empty))) {
+  display: none;
+}
+
+/* Zero out any stray margin-block-start on table rows/cells */
+.sl-markdown-content table tr,
+.sl-markdown-content table td,
+.sl-markdown-content table th {
+  margin-block-start: 0 !important;
 }
 .sl-markdown-content table th {
   background: var(--yr-surface2);
@@ -431,15 +459,16 @@ pre {
 }
 
 /* ── HTML table wrapper (MDX pages) ──
-   overflow:hidden on a <div> DOES clip children to border-radius — reliably,
-   regardless of border-collapse. The table inside has no border of its own. */
+   overflow:auto hidden clips corners via border-radius AND allows horizontal
+   scroll on narrow viewports, keeping the page from scrolling. */
 .yr-compare-wrap {
   margin-inline: auto;
   width: fit-content;
+  max-width: 100%;
   margin-block: 1.5rem;
   border: 1px solid var(--yr-border);
   border-radius: var(--yr-radius);
-  overflow: hidden;
+  overflow: auto hidden;
 }
 .yr-compare-wrap table {
   border: none;

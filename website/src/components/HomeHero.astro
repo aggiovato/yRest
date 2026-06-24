@@ -270,13 +270,18 @@ const orbitIcons = [
   @keyframes yr-counter { to { transform: rotate(-360deg); } }
 
   @media (max-width: 58rem) {
+    .yr-home-hero {
+      padding-block-start: 1rem;
+      min-height: auto;
+    }
     .yr-inner {
       grid-template-columns: 1fr;
       text-align: center;
+      gap: 3rem;
     }
     .yr-left { align-items: center; }
     .yr-tagline { max-width: 100%; }
-    .yr-right { order: -1; }
-    .yr-stage { width: 260px; height: 260px; transform: scale(0.85); }
+    .yr-right { order: -1; margin-block-start: 0; }
+    .yr-stage { width: 240px; height: 240px; transform: scale(0.82); margin-block-start: 0; }
   }
 </style>

@@ -47,6 +47,7 @@ import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
     const html = document.documentElement;
     const CLOSED = 'yr-sidebar-closed';
 
+    // Restore desktop saved state
     const saved = localStorage.getItem('yr-sidebar');
     if (saved === 'closed') {
       html.classList.add(CLOSED);
@@ -56,9 +57,23 @@ import ThemeSelect from 'virtual:starlight/components/ThemeSelect';
     }
 
     btn.addEventListener('click', () => {
-      const closed = html.classList.toggle(CLOSED);
-      btn.setAttribute('aria-expanded', String(!closed));
-      localStorage.setItem('yr-sidebar', closed ? 'closed' : 'open');
+      // Starlight's mobile breakpoint is 50rem (800px at 16px base).
+      // On mobile: toggle Starlight's own aria-expanded on <starlight-menu-button>
+      // so its CSS rule [aria-expanded=true] ~ .sidebar-pane kicks in.
+      // On desktop: toggle our yr-sidebar-closed class on <html>.
+      const isMobile = window.innerWidth < 800;
+      if (isMobile) {
+        const menuEl = document.querySelector('starlight-menu-button');
+        if (!menuEl) return;
+        const isOpen = menuEl.getAttribute('aria-expanded') === 'true';
+        menuEl.setAttribute('aria-expanded', String(!isOpen));
+        document.body.toggleAttribute('data-mobile-menu-expanded', !isOpen);
+        btn.setAttribute('aria-expanded', String(!isOpen));
+      } else {
+        const closed = html.classList.toggle(CLOSED);
+        btn.setAttribute('aria-expanded', String(!closed));
+        localStorage.setItem('yr-sidebar', closed ? 'closed' : 'open');
+      }
     });
   }
 

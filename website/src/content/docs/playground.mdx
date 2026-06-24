@@ -1,0 +1,30 @@
+---
+title: Playground
+description: Interactive YAML editor with live ER diagram and yRest syntax validation.
+tableOfContents: false
+---
+
+import Playground from "../../components/Playground/index.astro";
+
+Write a yRest `db.yml` file and see the ER diagram update in real time.  
+The editor validates `_rel` relations, checks that targets exist, and flags deprecated bare keys.
+
+<Playground />
+
+## What is highlighted
+
+| Token              | Color  | Example                        |
+| ------------------ | ------ | ------------------------------ |
+| Reserved keys      | Blue   | `_rel`, `_method`, `_response` |
+| Relation types     | Purple | `many2one`, `m2m`              |
+| Cardinality        | Amber  | `1..1`, `0..n`                 |
+| Template variables | Green  | `{{now}}`, `{{body.email}}`    |
+
+## How to use the editor
+
+- **Errors** appear with a red underline and in the gutter panel at the bottom of the editor.
+- **Warnings** (deprecated keys, unknown relation targets) appear with an amber underline.
+- Use **Load example** to switch between starter templates.
+- **Copy** sends the current YAML to your clipboard.
+- The **ER Diagram** panel updates automatically as you type (with a short debounce).
+- Drag nodes, scroll to zoom, double-click to reset the diagram view.

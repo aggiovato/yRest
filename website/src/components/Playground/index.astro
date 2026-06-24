@@ -1,0 +1,341 @@
+---
+---
+
+<div class="yr-pg-wrap not-content">
+  <!-- Toolbar -->
+  <div class="yr-pg-toolbar">
+    <div class="yr-pg-toolbar-left">
+      <span class="yr-pg-label">db.yml</span>
+      <select id="yr-pg-example" class="yr-pg-select" title="Load an example">
+        <option value="" disabled selected>Load example…</option>
+        <option value="minimal">Minimal — basic collections</option>
+        <option value="relations">Relations — m2o + m2m</option>
+        <option value="default">Full — custom routes + SSE</option>
+      </select>
+    </div>
+    <div class="yr-pg-toolbar-right">
+      <button id="yr-pg-reset" class="yr-pg-btn" type="button" title="Reset to default example">Reset</button>
+      <button id="yr-pg-copy" class="yr-pg-btn" type="button" title="Copy YAML to clipboard">Copy</button>
+      <button id="yr-pg-clear" class="yr-pg-btn yr-pg-btn--ghost" type="button" title="Clear the editor">Clear</button>
+    </div>
+  </div>
+
+  <!-- Split pane -->
+  <div class="yr-pg-split">
+
+    <!-- Left: editor -->
+    <div class="yr-pg-editor-pane">
+      <div class="yr-editor">
+        <!-- Gutter: line numbers + lint dots -->
+        <div class="yr-gutter">
+          <div id="yr-line-nums" class="yr-line-nums" aria-hidden="true"></div>
+          <div id="yr-ln-dots" class="yr-ln-dots" aria-hidden="true"></div>
+        </div>
+        <!-- Overlay: pre (highlight) + textarea (input) share the same grid cell -->
+        <div class="yr-editor-body">
+          <div id="yr-pg-pre" class="yr-editor-pre" aria-hidden="true"></div>
+          <textarea
+            id="yr-pg-textarea"
+            class="yr-editor-ta"
+            spellcheck="false"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: ER diagram -->
+    <div class="yr-pg-diagram-wrap">
+      <div class="yr-pg-diagram-header">
+        <span>ER Diagram</span>
+        <span class="yr-pg-diagram-hint">drag · scroll to zoom · dbl-click to reset</span>
+      </div>
+      <canvas id="yr-pg-canvas" class="yr-pg-canvas" style="cursor:grab;display:block;width:100%;"></canvas>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  import { initPlayground } from "./playground";
+  initPlayground();
+  document.addEventListener("astro:page-load", initPlayground);
+</script>
+
+<style>
+  /* Widen all sl-container instances on playground page (header + content) */
+  :global(body:has(.yr-pg-wrap) .sl-container) {
+    max-width: none !important;
+  }
+  :global(.sl-markdown-content:has(.yr-pg-wrap)) {
+    max-width: none !important;
+    width: 100% !important;
+    padding-inline: 30px !important;
+  }
+
+  /* ── Outer frame ── */
+  .yr-pg-wrap {
+    border: 1px solid #21262d;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #0d1117;
+    display: flex;
+    flex-direction: column;
+    margin-block: 2rem;
+    margin-inline: calc(-1 * var(--sl-content-pad-x, 1.5rem));
+    width: calc(100% + 2 * var(--sl-content-pad-x, 1.5rem));
+  }
+
+  /* ── Toolbar ── */
+  .yr-pg-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.875rem;
+    background: #161b22;
+    border-bottom: 1px solid #21262d;
+    flex-wrap: wrap;
+  }
+
+  .yr-pg-toolbar-left,
+  .yr-pg-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .yr-pg-label {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.8rem;
+    color: #7d8590;
+    padding: 0.2rem 0.5rem;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+
+  .yr-pg-select {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    color: #8b949e;
+    padding: 0.22rem 0.5rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .yr-pg-select:hover,
+  .yr-pg-select:focus {
+    border-color: #58a6ff;
+    color: #e6edf3;
+    outline: none;
+  }
+
+  .yr-pg-toolbar * {
+    margin-block-start: 0 !important;
+  }
+
+  .yr-pg-btn {
+    background: rgba(88, 166, 255, 0.06);
+    border: 1px solid rgba(88, 166, 255, 0.3);
+    color: #58a6ff;
+    padding: 0.22rem 0.75rem;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .yr-pg-btn:hover {
+    background: rgba(88, 166, 255, 0.14);
+    border-color: #58a6ff;
+  }
+  .yr-pg-btn--ghost {
+    background: transparent;
+    border-color: #30363d;
+    color: #7d8590;
+  }
+  .yr-pg-btn--ghost:hover {
+    border-color: #f85149;
+    color: #f85149;
+    background: rgba(248, 81, 73, 0.06);
+  }
+
+  /* ── Split pane — stretch so both columns always share the same height ── */
+  .yr-pg-split {
+    display: grid;
+    grid-template-columns: 40% 60%;
+    /* align-items: stretch is the default — editor drives height, canvas matches */
+  }
+
+  /* ── Editor pane ── */
+  .yr-pg-editor-pane {
+    /* Visible divider between editor and canvas */
+    border-right: 1px solid #30363d;
+    box-shadow: 1px 0 0 0 #484f58;
+    display: flex;
+    flex-direction: column;
+    background: #0d1117;
+  }
+
+  /* Row: gutter | editor body — height is content-driven (no flex:1) so
+     adding/removing lines grows/shrinks both columns via CSS grid stretch. */
+  .yr-editor {
+    display: flex;
+    flex: none;
+    min-height: 280px;
+    background: #0d1117;
+  }
+
+  /* ── Gutter wrapper (line numbers + dot markers) ── */
+  .yr-gutter {
+    position: relative;
+    flex-shrink: 0;
+    border-right: 1px solid #21262d;
+  }
+
+  /* ── Line numbers column ──
+     Uses white-space:pre + textContent newlines so the browser renders
+     numbers with IDENTICAL metrics to the code pre, guaranteeing alignment. */
+  .yr-line-nums {
+    padding: 10px 8px 10px 6px;   /* must match editor padding-block */
+    background: #0d1117;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: #484f58;
+    text-align: right;
+    user-select: none;
+    overflow: hidden;
+    white-space: pre;             /* newlines in textContent create visual lines */
+    min-width: 2.2em;
+  }
+
+  /* ── Lint dot markers — absolutely positioned over the gutter ── */
+  .yr-ln-dots {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  :global(.yr-ln-dot) {
+    position: absolute;
+    right: 3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: all;
+    cursor: help;
+  }
+
+  :global(.yr-ln-dot[data-sev="warning"]) {
+    background: #d29922;
+    box-shadow: 0 0 0 2px rgba(210, 169, 34, 0.25);
+  }
+
+  :global(.yr-ln-dot[data-sev="error"]) {
+    background: #f85149;
+    box-shadow: 0 0 0 2px rgba(248, 81, 73, 0.25);
+  }
+
+  /* ── Grid overlay: pre + textarea share the same cell ── */
+  .yr-editor-body {
+    flex: 1;
+    display: grid;
+    background: #0d1117;
+  }
+
+  .yr-editor-pre,
+  .yr-editor-ta {
+    grid-area: 1 / 1;
+    margin: 0;
+    padding: 10px 14px;
+    font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    tab-size: 2;
+    -moz-tab-size: 2;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+  }
+
+  /* Highlight layer — behind the textarea */
+  .yr-editor-pre {
+    color: #e6edf3;
+    background: #0d1117;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  /* Input layer — transparent text so highlights show through */
+  .yr-editor-ta {
+    color: transparent;
+    caret-color: #e6edf3;
+    background: transparent;
+    resize: none;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .yr-editor-ta::selection {
+    background: rgba(38, 79, 120, 0.55);
+  }
+
+  /* ── Diagram pane — fills the same row height as the editor ── */
+  .yr-pg-diagram-wrap {
+    display: flex;
+    flex-direction: column;
+    background: #0d1117;
+    overflow: hidden;
+    min-height: 280px;
+  }
+
+  .yr-pg-diagram-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0.875rem;
+    border-bottom: 1px solid #21262d;
+    font-size: 0.78rem;
+    color: #7d8590;
+    background: #161b22;
+    flex-shrink: 0;
+  }
+
+  .yr-pg-diagram-hint {
+    font-size: 0.72rem;
+    color: #484f58;
+  }
+
+  /* Canvas fills all available height inside the diagram pane */
+  .yr-pg-canvas {
+    flex: 1;
+    min-height: 0;
+    display: block;
+    width: 100%;
+  }
+
+  /* ── Mobile ── */
+  @media (max-width: 60rem) {
+    .yr-pg-split {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto;
+    }
+    .yr-pg-editor-pane {
+      border-right: none;
+      border-bottom: 1px solid #21262d;
+    }
+    .yr-pg-diagram-hint {
+      display: none;
+    }
+  }
+</style>
