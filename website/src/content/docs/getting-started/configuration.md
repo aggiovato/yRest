@@ -10,6 +10,7 @@ yRest options can be set in three places: schema defaults, a `yrest.config.yml` 
 `yrest.config.yml` lives in the same directory as your `db.yml`. The `init` command creates both files at once:
 
 ```bash
+# bash - init command
 npx @yrest/cli init
 ```
 
@@ -43,15 +44,17 @@ A flag passed on the command line always wins over the config file. The config f
 
 ## Options reference
 
+All options below can be set in `yrest.config.yml`, passed as CLI flags to `yrest serve`, or both. Values from the config file override built-in defaults; CLI flags override everything. Start with the defaults and add only what you need — for most projects a couple of entries are enough.
+
 ### port
+
+The TCP port the server listens on. Port `3070` was chosen to avoid conflicts with the most common development ports (3000, 3001, 4000, 8080, 8000), so you can run yRest alongside your frontend dev server without changing any config.
 
 |          |                  |
 | -------- | ---------------- |
 | Type     | `number`         |
 | Default  | `3070`           |
 | CLI flag | `-p, --port <n>` |
-
-The TCP port the server listens on. Port `3070` was chosen to avoid conflicts with the most common development ports (3000, 3001, 4000, 8080, 8000), so you can run yRest alongside your frontend dev server without changing any config.
 
 ```yaml
 port: 4000
@@ -65,13 +68,13 @@ npx @yrest/cli serve db.yml --port 4000
 
 ### host
 
+The hostname or IP address the server binds to. The default `localhost` makes the server reachable only from the same machine. Set to `0.0.0.0` to expose the server on all network interfaces — useful inside Docker containers or when other devices on the LAN need to reach it.
+
 |          |                     |
 | -------- | ------------------- |
 | Type     | `string`            |
 | Default  | `"localhost"`       |
 | CLI flag | `-H, --host <host>` |
-
-The hostname or IP address the server binds to. The default `localhost` makes the server reachable only from the same machine. Set to `0.0.0.0` to expose the server on all network interfaces — useful inside Docker containers or when other devices on the LAN need to reach it.
 
 ```yaml
 host: 0.0.0.0 # expose on all interfaces
@@ -81,15 +84,15 @@ host: 0.0.0.0 # expose on all interfaces
 
 ### base
 
+A URL prefix prepended to every route — both CRUD collection routes and custom `_routes` entries. A leading slash is added automatically if you omit it.
+
+With `base: /api/v1`, the collection `users` is exposed at `/api/v1/users` instead of `/users`. The `/_about` and `/_snapshot` meta endpoints are not prefixed.
+
 |          |                     |
 | -------- | ------------------- |
 | Type     | `string`            |
 | Default  | `""` (none)         |
 | CLI flag | `-b, --base <path>` |
-
-A URL prefix prepended to every route — both CRUD collection routes and custom `_routes` entries. A leading slash is added automatically if you omit it.
-
-With `base: /api/v1`, the collection `users` is exposed at `/api/v1/users` instead of `/users`. The `/_about` and `/_snapshot` meta endpoints are not prefixed.
 
 ```yaml
 base: /api/v1
@@ -104,15 +107,15 @@ npx @yrest/cli serve db.yml --base /api/v1
 
 ### watch
 
+When enabled, yRest watches `db.yml` for file system changes and reloads automatically without restarting the process. Any collection, relation, or custom route you add to the file appears immediately in the running server.
+
+This is useful during active development when you are editing the data file frequently. In CI or production-like environments, leave it `false` so the data stays stable throughout a test run.
+
 |          |               |
 | -------- | ------------- |
 | Type     | `boolean`     |
 | Default  | `false`       |
 | CLI flag | `-w, --watch` |
-
-When enabled, yRest watches `db.yml` for file system changes and reloads automatically without restarting the process. Any collection, relation, or custom route you add to the file appears immediately in the running server.
-
-This is useful during active development when you are editing the data file frequently. In CI or production-like environments, leave it `false` so the data stays stable throughout a test run.
 
 ```yaml
 watch: true
@@ -122,15 +125,15 @@ watch: true
 
 ### readonly
 
+When enabled, all mutating requests — POST, PUT, PATCH and DELETE — are rejected with `405 Method Not Allowed`. GET requests and meta endpoints (`/_about`, `/_snapshot`) continue to work normally.
+
+Use this when you want to share a stable mock that cannot be accidentally modified — for example, a shared staging environment, a demo, or a read-only API fixture in a test suite where writes are not expected.
+
 |          |                  |
 | -------- | ---------------- |
 | Type     | `boolean`        |
 | Default  | `false`          |
 | CLI flag | `-r, --readonly` |
-
-When enabled, all mutating requests — POST, PUT, PATCH and DELETE — are rejected with `405 Method Not Allowed`. GET requests and meta endpoints (`/_about`, `/_snapshot`) continue to work normally.
-
-Use this when you want to share a stable mock that cannot be accidentally modified — for example, a shared staging environment, a demo, or a read-only API fixture in a test suite where writes are not expected.
 
 ```yaml
 readonly: true
@@ -140,15 +143,15 @@ readonly: true
 
 ### delay
 
+Adds a fixed latency to every response before it is sent. This simulates a slow network or a high-latency backend, making it easier to test loading states, skeleton screens, and timeout handling in your frontend.
+
+The delay applies to all routes — collection endpoints, custom routes, and SSE connections. For per-route latency on individual `_routes` entries, use the `delay:` key inside the route definition instead.
+
 |          |                         |
 | -------- | ----------------------- |
 | Type     | `number` (milliseconds) |
 | Default  | `0` (disabled)          |
 | CLI flag | `-d, --delay <ms>`      |
-
-Adds a fixed latency to every response before it is sent. This simulates a slow network or a high-latency backend, making it easier to test loading states, skeleton screens, and timeout handling in your frontend.
-
-The delay applies to all routes — collection endpoints, custom routes, and SSE connections. For per-route latency on individual `_routes` entries, use the `delay:` key inside the route definition instead.
 
 ```yaml
 delay: 300 # simulate a 300 ms round trip
@@ -158,13 +161,15 @@ delay: 300 # simulate a 300 ms round trip
 
 ### snapshot
 
+When enabled, yRest saves the initial state of the database at startup and exposes three meta endpoints for saving and restoring it on demand. This is the recommended approach for keeping test suites isolated — reset the database to a known state before each test without restarting the server.
+
 |          |                  |
 | -------- | ---------------- |
 | Type     | `boolean`        |
 | Default  | `false`          |
 | CLI flag | `-s, --snapshot` |
 
-When enabled, yRest saves the initial state of the database at startup and exposes three meta endpoints:
+The three endpoints exposed when `snapshot: true`:
 
 | Endpoint           | Method | Description                                             |
 | ------------------ | ------ | ------------------------------------------------------- |
@@ -187,13 +192,15 @@ curl -X POST http://localhost:3070/_snapshot/reset
 
 ### pageable
 
+When enabled, GET collection responses are wrapped in a `{ data, pagination }` envelope instead of returning a plain array. This is useful when your frontend expects a structured response with metadata, rather than a raw array. Accepts `true` for the default page size (10) or a number to set a custom default.
+
 |          |                       |
 | -------- | --------------------- |
 | Type     | `boolean` or `number` |
 | Default  | `false`               |
 | CLI flag | `--pageable [limit]`  |
 
-When enabled, GET collection responses are wrapped in a `{ data, pagination }` envelope instead of returning a plain array:
+With `pageable` enabled, the response shape looks like this:
 
 ```json
 {
@@ -229,20 +236,18 @@ The per-request `?_page` and `?_limit` query parameters always override the conf
 
 ### idStrategy
 
+Controls how `id` values are generated when a new item is created via POST without an explicit `id` in the request body. Use `uuid` when your frontend expects string IDs, when items from multiple collections need globally unique identifiers, or when you need IDs that are stable and meaningful across restarts.
+
 |          |                            |
 | -------- | -------------------------- |
 | Type     | `"increment"` \| `"uuid"`  |
 | Default  | `"increment"`              |
 | CLI flag | `--id-strategy <strategy>` |
 
-The strategy used to generate `id` values when a new item is created via POST without an explicit `id` in the request body.
-
 | Strategy    | Behaviour                                                     |
 | ----------- | ------------------------------------------------------------- |
 | `increment` | Next integer above the current maximum `id` in the collection |
 | `uuid`      | A random UUID v4 string from `crypto.randomUUID()`            |
-
-Use `uuid` when your frontend code expects string IDs, when you need IDs that are stable across restarts, or when items from multiple collections need globally unique identifiers.
 
 ```yaml
 idStrategy: uuid
@@ -260,19 +265,19 @@ This flag only affects IDs assigned to **new items created via POST**. To pre-po
 
 ### handlers
 
+Path to a JavaScript file exporting handler functions used by `_routes` entries. yRest loads the file at startup and calls the exported function whose name matches the `handler:` key in the route definition. If omitted, yRest still auto-discovers `yrest.handlers.js` (or `.mjs`) in the current working directory.
+
 |          |                      |
 | -------- | -------------------- |
 | Type     | `string` (file path) |
 | Default  | _(auto-discovered)_  |
 | CLI flag | `--handlers <file>`  |
 
-Path to a JavaScript file exporting handler functions for custom routes. yRest loads the file at startup and calls the exported function whose name matches the `handler:` key in a `_routes` entry.
-
 ```yaml
 handlers: ./yrest.handlers.js
 ```
 
-If this option is omitted, yRest still auto-discovers `yrest.handlers.js` (or `.mjs`) in the current working directory. Use the explicit path when your handlers file has a different name or lives in a subdirectory.
+Use the explicit path when your handlers file has a different name or lives in a subdirectory.
 
 ---
 

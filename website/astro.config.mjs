@@ -1,12 +1,16 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import sitemap from "@astrojs/sitemap";
 
 export default defineConfig({
+  site: "https://yrest-docs.netlify.app",
   integrations: [
+    sitemap(),
     starlight({
       title: "yRest",
       description:
         "YAML-powered REST API mock server. Zero-config CRUD, relations, filters, SSE and custom routes from a db.yml file.",
+      favicon: "/favicon.ico",
       defaultLocale: "root",
       locales: {
         root: { label: "English", lang: "en" },
@@ -24,6 +28,70 @@ export default defineConfig({
         Header: "./src/components/Header.astro",
       },
       head: [
+        // ── LLM discoverability ──────────────────────────────────────────────
+        {
+          tag: "link",
+          attrs: { rel: "llms-txt", href: "/llms.txt" },
+        },
+        // ── Favicon set ──────────────────────────────────────────────────────
+        {
+          tag: "link",
+          attrs: { rel: "icon", type: "image/png", sizes: "32x32", href: "/favicon-32x32.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "icon", type: "image/png", sizes: "16x16", href: "/favicon-16x16.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" },
+        },
+        {
+          tag: "link",
+          attrs: { rel: "manifest", href: "/site.webmanifest" },
+        },
+        // ── Open Graph image ─────────────────────────────────────────────────
+        {
+          tag: "meta",
+          attrs: { property: "og:image", content: "https://yrest-docs.netlify.app/og-image.png" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:width", content: "1280" },
+        },
+        {
+          tag: "meta",
+          attrs: { property: "og:image:height", content: "640" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:card", content: "summary_large_image" },
+        },
+        {
+          tag: "meta",
+          attrs: { name: "twitter:image", content: "https://yrest-docs.netlify.app/og-image.png" },
+        },
+        // ── Structured data (JSON-LD) ─────────────────────────────────────────
+        {
+          tag: "script",
+          attrs: { type: "application/ld+json" },
+          content: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            name: "yRest",
+            alternateName: "@yrest/cli",
+            description:
+              "YAML-powered REST API mock server. Zero-config CRUD, relations, filters, SSE streams and custom routes from a db.yml file.",
+            url: "https://yrest-docs.netlify.app",
+            applicationCategory: "DeveloperApplication",
+            operatingSystem: "All",
+            offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+            downloadUrl: "https://www.npmjs.com/package/@yrest/cli",
+            codeRepository: "https://github.com/aggiovato/yRest",
+            license: "https://github.com/aggiovato/yRest/blob/main/LICENSE",
+          }),
+        },
+        // ── Sidebar state restore (must run before paint) ─────────────────────
         {
           tag: "script",
           content:
@@ -104,9 +172,6 @@ export default defineConfig({
           href: "https://www.npmjs.com/package/@yrest/cli",
         },
       ],
-      editLink: {
-        baseUrl: "https://github.com/aggiovato/yRest/edit/main/website/",
-      },
       customCss: ["./src/styles/custom.css"],
       sidebar: [
         {
@@ -165,12 +230,12 @@ export default defineConfig({
           },
           items: [
             {
-              label: "YAML Format",
+              label: "yRest Format",
               translations: {
-                es: "Formato YAML",
-                de: "YAML-Format",
-                fr: "Format YAML",
-                it: "Formato YAML",
+                es: "Formato yRest",
+                de: "yRest-Format",
+                fr: "Format yRest",
+                it: "Formato yRest",
               },
               slug: "database/format",
             },

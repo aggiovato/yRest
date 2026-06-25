@@ -65,14 +65,16 @@
 </script>
 
 <style>
-  /* Widen all sl-container instances on playground page (header + content) */
-  :global(body:has(.yr-pg-wrap) .sl-container) {
-    max-width: none !important;
-  }
-  :global(.sl-markdown-content:has(.yr-pg-wrap)) {
-    max-width: none !important;
-    width: 100% !important;
-    padding-inline: 30px !important;
+  /* Widen all sl-container instances on playground page — desktop only */
+  @media (min-width: 60rem) {
+    :global(body:has(.yr-pg-wrap) .sl-container) {
+      max-width: none !important;
+    }
+    :global(.sl-markdown-content:has(.yr-pg-wrap)) {
+      max-width: none !important;
+      width: 100% !important;
+      padding-inline: 30px !important;
+    }
   }
 
   /* ── Outer frame ── */
@@ -336,6 +338,9 @@
     }
     .yr-pg-diagram-hint {
       display: none;
+    }
+    .yr-pg-diagram-wrap {
+      min-height: 360px;
     }
   }
 </style>

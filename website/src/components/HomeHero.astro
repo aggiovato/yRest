@@ -13,13 +13,13 @@ const {
   ctaHref = "/getting-started/quick-start/",
 } = Astro.props;
 
-const orbitIcons = [
-  { label: 'Zero config',   dur: '22s', delay: '0s',      r: '115px', d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z' },
-  { label: 'Full CRUD',     dur: '22s', delay: '-7.33s',  r: '115px', d: 'M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z' },
-  { label: 'Query power',   dur: '22s', delay: '-14.67s', r: '115px', d: 'M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', d2: 'M21 21l-4.35-4.35' },
-  { label: 'Relations',     dur: '30s', delay: '-5s',     r: '165px', d: 'M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9' },
-  { label: 'Custom routes', dur: '30s', delay: '-15s',    r: '165px', d: 'M16 18l6-6-6-6M8 6L2 12l6 6' },
-  { label: 'Test-ready',    dur: '30s', delay: '-25s',    r: '165px', d: 'M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' },
+const ICONS = [
+  { ring: 0, label: 'Zero config',   paths: ['M13 2L3 14h9l-1 8 10-12h-9l1-8z'] },
+  { ring: 0, label: 'Full CRUD',     paths: ['M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z'] },
+  { ring: 0, label: 'Query power',   paths: ['M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z', 'M21 21l-4.35-4.35'] },
+  { ring: 1, label: 'Relations',     paths: ['M6 3v12M18 9a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 9a9 9 0 0 1-9 9'] },
+  { ring: 1, label: 'Custom routes', paths: ['M16 18l6-6-6-6M8 6L2 12l6 6'] },
+  { ring: 1, label: 'Test-ready',    paths: ['M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3'] },
 ];
 ---
 
@@ -41,24 +41,24 @@ const orbitIcons = [
 
     <div class="yr-right" aria-hidden="true">
       <div class="yr-stage">
-        <div class="yr-ring yr-ring-1"></div>
-        <div class="yr-ring yr-ring-2"></div>
+        <svg id="yr-orbit-svg" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+          <path id="yr-rp-0" fill="none" stroke="rgba(88,166,255,0.07)" stroke-width="1" />
+          <path id="yr-rp-1" fill="none" stroke="rgba(88,166,255,0.07)" stroke-width="1" />
 
-        {orbitIcons.map(icon => (
-          <div
-            class="yr-arm"
-            style={`--dur:${icon.dur};--delay:${icon.delay};--r:${icon.r};`}
-            title={icon.label}
-          >
-            <div class="yr-bob">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d={icon.d} />
-                {icon.d2 && <path d={icon.d2} />}
-              </svg>
-            </div>
-          </div>
-        ))}
+          {ICONS.map((icon, i) => (
+            <g class="yr-icon" data-idx={String(i)}>
+              <title>{icon.label}</title>
+              <rect x="0" y="0" width="36" height="36" rx="8"
+                    fill="rgba(88,166,255,0.08)" stroke="rgba(88,166,255,0.2)" stroke-width="1" />
+              <g transform="translate(9,9) scale(0.75)">
+                {icon.paths.map(d => (
+                  <path d={d} fill="none" stroke="#58a6ff" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                ))}
+              </g>
+            </g>
+          ))}
+        </svg>
 
         <div class="yr-center">
           <div class="yr-glow"></div>
@@ -202,15 +202,21 @@ const orbitIcons = [
     flex-shrink: 0;
   }
 
-  .yr-ring {
+  #yr-orbit-svg {
     position: absolute;
-    border-radius: 50%;
-    border: 1px solid rgba(88, 166, 255, 0.07);
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    overflow: visible;
   }
-  .yr-ring-1 { width: 250px; height: 250px; }
-  .yr-ring-2 { width: 336px; height: 336px; }
+
+  .yr-icon {
+    cursor: grab;
+  }
+  .yr-icon:active {
+    cursor: grabbing;
+  }
 
   .yr-center {
     position: absolute;
@@ -220,6 +226,7 @@ const orbitIcons = [
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
   }
 
   .yr-logo {
@@ -227,6 +234,7 @@ const orbitIcons = [
     height: 100px;
     object-fit: contain;
     position: relative;
+    margin-bottom: 3rem;
     z-index: 1;
     filter: drop-shadow(0 0 22px rgba(88, 166, 255, 0.4));
   }
@@ -237,37 +245,8 @@ const orbitIcons = [
     background: radial-gradient(circle, rgba(88, 166, 255, 0.12) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
+    margin-bottom: 2.5rem;
   }
-
-  .yr-arm {
-    position: absolute;
-    inset: 0;
-    animation: yr-spin var(--dur) linear infinite;
-    animation-delay: var(--delay);
-  }
-
-  .yr-bob {
-    position: absolute;
-    top: 50%;
-    left: calc(50% + var(--r) - 18px);
-    margin-top: -18px;
-    width: 36px;
-    height: 36px;
-    background: rgba(88, 166, 255, 0.08);
-    border: 1px solid rgba(88, 166, 255, 0.2);
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #58a6ff;
-    animation: yr-counter var(--dur) linear infinite;
-    animation-delay: var(--delay);
-  }
-
-  .yr-bob svg { width: 18px; height: 18px; }
-
-  @keyframes yr-spin    { to { transform: rotate(360deg);  } }
-  @keyframes yr-counter { to { transform: rotate(-360deg); } }
 
   @media (max-width: 58rem) {
     .yr-home-hero {
@@ -282,6 +261,261 @@ const orbitIcons = [
     .yr-left { align-items: center; }
     .yr-tagline { max-width: 100%; }
     .yr-right { order: -1; margin-block-start: 0; }
-    .yr-stage { width: 240px; height: 240px; transform: scale(0.82); margin-block-start: 0; }
+    .yr-stage {
+      width: 280px;
+      height: 280px;
+      margin-block-start: 0;
+      margin-inline: auto;
+    }
+    .yr-logo { width: 80px; height: 80px; margin-bottom: 3rem; }
+    .yr-glow { width: 100px; height: 100px; margin-bottom: 2.5rem; }
   }
 </style>
+
+<script is:inline>
+(function () {
+  function init() {
+    var svg = document.getElementById('yr-orbit-svg');
+    if (!svg) return;
+
+    var CX = 170, CY = 170;
+    var MAX_DRAG = 75;
+    var SPRING_K = 0.12;
+    var SPRING_DAMP = 0.80;
+    var N_SAMPLES = 90;
+    var DEFORM_SPAN = Math.PI / 2.5; // ~72° half-width
+    var TAU = Math.PI * 2;
+
+    var RINGS = [
+      { r: 115, period: 22000 },
+      { r: 165, period: 30000 },
+    ];
+
+    // Start angles computed from CSS animation delays:
+    // inner: delay 0s, -7.33s, -14.67s → 0, 7.33/22 * 2π, 14.67/22 * 2π
+    // outer: delay -5s, -15s, -25s     → 5/30 * 2π, 15/30 * 2π, 25/30 * 2π
+    var ICON_CONFIG = [
+      { ring: 0, startAngle: 0 },
+      { ring: 0, startAngle: 2.0944 },
+      { ring: 0, startAngle: 4.1888 },
+      { ring: 1, startAngle: 1.0472 },
+      { ring: 1, startAngle: 3.1416 },
+      { ring: 1, startAngle: 5.2360 },
+    ];
+
+    var ringPaths = [
+      document.getElementById('yr-rp-0'),
+      document.getElementById('yr-rp-1'),
+    ];
+
+    var iconGroups = Array.from(svg.querySelectorAll('.yr-icon'));
+
+    var icons = ICON_CONFIG.map(function (cfg) {
+      return {
+        ring: cfg.ring,
+        startAngle: cfg.startAngle,
+        angle: cfg.startAngle,
+        orbX: 0, orbY: 0,
+        x: 0, y: 0,
+        dragOffX: 0, dragOffY: 0,
+        vx: 0, vy: 0,
+        isDragged: false,
+        dragStartSvgX: 0, dragStartSvgY: 0,
+        dragStartOffX: 0, dragStartOffY: 0,
+      };
+    });
+
+    var draggedIdx = -1;
+
+    function clientToSvg(clientX, clientY) {
+      var rect = svg.getBoundingClientRect();
+      var sx = 340 / rect.width;
+      var sy = 340 / rect.height;
+      return { x: (clientX - rect.left) * sx, y: (clientY - rect.top) * sy };
+    }
+
+    function hitTest(idx, px, py) {
+      var icon = icons[idx];
+      return Math.abs(px - icon.x) < 24 && Math.abs(py - icon.y) < 24;
+    }
+
+    function startDrag(idx, svgX, svgY) {
+      draggedIdx = idx;
+      icons[idx].isDragged = true;
+      icons[idx].dragStartSvgX = svgX;
+      icons[idx].dragStartSvgY = svgY;
+      icons[idx].dragStartOffX = icons[idx].dragOffX;
+      icons[idx].dragStartOffY = icons[idx].dragOffY;
+      icons[idx].vx = 0;
+      icons[idx].vy = 0;
+      svg.style.cursor = 'grabbing';
+    }
+
+    function moveDrag(svgX, svgY) {
+      if (draggedIdx < 0) return;
+      var icon = icons[draggedIdx];
+      var rawDx = (svgX - icon.dragStartSvgX) + icon.dragStartOffX;
+      var rawDy = (svgY - icon.dragStartSvgY) + icon.dragStartOffY;
+      var dist = Math.sqrt(rawDx * rawDx + rawDy * rawDy);
+      if (dist > MAX_DRAG) {
+        var f = MAX_DRAG / dist;
+        icon.dragOffX = rawDx * f;
+        icon.dragOffY = rawDy * f;
+      } else {
+        icon.dragOffX = rawDx;
+        icon.dragOffY = rawDy;
+      }
+    }
+
+    function endDrag() {
+      if (draggedIdx < 0) return;
+      icons[draggedIdx].isDragged = false;
+      svg.style.cursor = '';
+      draggedIdx = -1;
+    }
+
+    svg.addEventListener('mousedown', function (e) {
+      var pt = clientToSvg(e.clientX, e.clientY);
+      for (var i = 0; i < icons.length; i++) {
+        if (hitTest(i, pt.x, pt.y)) { startDrag(i, pt.x, pt.y); e.preventDefault(); break; }
+      }
+    });
+    document.addEventListener('mousemove', function (e) {
+      if (draggedIdx < 0) return;
+      var pt = clientToSvg(e.clientX, e.clientY);
+      moveDrag(pt.x, pt.y);
+    });
+    document.addEventListener('mouseup', endDrag);
+
+    svg.addEventListener('touchstart', function (e) {
+      var t = e.touches[0];
+      var pt = clientToSvg(t.clientX, t.clientY);
+      for (var i = 0; i < icons.length; i++) {
+        if (hitTest(i, pt.x, pt.y)) { startDrag(i, pt.x, pt.y); e.preventDefault(); break; }
+      }
+    }, { passive: false });
+    document.addEventListener('touchmove', function (e) {
+      if (draggedIdx < 0) return;
+      var t = e.touches[0];
+      var pt = clientToSvg(t.clientX, t.clientY);
+      moveDrag(pt.x, pt.y);
+      e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', endDrag);
+
+    function normalizeAngle(a) {
+      a = a % TAU;
+      if (a < 0) a += TAU;
+      return a;
+    }
+
+    function computeRingPath(ringIdx) {
+      var r = RINGS[ringIdx].r;
+      // Collect icons on this ring that have displacement
+      var deformed = [];
+      for (var i = 0; i < icons.length; i++) {
+        var ic = icons[i];
+        if (ic.ring === ringIdx && (Math.abs(ic.dragOffX) > 0.1 || Math.abs(ic.dragOffY) > 0.1)) {
+          deformed.push(ic);
+        }
+      }
+
+      var pts = [];
+      for (var s = 0; s < N_SAMPLES; s++) {
+        var theta = (s / N_SAMPLES) * TAU;
+        var dx = 0, dy = 0;
+
+        for (var j = 0; j < deformed.length; j++) {
+          var ic2 = deformed[j];
+          var iconNorm = normalizeAngle(ic2.angle);
+          var angDist = theta - iconNorm;
+          // Normalize to [-π, π]
+          if (angDist > Math.PI) angDist -= TAU;
+          else if (angDist < -Math.PI) angDist += TAU;
+
+          if (Math.abs(angDist) < DEFORM_SPAN) {
+            var t = Math.cos(angDist / DEFORM_SPAN * Math.PI * 0.5);
+            var weight = t * t;
+            dx += ic2.dragOffX * weight;
+            dy += ic2.dragOffY * weight;
+          }
+        }
+
+        pts.push([CX + r * Math.cos(theta) + dx, CY + r * Math.sin(theta) + dy]);
+      }
+
+      // Catmull-Rom → cubic bezier (closed)
+      var n = pts.length;
+      var d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+      for (var k = 0; k < n; k++) {
+        var p0 = pts[(k - 1 + n) % n];
+        var p1 = pts[k];
+        var p2 = pts[(k + 1) % n];
+        var p3 = pts[(k + 2) % n];
+        var cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+        var cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+        var cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+        var cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+        d += 'C' + cp1x.toFixed(1) + ',' + cp1y.toFixed(1) + ' '
+               + cp2x.toFixed(1) + ',' + cp2y.toFixed(1) + ' '
+               + p2[0].toFixed(1) + ',' + p2[1].toFixed(1);
+      }
+      return d + 'Z';
+    }
+
+    var startTime = performance.now();
+
+    function frame(now) {
+      if (!document.body.contains(svg)) return;
+      var elapsed = now - startTime;
+
+      for (var i = 0; i < icons.length; i++) {
+        var icon = icons[i];
+        var ring = RINGS[icon.ring];
+
+        icon.angle = icon.startAngle + (elapsed / ring.period) * TAU;
+        icon.orbX = CX + ring.r * Math.cos(icon.angle);
+        icon.orbY = CY + ring.r * Math.sin(icon.angle);
+
+        if (!icon.isDragged) {
+          icon.vx += -SPRING_K * icon.dragOffX;
+          icon.vy += -SPRING_K * icon.dragOffY;
+          icon.vx *= SPRING_DAMP;
+          icon.vy *= SPRING_DAMP;
+          icon.dragOffX += icon.vx;
+          icon.dragOffY += icon.vy;
+          if (Math.abs(icon.dragOffX) < 0.05 && Math.abs(icon.dragOffY) < 0.05
+              && Math.abs(icon.vx) < 0.05 && Math.abs(icon.vy) < 0.05) {
+            icon.dragOffX = 0; icon.dragOffY = 0; icon.vx = 0; icon.vy = 0;
+          }
+        }
+
+        icon.x = icon.orbX + icon.dragOffX;
+        icon.y = icon.orbY + icon.dragOffY;
+      }
+
+      for (var ri = 0; ri < RINGS.length; ri++) {
+        ringPaths[ri].setAttribute('d', computeRingPath(ri));
+      }
+
+      for (var ii = 0; ii < icons.length; ii++) {
+        var ic = icons[ii];
+        iconGroups[ii].setAttribute(
+          'transform',
+          'translate(' + (ic.x - 18).toFixed(1) + ',' + (ic.y - 18).toFixed(1) + ')'
+        );
+      }
+
+      requestAnimationFrame(frame);
+    }
+
+    requestAnimationFrame(frame);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>

@@ -8,8 +8,11 @@ const NW = 178,
   COL_GAP = 100,
   BR = 12,
   BO = 16,
-  LGH = 84,
   MIN_GAP = 10;
+
+function legendHeight(w: number): number {
+  return w < 600 ? 108 : 84;
+}
 
 const C = {
   bg: "#0d1117",
@@ -228,7 +231,7 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
     const pad = 28,
       gW = x1 - x0 + pad * 2,
       gH = y1 - y0 + pad * 2;
-    zm = Math.min(W / gW, (H - LGH) / gH, 1);
+    zm = Math.min(W / gW, (H - legendHeight(W)) / gH, 1);
     pan.x = (W - gW * zm) / 2 + pad * zm - x0 * zm;
     pan.y = pad - y0 * zm; // top-aligned instead of vertically centered
   }
@@ -490,13 +493,11 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
   function drawLegend() {
     const cvW = cv.width / dpr,
       cvH = cv.height / dpr;
-    const yL = cvH - LGH,
-      y1 = yL + 13,
-      y2 = yL + 35,
-      y3 = yL + 62;
+    const lgH = legendHeight(cvW);
+    const yL = cvH - lgH;
 
     ctx.fillStyle = "#161b22";
-    ctx.fillRect(0, yL, cvW, LGH);
+    ctx.fillRect(0, yL, cvW, lgH);
     ctx.strokeStyle = "#30363d";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -522,50 +523,11 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
       { c: C.o2o, l: "one2one", d: false },
       { c: C.m2m, l: "many2many", d: true },
     ];
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    ctx.font = "10px monospace";
-    let x = 14;
-    types.forEach((it) => {
-      ctx.strokeStyle = it.c;
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash(it.d ? [4, 3] : []);
-      ctx.beginPath();
-      ctx.moveTo(x, y1);
-      ctx.lineTo(x + 14, y1);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = C.mu;
-      ctx.fillText(it.l, x + 18, y1);
-      x += 18 + ctx.measureText(it.l).width + 22;
-    });
-
-    x = 14;
     const pairs = [
       { carA: "1..n", carB: "1..1", col: C.m2o, l: "many2one (N:1)" },
       { carA: "1..1", carB: "1..1", col: C.o2o, l: "one2one (1:1)" },
       { carA: "1..1", carB: "0..n", col: C.m2m, l: "pivot edge (1:0..N)" },
     ];
-    pairs.forEach((p) => {
-      ctx.strokeStyle = p.col + "55";
-      ctx.lineWidth = 1.2;
-      ctx.setLineDash(p.col === C.m2m ? [4, 3] : []);
-      ctx.beginPath();
-      ctx.moveTo(x + 8, y2);
-      ctx.lineTo(x + 56, y2);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      legendBadge(x + 8, y2, p.carA, p.col, 0);
-      legendBadge(x + 56, y2, p.carB, p.col, Math.PI);
-      ctx.fillStyle = C.mu;
-      ctx.font = "10px monospace";
-      ctx.textAlign = "left";
-      ctx.textBaseline = "middle";
-      ctx.fillText(p.l, x + 66, y2);
-      x += 66 + ctx.measureText(p.l).width + 24;
-    });
-
-    x = 14;
     const symbols = [
       { car: "1..1", l: "exactly one" },
       { car: "0..1", l: "zero or one" },
@@ -573,21 +535,134 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
       { car: "0..n", l: "zero or more" },
       { car: "n", l: "many (pivot)" },
     ];
-    ctx.font = "10px monospace";
-    ctx.textAlign = "left";
-    ctx.textBaseline = "middle";
-    symbols.forEach((s) => {
-      legendBadge(x + 8, y3, s.car, C.mu, 0);
-      ctx.fillStyle = C.mu;
-      ctx.fillText(s.l, x + 20, y3);
-      x += 20 + ctx.measureText(s.l).width + 18;
-    });
 
-    ctx.fillStyle = "#3d444d";
-    ctx.font = "10px monospace";
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText("drag  ·  scroll to zoom  ·  dbl-click to reset", cvW - 14, y1);
+    if (cvW < 600) {
+      // Mobile: 4 rows stacked vertically
+      const r1 = yL + 15,
+        r2 = yL + 35,
+        r3 = yL + 57,
+        r4 = yL + 82;
+
+      // Row 1: relation type color lines + labels
+      ctx.font = "10px monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      let x = 12;
+      types.forEach((it) => {
+        ctx.strokeStyle = it.c;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash(it.d ? [4, 3] : []);
+        ctx.beginPath();
+        ctx.moveTo(x, r1);
+        ctx.lineTo(x + 14, r1);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = C.mu;
+        ctx.fillText(it.l, x + 18, r1);
+        x += 18 + ctx.measureText(it.l).width + 14;
+      });
+
+      // Row 2: interaction hint
+      ctx.fillStyle = "#3d444d";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText("drag  ·  pinch to zoom  ·  dbl-tap to reset", 12, r2);
+
+      // Row 3: paired cardinality examples
+      x = 12;
+      pairs.forEach((p) => {
+        ctx.strokeStyle = p.col + "55";
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash(p.col === C.m2m ? [4, 3] : []);
+        ctx.beginPath();
+        ctx.moveTo(x + 8, r3);
+        ctx.lineTo(x + 40, r3);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        legendBadge(x + 8, r3, p.carA, p.col, 0);
+        legendBadge(x + 40, r3, p.carB, p.col, Math.PI);
+        ctx.fillStyle = C.mu;
+        ctx.font = "10px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.l, x + 50, r3);
+        x += 50 + ctx.measureText(p.l).width + 10;
+      });
+
+      // Row 4: cardinality symbols
+      x = 12;
+      symbols.forEach((s) => {
+        legendBadge(x + 8, r4, s.car, C.mu, 0);
+        ctx.fillStyle = C.mu;
+        ctx.font = "10px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(s.l, x + 20, r4);
+        x += 20 + ctx.measureText(s.l).width + 12;
+      });
+    } else {
+      // Desktop: 3-row horizontal layout
+      const y1 = yL + 13,
+        y2 = yL + 35,
+        y3 = yL + 62;
+
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.font = "10px monospace";
+      let x = 14;
+      types.forEach((it) => {
+        ctx.strokeStyle = it.c;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash(it.d ? [4, 3] : []);
+        ctx.beginPath();
+        ctx.moveTo(x, y1);
+        ctx.lineTo(x + 14, y1);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = C.mu;
+        ctx.fillText(it.l, x + 18, y1);
+        x += 18 + ctx.measureText(it.l).width + 22;
+      });
+
+      x = 14;
+      pairs.forEach((p) => {
+        ctx.strokeStyle = p.col + "55";
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash(p.col === C.m2m ? [4, 3] : []);
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y2);
+        ctx.lineTo(x + 56, y2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        legendBadge(x + 8, y2, p.carA, p.col, 0);
+        legendBadge(x + 56, y2, p.carB, p.col, Math.PI);
+        ctx.fillStyle = C.mu;
+        ctx.font = "10px monospace";
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(p.l, x + 66, y2);
+        x += 66 + ctx.measureText(p.l).width + 24;
+      });
+
+      x = 14;
+      ctx.font = "10px monospace";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      symbols.forEach((s) => {
+        legendBadge(x + 8, y3, s.car, C.mu, 0);
+        ctx.fillStyle = C.mu;
+        ctx.fillText(s.l, x + 20, y3);
+        x += 20 + ctx.measureText(s.l).width + 18;
+      });
+
+      ctx.fillStyle = "#3d444d";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText("drag  ·  scroll to zoom  ·  dbl-click to reset", cvW - 14, y1);
+    }
+
     ctx.textBaseline = "alphabetic";
   }
 
@@ -703,6 +778,88 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
   cv.addEventListener("dblclick", onDblClick);
   window.addEventListener("resize", onResize);
 
+  // ── Touch interaction ─────────────────────────────────────────────────────
+  let lastTap = 0;
+  let pinchDist0 = 0;
+  let pinchZm0 = 1;
+
+  const onTouchStart = (ev: TouchEvent) => {
+    ev.preventDefault();
+    if (ev.touches.length === 1) {
+      const r = cv.getBoundingClientRect();
+      const mx = ev.touches[0].clientX - r.left;
+      const my = ev.touches[0].clientY - r.top;
+      const w = toW(mx, my),
+        h = hitTest(w.x, w.y);
+      if (h) {
+        drag = h;
+        dox = w.x - h.x;
+        doy = w.y - h.y;
+      } else {
+        isPan = true;
+        ps.x = mx - pan.x;
+        ps.y = my - pan.y;
+      }
+      const now = Date.now();
+      if (now - lastTap < 300) {
+        nodes.forEach((n, i) => {
+          n.x = origPos[i].x;
+          n.y = origPos[i].y;
+        });
+        const br = cv.getBoundingClientRect();
+        fitView(br.width, br.height);
+        draw();
+      }
+      lastTap = now;
+    } else if (ev.touches.length === 2) {
+      drag = null;
+      isPan = false;
+      const t1 = ev.touches[0],
+        t2 = ev.touches[1];
+      pinchDist0 = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      pinchZm0 = zm;
+    }
+  };
+
+  const onTouchMove = (ev: TouchEvent) => {
+    ev.preventDefault();
+    if (ev.touches.length === 1) {
+      const r = cv.getBoundingClientRect();
+      const mx = ev.touches[0].clientX - r.left;
+      const my = ev.touches[0].clientY - r.top;
+      if (drag) {
+        const w = toW(mx, my);
+        drag.x = w.x - dox;
+        drag.y = w.y - doy;
+      } else if (isPan) {
+        pan.x = mx - ps.x;
+        pan.y = my - ps.y;
+      }
+      draw();
+    } else if (ev.touches.length === 2 && pinchDist0 > 0) {
+      const r = cv.getBoundingClientRect();
+      const t1 = ev.touches[0],
+        t2 = ev.touches[1];
+      const dist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+      const nz = Math.max(0.25, Math.min(3, pinchZm0 * (dist / pinchDist0)));
+      const mx = (t1.clientX + t2.clientX) / 2 - r.left;
+      const my = (t1.clientY + t2.clientY) / 2 - r.top;
+      pan.x = mx - (mx - pan.x) * (nz / zm);
+      pan.y = my - (my - pan.y) * (nz / zm);
+      zm = nz;
+      draw();
+    }
+  };
+
+  const onTouchEnd = () => {
+    drag = null;
+    isPan = false;
+  };
+
+  cv.addEventListener("touchstart", onTouchStart, { passive: false });
+  cv.addEventListener("touchmove", onTouchMove, { passive: false });
+  cv.addEventListener("touchend", onTouchEnd);
+
   // ResizeObserver: refit when the canvas grows (e.g. editor grows → grid stretch)
   const ro = new ResizeObserver(() => {
     if (!cv.isConnected) return;
@@ -736,5 +893,8 @@ export function renderCanvas(cv: HTMLCanvasElement, D: ERData): () => void {
     cv.removeEventListener("wheel", onWheel);
     cv.removeEventListener("dblclick", onDblClick);
     window.removeEventListener("resize", onResize);
+    cv.removeEventListener("touchstart", onTouchStart);
+    cv.removeEventListener("touchmove", onTouchMove);
+    cv.removeEventListener("touchend", onTouchEnd);
   };
 }

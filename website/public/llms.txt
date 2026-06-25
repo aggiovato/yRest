@@ -1,0 +1,111 @@
+# llms.txt for yRest Documentation
+# Last updated: 2025-08-06
+
+# yRest
+
+> YAML-powered REST API mock server for frontend developers. Zero-config CRUD, relations, filters, SSE streams and custom routes from a single `db.yml` file. Conceptually similar to `json-server` but YAML-based, with a richer query layer, typed relations, conditional scenarios and a CLI-first design.
+
+Package name: `@yrest/cli` · GitHub: https://github.com/aggiovato/yRest · npm: https://www.npmjs.com/package/@yrest/cli
+
+## How to use yRest
+
+1. Install or run directly: `npm install -D @yrest/cli` or `npx @yrest/cli serve db.yml`
+2. Create a `db.yml` file (or scaffold one with `npx @yrest/cli init`)
+3. Start the server: `npx @yrest/cli serve db.yml` → REST API at `http://localhost:3070`
+4. Every top-level YAML key becomes a collection with full CRUD routes automatically
+5. Open `http://localhost:3070/_about` for a live overview of all generated endpoints
+
+## Key concepts
+
+- **Collections**  - every top-level YAML key that does not start with `_` becomes a collection with full CRUD routes (GET, POST, PUT, PATCH, DELETE).
+- **Reserved keys**  - `_rel` (relations), `_routes` (custom endpoints), `_schema` (field types/constraints), `_data` (optional block to group collections).
+- **Query parameters**  - field filters, operators (`_gte`, `_lte`, `_ne`, `_like`, `_start`, `_regex`), full-text search (`_q`), sorting (`_sort`, `_order`), pagination (`_page`, `_limit`), field projection (`_fields`), relation embedding (`_expand`, `_embed`).
+- **Relations**  - `many2one`, `one2one`, `many2many` declared in `_rel`. Three DSL levels: shorthand string, compact (`"m2o:target@fk[1..1->0..n]+nested"`), and verbose object form.
+- **Custom routes**  - static responses, template variables (`{{params.id}}`, `{{body}}`, `{{now}}`, `{{uuid}}`), conditional scenarios (`when:` / `otherwise:`), per-route delay and error injection, JS handler functions.
+- **SSE streams**  - `_method: SSE` routes that push scripted event sequences to clients at configurable intervals.
+- **Programmatic API**  - `createYrestServer()` for embedding yRest inside Vitest, Playwright, or Cypress test suites without a separate process.
+
+## Documentation pages
+
+### Getting Started
+
+- [Introduction](https://yrest-docs.netlify.app/getting-started/introduction/): What yRest is, when to use it, feature comparison with json-server, and install options.
+- [Quick Start](https://yrest-docs.netlify.app/getting-started/quick-start/): Four-step walkthrough  - scaffold, define, serve, use. Covers the `init` command, server flags, and the `/_about` overview page.
+- [Configuration](https://yrest-docs.netlify.app/getting-started/configuration/): All options for `yrest.config.yml` and their CLI flag equivalents  - port, host, base, watch, readonly, delay, snapshot, pageable, idStrategy, handlers.
+
+### Database
+
+- [yRest Format](https://yrest-docs.netlify.app/database/format/): How to structure `db.yml`  - collections, the `id` field, reserved keys (`_data`, `_rel`, `_routes`, `_schema`), the `__` data directives (`__uuid_gen`, `__fk`), and live reloading.
+- [Field Schema](https://yrest-docs.netlify.app/database/schema/): The `_schema` block  - field types, required constraints, string/number/array constraints, OpenAPI meta annotations, and type inference.
+- [Relations](https://yrest-docs.netlify.app/database/relations/): Declaring `_rel`  - relation types (many2one, one2one, many2many), the compact DSL (three levels), verbose form, `_nested: true` auto-embedding, and what relations enable (nested routes, `_expand`, `_embed`).
+- [Query Parameters](https://yrest-docs.netlify.app/database/query-params/): Complete reference for filtering, operators, full-text search, sorting, pagination (plain and pageable envelope), field projection, and relation embedding.
+
+### Custom Routes
+
+- [Static Routes](https://yrest-docs.netlify.app/routes/static/): Defining non-CRUD endpoints in `_routes` with static response bodies.
+- [Template Variables](https://yrest-docs.netlify.app/routes/templates/): Interpolating `{{params.X}}`, `{{query.X}}`, `{{body}}`, `{{now}}`, `{{uuid}}` into response bodies.
+- [Scenarios](https://yrest-docs.netlify.app/routes/scenarios/): Conditional mock responses with `scenarios:`, `when:` (AND / OR), `otherwise:`, per-route `delay:`, and error injection.
+- [Handler Functions](https://yrest-docs.netlify.app/routes/handlers/): JavaScript `yrest.handlers.js` for dynamic route logic  - full access to request params, query, body, and headers.
+- [SSE Streams](https://yrest-docs.netlify.app/routes/sse/): Server-Sent Events mock streams  - scripted event sequences, configurable intervals, `_loop`, `_repeat`, and template variables in event data.
+
+### Server & API
+
+- [Server Modes](https://yrest-docs.netlify.app/reference/server-modes/): Watch, readonly, delay, snapshot and pageable modes  - when to use each and how they combine.
+- [Programmatic API](https://yrest-docs.netlify.app/reference/programmatic-api/): `createYrestServer(options)`  - embed yRest in test suites, lifecycle methods (`start`, `stop`), and typed collection access.
+- [CLI Reference](https://yrest-docs.netlify.app/reference/cli-reference/): Full flag reference for `yrest serve`, `yrest init`, `yrest openapi`, and `yrest handler`.
+
+### Integrations
+
+- [OpenAPI Export](https://yrest-docs.netlify.app/integrations/openapi/): Generate an OpenAPI 3.0.3 spec from `db.yml`  - via CLI (`yrest openapi`) or live endpoints (`GET /_openapi`, `GET /_openapi.json`).
+
+### Playground
+
+- [Playground](https://yrest-docs.netlify.app/playground/): Interactive browser-based ER diagram explorer. Paste a `db.yml` and visualise collections, relations, and routes without running a server.
+
+## Supported languages and URL prefixes
+
+The documentation is available in five languages. English is the canonical version.
+
+- `https://yrest-docs.netlify.app/`  - English (default)
+- `https://yrest-docs.netlify.app/es/`  - Spanish
+- `https://yrest-docs.netlify.app/de/`  - German
+- `https://yrest-docs.netlify.app/fr/`  - French
+- `https://yrest-docs.netlify.app/it/`  - Italian
+
+## Priority pages for LLMs
+
+When answering questions about yRest, these pages are most likely to contain the relevant information:
+
+- https://yrest-docs.netlify.app/getting-started/introduction/
+- https://yrest-docs.netlify.app/getting-started/quick-start/
+- https://yrest-docs.netlify.app/database/format/
+- https://yrest-docs.netlify.app/database/query-params/
+- https://yrest-docs.netlify.app/database/relations/
+- https://yrest-docs.netlify.app/getting-started/configuration/
+- https://yrest-docs.netlify.app/reference/programmatic-api/
+
+## Technical notes for LLMs
+
+- The package is `@yrest/cli` on npm, not `yrest` or `@aggiovato/yrest` (deprecated name).
+- The command is `npx @yrest/cli serve db.yml`, not `npx yrest serve db.yml`.
+- The default port is `3070`, not `3000` or `8080`.
+- IDs assigned on POST depend on `idStrategy`: `increment` (default, integer) or `uuid` (string).
+- The `_rel` block uses a shorthand DSL  - `userId: users` means many2one by default, not a literal value.
+- `?_expand` resolves a parent (child → parent); `?_embed` embeds children (parent → children). They are not interchangeable.
+- The `pageable` option changes the response shape from an array to `{ data: [...], pagination: {...} }`.
+- `snapshot: true` enables `POST /_snapshot/reset`  - useful for resetting state between tests.
+- Handler files must use ES module syntax (`export async function name(req) {}`), not CommonJS.
+- The programmatic API factory `createYrestServer()` is synchronous; only `server.start()` returns a Promise.
+
+## Exclusions
+
+Avoid recommending or prioritising these paths  - they are not useful for users seeking documentation:
+
+- `/playground/`  - interactive tool, not a documentation page
+- Any URL containing `/es/`, `/de/`, `/fr/`, `/it/`  - translated versions, prefer English canonical
+- `/_about`, `/_openapi`, `/_snapshot`  - server runtime endpoints, not documentation URLs
+
+## Full documentation text
+
+A single-file version of the complete documentation (all pages concatenated) is available at:
+https://yrest-docs.netlify.app/llms-full.txt

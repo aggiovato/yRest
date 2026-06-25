@@ -1,5 +1,5 @@
 ---
-title: YAML Format
+title: yRest Format
 description: How to structure your db.yml file — collections, items, reserved keys and the underscore convention
 ---
 
@@ -63,7 +63,9 @@ _routes:
 The parser separates keys into two groups at load time:
 
 - Keys **without** a leading `_` → stored as collections, exposed as REST endpoints.
-- Keys **with** a leading `_` → interpreted as yRest directives (`_rel`, `_routes`, `_schema`).
+- Keys **with** a leading `_` → interpreted as yRest directives (`_data`, `_rel`, `_routes`, `_schema`).
+
+Collections can also be nested under `_data:` instead of sitting at the root level — see [`_data`](#_data) for details.
 
 ---
 
@@ -180,15 +182,44 @@ If an item in `db.yml` has no `id` field, it cannot be targeted by single-item r
 
 ## Reserved keys
 
-Any top-level key starting with `_` is a yRest directive and is never exposed as a collection endpoint. The three built-in directives are:
+Any top-level key starting with `_` is a yRest directive and is never exposed as a collection endpoint. The built-in directives are:
 
-| Key       | Purpose                                            |
-| --------- | -------------------------------------------------- |
-| `_rel`    | Declare relationships between collections          |
-| `_routes` | Define custom non-CRUD endpoints                   |
-| `_schema` | Declare field types and constraints per collection |
+| Key       | Purpose                                               |
+| --------- | ----------------------------------------------------- |
+| `_data`   | Group all collections under a single block (optional) |
+| `_rel`    | Declare relationships between collections             |
+| `_routes` | Define custom non-CRUD endpoints                      |
+| `_schema` | Declare field types and constraints per collection    |
 
 Unknown `_`-prefixed keys are silently ignored, which means you can safely add comments via anchor keys or use yRest in combination with tools that inject their own metadata.
+
+### `_data`
+
+An optional block that nests all your collections under a single key. This is useful when you want to visually separate your data from the yRest directives at the top of the file:
+
+```yaml
+_data:
+  users:
+    - id: 1
+      name: Ana
+  posts:
+    - id: 1
+      title: Hello World
+      userId: 1
+
+_rel:
+  posts:
+    userId: users
+
+_routes:
+  - method: GET
+    path: /health
+    response:
+      status: 200
+      body: { status: ok }
+```
+
+The flat form (collections at the root level) and the `_data` block form are equivalent and can even coexist in the same file — collections from both places are merged, with root-level keys taking priority on name conflicts. Most projects use the flat form for simplicity; `_data` is useful when a long file benefits from clear visual separation.
 
 ### `_rel`
 
@@ -266,11 +297,11 @@ See [Field Schema](/database/schema/) for all supported types and options.
 
 All yRest-internal keys in YAML must start with `_`. This separates yRest directives from user data unambiguously.
 
-| Prefix    | Used for                                            |
-| --------- | --------------------------------------------------- |
-| No prefix | Collection names and item fields                    |
-| `_`       | Top-level directives (`_rel`, `_routes`, `_schema`) |
-| `__`      | Load-time data directives (`__uuid_gen`, `__fk`)    |
+| Prefix    | Used for                                                     |
+| --------- | ------------------------------------------------------------ |
+| No prefix | Collection names and item fields                             |
+| `_`       | Top-level directives (`_data`, `_rel`, `_routes`, `_schema`) |
+| `__`      | Load-time data directives (`__uuid_gen`, `__fk`)             |
 
 The rule is simple: if you are defining your own data, never start a key with `_`. If you see a `_`-prefixed key at the top level of `db.yml`, it is a yRest instruction.
 

@@ -70,11 +70,19 @@ header.header {
 }
 
 /* Hide Starlight's native mobile hamburger — our custom yr-hamburger handles both
-   mobile and desktop. The <starlight-menu-button> element itself must stay in the
-   DOM (Starlight's CSS uses [aria-expanded=true] ~ .sidebar-pane to show it on mobile),
-   but we hide the button inside it. */
-starlight-menu-button button {
+   mobile and desktop. The element must stay in the DOM (Starlight's CSS sibling
+   selector [aria-expanded=true] ~ .sidebar-pane still matches hidden elements),
+   but display:none removes it from the visual layout so it takes no space. */
+starlight-menu-button {
   display: none !important;
+}
+
+/* Starlight's mobile header adds 64px right padding to leave room for its native
+   hamburger button. Since we hide that button, restore normal nav padding. */
+@media (max-width: 50rem) {
+  header.header {
+    padding-inline-end: var(--sl-nav-pad-x, 1rem) !important;
+  }
 }
 
 /* Sidebar closed state:
@@ -109,11 +117,10 @@ html.yr-sidebar-closed .main-pane {
   color: #58a6ff !important;
 }
 
-/* Section group labels — same scale as links, muted color, not caps */
+/* Section group labels — same visual weight and color as root links */
 .sidebar-content .group-label .large {
-  font-weight: 600 !important;
+  font-weight: 400 !important;
   font-size: var(--sl-text-sm) !important;
-  color: #6e7681 !important;
   text-transform: none !important;
   letter-spacing: 0;
 }
@@ -281,7 +288,11 @@ html.yr-sidebar-closed .main-pane {
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
 }
 
-/* Nested items (h3 inside h2 section) — slightly smaller, indented */
+/* Nested items (h3 inside h2 section) — slightly smaller, indented
+   Dot alignment math:
+   - outer ul padding-left: 20px, line at left: 5px
+   - inner ul padding-left: 14px → a starts at 34px from outer ul
+   - dot center must land at 5px → left = 5 - 3(dot-radius) - 34 = -32px */
 .right-sidebar-panel starlight-toc nav ul ul {
   padding-left: 14px;
 }
@@ -292,7 +303,7 @@ html.yr-sidebar-closed .main-pane {
 .right-sidebar-panel starlight-toc nav ul ul a::before {
   width: 6px;
   height: 6px;
-  left: -16px;
+  left: -32px;
 }
 
 /* ── Card grid ── */
@@ -380,7 +391,7 @@ html.yr-sidebar-closed .main-pane {
 pre:not(:where(.not-content *)) {
   background: var(--yr-surface2) !important;
   border: 1px solid var(--yr-border) !important;
-  border-radius: var(--yr-radius) !important;
+  border-radius: 0 0 var(--yr-radius) var(--yr-radius) !important;
   font-family: var(--sl-font-mono) !important;
 }
 
@@ -489,6 +500,18 @@ pre:not(:where(.not-content *)) {
 .yr-table-full table {
   min-width: 0;
   width: 100%;
+}
+
+/* ── Quick steps image ── */
+.yr-quick-steps-wrap {
+  display: flex;
+  justify-content: center;
+  margin-block: 3rem;
+}
+.yr-quick-steps-wrap img {
+  max-width: 480px;
+  width: 100%;
+  height: auto;
 }
 
 /* ── Scrollbars ── */

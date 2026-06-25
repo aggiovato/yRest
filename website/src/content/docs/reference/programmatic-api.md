@@ -10,9 +10,9 @@ This page is being written. See the [README](https://github.com/aggiovato/yRest#
 The programmatic API lets you start and stop a yRest server from inside your test suite or any Node.js script — no CLI, no separate process. Import `createYrestServer`, pass a config object, and use the running server URL in your tests.
 
 ```ts
-import { createYrestServer } from "@aggiovato/yrest";
+import { createYrestServer } from "@yrest/cli";
 
-const server = await createYrestServer({ file: "./tests/db.yml", port: 3070 });
+const server = createYrestServer({ file: "./tests/db.yml", port: 3070 });
 await server.start();
 // run tests against http://localhost:3070
 await server.stop();

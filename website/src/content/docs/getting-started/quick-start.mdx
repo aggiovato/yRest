@@ -3,6 +3,15 @@ title: Quick Start
 description: Get a mock REST API running in under a minute
 ---
 
+import quickSteps from "../../../assets/quick-steps.png";
+import { Image } from "astro:assets";
+
+Getting a full mock REST API running with yRest takes under a minute. All you need is a YAML file — no server code, no configuration, no database to set up. The four steps below take you from zero to a live API you can call from your frontend.
+
+<div class="yr-quick-steps-wrap">
+  <Image src={quickSteps} alt="yRest in 4 steps: install, define, serve, use" width={480} />
+</div>
+
 :::note[What this guide covers]
 This walkthrough shows yRest in **standalone mock mode** — you run it with `npx`, point it at a YAML file, and immediately get a REST API. No installation, no backend code.
 
@@ -85,6 +94,8 @@ posts:
 Any top-level key that doesn't start with `_` becomes a collection with full CRUD routes.
 
 ## 2. Start the server
+
+With your `db.yml` ready, start the server with a single command. yRest reads the file, registers a full CRUD route for every collection, and begins listening — no compilation step, no database setup, no config file required.
 
 ```bash
 npx @yrest/cli serve db.yml

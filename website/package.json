@@ -13,5 +13,8 @@
     "@astrojs/starlight": "^0.40.0",
     "astro": "^6.4.8",
     "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@astrojs/sitemap": "^3.7.3"
   }
 }

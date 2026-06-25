@@ -64,12 +64,16 @@ npx @yrest/cli serve db.yml
 # → REST API at http://localhost:3070
 ```
 
+For a version-by-version history of what's been added and what's on the roadmap, see the [Changelog](https://github.com/aggiovato/yRest/blob/main/CHANGELOG.md) and [Releases](https://github.com/aggiovato/yRest/releases) on GitHub.
+
 ## When to use it
 
 - You're building a frontend and need a realistic API before the backend is ready.
 - You need a predictable mock for integration tests (Vitest, Playwright, Cypress).
 - You want to demo a UI flow without maintaining a real server.
 - You need SSE or custom endpoint behaviour that `json-server` can't handle.
+- You're designing a new API contract before the backend team starts building — yRest gives you a real running server to validate the exact shape, not just a static spec document.
+- You need to test error states, conditional auth flows, or network latency — simulate them with [conditional scenarios](/routes/scenarios/) and [delay injection](/getting-started/configuration/#delay), no server code required.
 
 ## How it compares
 
@@ -85,22 +89,27 @@ Both yRest and `json-server` share the same zero-config philosophy — point the
 </tr>
 </thead>
 <tbody>
-<tr><td>YAML database</td><td><Y /></td><td><N /></td></tr>
+<tr><td colspan="3" style="background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);font-size:var(--sl-text-xs);padding-block:0.35rem 0.25rem;letter-spacing:0.04em;text-transform:uppercase;">Foundation</td></tr>
 <tr><td>Zero config</td><td><Y /></td><td><Y /></td></tr>
 <tr><td>Full CRUD</td><td><Y /></td><td><Y /></td></tr>
+<tr><td>YAML database</td><td><Y /></td><td><N /></td></tr>
+<tr><td colspan="3" style="background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);font-size:var(--sl-text-xs);padding-block:0.35rem 0.25rem;letter-spacing:0.04em;text-transform:uppercase;">Query &amp; Filtering</td></tr>
 <tr><td>Field operators (<code>_gte</code>, <code>_like</code>, <code>_regex</code>…)</td><td><Y /></td><td><W /></td></tr>
-<tr><td>Relations: many2one, one2one, many2many</td><td><Y /></td><td><W /></td></tr>
-<tr><td>Auto-embedding (<code>_nested: true</code>)</td><td><Y /></td><td><N /></td></tr>
 <tr><td>Field projection (<code>_fields</code>)</td><td><Y /></td><td><N /></td></tr>
 <tr><td>Pageable mode (envelope response)</td><td><Y /></td><td><N /></td></tr>
+<tr><td colspan="3" style="background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);font-size:var(--sl-text-xs);padding-block:0.35rem 0.25rem;letter-spacing:0.04em;text-transform:uppercase;">Relations</td></tr>
+<tr><td>Relations: many2one, one2one, many2many</td><td><Y /></td><td><W /></td></tr>
+<tr><td>Auto-embedding (<code>_nested: true</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td colspan="3" style="background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);font-size:var(--sl-text-xs);padding-block:0.35rem 0.25rem;letter-spacing:0.04em;text-transform:uppercase;">Mock features</td></tr>
 <tr><td>Custom routes (<code>_routes</code>)</td><td><Y /></td><td><N /></td></tr>
 <tr><td>Template variables (<code>{"{{"}}params.id{"}}"}</code>)</td><td><Y /></td><td><N /></td></tr>
 <tr><td>Conditional scenarios</td><td><Y /></td><td><N /></td></tr>
-<tr><td>Handler functions</td><td><Y /></td><td><N /></td></tr>
-<tr><td>SSE stream routes (<code>_method: SSE</code>)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>Handler functions (JS logic)</td><td><Y /></td><td><N /></td></tr>
+<tr><td>SSE stream routes</td><td><Y /></td><td><N /></td></tr>
 <tr><td>Snapshot endpoints</td><td><Y /></td><td><N /></td></tr>
-<tr><td>OpenAPI 3.0 export</td><td><Y /></td><td><N /></td></tr>
+<tr><td colspan="3" style="background:var(--sl-color-bg-sidebar);color:var(--sl-color-gray-3);font-size:var(--sl-text-xs);padding-block:0.35rem 0.25rem;letter-spacing:0.04em;text-transform:uppercase;">Integration &amp; tooling</td></tr>
 <tr><td>Programmatic API for test frameworks</td><td><Y /></td><td><N /></td></tr>
+<tr><td>OpenAPI 3.0 export</td><td><Y /></td><td><N /></td></tr>
 <tr><td>TypeScript types</td><td><Y /></td><td><N /></td></tr>
 </tbody>
 </table>
@@ -108,23 +117,29 @@ Both yRest and `json-server` share the same zero-config philosophy — point the
 
 ## Install
 
-Add yRest to your project as a development dependency:
+yRest can be used in two ways depending on your workflow.
+
+**As a dev-server** — run it with `npx` alongside your frontend app, no installation required. See [Quick Start](/getting-started/quick-start/) for a step-by-step walkthrough.
+
+```bash
+npx @yrest/cli serve db.yml   # zero-install, API ready at http://localhost:3070
+```
+
+Or install it as a dev dependency to skip the `npx` download on every run:
 
 ```bash
 npm install -D @yrest/cli
-```
-
-Or run it directly without installing — useful for a quick try:
-
-```bash
+npx @yrest/cli init           # scaffold db.yml + yrest.config.yml
 npx @yrest/cli serve db.yml
 ```
 
-Once installed, scaffold a starter file and launch the server:
+**As a programmatic test fixture** — import `createYrestServer` directly into your Vitest, Playwright or Cypress suite. No separate process, no CLI. See [Programmatic API](/reference/programmatic-api/) for the full API reference.
 
-```bash
-npx @yrest/cli init          # creates db.yml + yrest.config.yml in the current directory
-npx @yrest/cli serve db.yml  # → REST API at http://localhost:3070
+```ts
+import { createYrestServer } from "@yrest/cli";
+
+const server = createYrestServer({ file: "./tests/db.yml", port: 3070 });
+await server.start();
+// run tests ...
+await server.stop();
 ```
-
-The server watches `db.yml` for changes and reloads automatically. Head to [Quick Start](/getting-started/quick-start/) for a step-by-step walkthrough with a real example.
