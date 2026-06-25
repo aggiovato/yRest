@@ -28,6 +28,14 @@ export default defineConfig({
         Header: "./src/components/Header.astro",
       },
       head: [
+        // ── Google Search Console verification ───────────────────────────────
+        {
+          tag: "meta",
+          attrs: {
+            name: "google-site-verification",
+            content: "jkpYr_jnVzEOixPPpEUhm8gD6Ic6aUhBc1w2d_oatWA",
+          },
+        },
         // ── LLM discoverability ──────────────────────────────────────────────
         {
           tag: "link",
