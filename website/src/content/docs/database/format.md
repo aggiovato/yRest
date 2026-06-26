@@ -270,21 +270,21 @@ Declares field-level metadata for a collection — types, required constraints, 
 _schema:
   users:
     name:
-      type: string
-      required: true
+      _type: string
+      _required: true
     email:
-      type: string
-      required: true
+      _type: string
+      _required: true
     role:
-      type: string
-      default: viewer
+      _type: string
+      _default: viewer
   posts:
     title:
-      type: string
-      required: true
+      _type: string
+      _required: true
     published:
-      type: boolean
-      default: false
+      _type: boolean
+      _default: false
 ```
 
 Schema declarations are used for validation on POST/PUT/PATCH requests and for the OpenAPI spec generated at `/_about`.
