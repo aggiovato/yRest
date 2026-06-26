@@ -107,10 +107,10 @@ export type FieldDef = {
  *   users:
  *     name: required          # shorthand
  *     email:
- *       required: true
- *       format: email
+ *       _required: true
+ *       _format: email
  *     age:
- *       type: integer
+ *       _type: integer
  * ```
  */
 export type SchemaBlock = Record<string, Record<string, FieldDef>>;

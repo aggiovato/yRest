@@ -26,12 +26,12 @@ _rel:
 _schema:
   employees:
     name: required
-    email: { required: true, format: email }
+    email: { _required: true, _format: email }
     role: required
     departmentId: required
   profiles:
-    bio: { type: string }
-    avatarUrl: { type: string, format: uri }
+    bio: { _type: string }
+    avatarUrl: { _type: string, _format: uri }
   projects:
     name: required
     status: required

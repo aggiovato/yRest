@@ -7,6 +7,40 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [0.13.1] — 2026-06-26
+
+### Fixed
+
+- **`_schema` key convention — completed Phase 11A uniformity:** field-level keys inside `_schema` object blocks must now use the `_` prefix (`_required`, `_format`, `_type`) in line with all other yRest reserved keys. The parser already enforced this since v0.11.2; this release corrects the remaining documentation and example files that still showed the bare form.
+
+  The shorthand string form (`fieldName: required`) remains valid and unchanged.
+
+  | Old (silently ignored since v0.11.2) | Correct           |
+  | ------------------------------------ | ----------------- |
+  | `required: true`                     | `_required: true` |
+  | `type: string`                       | `_type: string`   |
+  | `format: email`                      | `_format: email`  |
+
+  Example:
+
+  ```yaml
+  # correct
+  _schema:
+    users:
+      name: required # shorthand — unchanged
+      email:
+        _required: true # was: required: true
+        _type: string # was: type: string
+        _format: email # was: format: email
+  ```
+
+### Internal
+
+- `db.yml` (development fixture) — migrated `email`, `bio` and `avatarUrl` schema fields from bare keys (`required`, `type`, `format`) to `_` prefix form (`_required`, `_type`, `_format`).
+- `src/storage/types.ts` — corrected the `SchemaBlock` JSDoc `@example` block which still showed the old bare-key syntax.
+
+---
+
 ## [0.13.0] — 2026-06-23
 
 ### Added
