@@ -5,6 +5,7 @@ import { registerInit } from "./commands/init.js";
 import { registerServe } from "./commands/serve.js";
 import { registerHandler } from "./commands/handler.js";
 import { registerOpenApi } from "./commands/openapi.js";
+import { registerTypes } from "./commands/types.js";
 
 const require = createRequire(import.meta.url);
 const { version } = require("../../package.json");
@@ -18,5 +19,6 @@ registerInit(program);
 registerServe(program);
 registerHandler(program);
 registerOpenApi(program);
+registerTypes(program);
 
 program.parse();

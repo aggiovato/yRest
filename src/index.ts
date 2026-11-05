@@ -65,3 +65,7 @@ export { yrestOptionsSchema } from "./config/loadOptions.js";
 export type { YrestOptions } from "./config/loadOptions.js";
 export type { Data, Resource, Relations, CustomRoute, YrestStorage } from "./storage/types.js";
 export type { HandlerRequest, HandlerResponse, Handler, HandlerMap } from "./utils/handlers.js";
+
+// ─── Codegen ──────────────────────────────────────────────────────────────────
+export { generateTypes } from "./codegen/generateTypes.js";
+export type { GenerateTypesInput, GenerateTypesOptions } from "./codegen/generateTypes.js";
