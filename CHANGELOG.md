@@ -7,6 +7,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`yrest types` command (Phase 12C):** generates TypeScript interfaces from a `db.yml` file — one interface per collection (singular PascalCase: `post_tags` → `PostTag`), a `CollectionName` union and a `Collections` map. Prints to stdout by default; `--output <file>` writes a file and `--watch` regenerates it on every change.
+  - Types are inferred from every item: a field missing on any item is optional, mixed types become unions, nested objects are merged into one shape and array elements are pooled.
+  - `_schema` overrides the inference (`_type`, `_required`, `_enum`, `_nullable`, `_items`) and adds JSDoc for `_description`, `_format` and `_deprecated`.
+  - `many2one` / `one2one` foreign keys from `_rel` are annotated with `FK → target.id`.
+  - Read-only: `__uuid_gen` / `__fk` directives are not resolved and `db.yml` is never rewritten.
+- **`generateTypes()`** exported from the public API for programmatic codegen.
+
+---
+
 ## [0.13.1] — 2026-06-26
 
 ### Fixed

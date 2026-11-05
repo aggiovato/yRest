@@ -52,7 +52,7 @@ Package name: `@yrest/cli` · GitHub: https://github.com/aggiovato/yRest · npm:
 
 - [Server Modes](https://yrest-docs.netlify.app/reference/server-modes/): Watch, readonly, delay, snapshot and pageable modes  - when to use each and how they combine.
 - [Programmatic API](https://yrest-docs.netlify.app/reference/programmatic-api/): `createYrestServer(options)`  - embed yRest in test suites, lifecycle methods (`start`, `stop`), and typed collection access.
-- [CLI Reference](https://yrest-docs.netlify.app/reference/cli-reference/): Full flag reference for `yrest serve`, `yrest init`, `yrest openapi`, and `yrest handler`.
+- [CLI Reference](https://yrest-docs.netlify.app/reference/cli-reference/): Full flag reference for `yrest serve`, `yrest init`, `yrest openapi`, `yrest handler` and `yrest types` (TypeScript interface codegen from `db.yml`).
 
 ### Integrations
 
