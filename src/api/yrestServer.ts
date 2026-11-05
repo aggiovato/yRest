@@ -8,6 +8,7 @@ import type {
   YrestStorage,
 } from "../storage/types.js";
 import { parseRelations } from "../storage/parseRelations.js";
+import { parseRoutes } from "../storage/parseRoutes.js";
 import { parseSseRoutes } from "../storage/parseSseRoutes.js";
 import { parseSchema } from "../storage/parseSchema.js";
 import type { YrestOptions } from "../config/loadOptions.js";
@@ -144,9 +145,7 @@ function createInMemoryStorage(data: Data): YrestStorage {
   const RESERVED = new Set(["_rel", "_routes", "_schema"]);
 
   const relations: Relations = parseRelations(raw["_rel"]);
-  const routes: CustomRoute[] = Array.isArray(raw["_routes"])
-    ? (raw["_routes"] as CustomRoute[])
-    : [];
+  const routes: CustomRoute[] = parseRoutes(raw["_routes"]);
   const sseRoutes: SseRoute[] = parseSseRoutes(raw["_routes"]);
   const schema: SchemaBlock = parseSchema(raw["_schema"]);
   const collections: Data = Object.fromEntries(

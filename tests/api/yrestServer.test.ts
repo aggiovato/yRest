@@ -231,6 +231,33 @@ describe("createYrestServer", () => {
     });
   });
 
+  describe("inline data — custom _routes", () => {
+    let server: ReturnType<typeof createYrestServer>;
+
+    beforeAll(async () => {
+      server = createYrestServer({
+        data: yrest`
+          _routes:
+            - _method: GET
+              _path: /ping
+              _response:
+                _status: 202
+                _body: { ok: true }
+        `,
+        port: 0,
+      });
+      await server.start();
+    });
+
+    afterAll(() => server.stop());
+
+    it("serves _routes declared with the _-prefixed keys", async () => {
+      const res = await get(`${server.url}/ping`);
+      expect(res.status).toBe(202);
+      expect(await res.json()).toEqual({ ok: true });
+    });
+  });
+
   describe("file-based", () => {
     let filePath: string;
     let server: ReturnType<typeof createYrestServer>;
