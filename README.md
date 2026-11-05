@@ -65,7 +65,7 @@ A YAML-first alternative to json-server for frontend development.
 | Pageable mode (envelope response)                   |  ✅   |     ❌      |
 | Custom static routes (`_routes`)                    |  ✅   |     ❌      |
 | Template variables in responses                     |  ✅   |     ❌      |
-| Handler functions (JS logic)                        |  ✅   |     ❌      |
+| Handler functions (JS / TS logic)                   |  ✅   |     ❌      |
 | Conditional scenarios (`scenarios:`)                |  ✅   |     ❌      |
 | Snapshot endpoints                                  |  ✅   |     ❌      |
 | Config file                                         |  ✅   |     ⚠️      |
@@ -294,7 +294,7 @@ npx @yrest/cli serve db.yml --handlers yrest.handlers.js
 | `--delay <ms>`      | `0`         | Add a fixed delay to all responses (simulates network latency)          |
 | `--pageable [n]`    | `false`     | Wrap GET collection responses in `{ data, pagination }`. Optional limit |
 | `--snapshot`        | `false`     | Save initial state snapshot and expose `/_snapshot` endpoints           |
-| `--handlers <file>` | _(none)_    | Path to a JS file exporting handler functions for custom routes         |
+| `--handlers <file>` | _(none)_    | Path to a JS or TS file exporting handler functions for custom routes   |
 | `--id-strategy`     | `increment` | Id generation for new items: `increment` (auto-int) or `uuid`           |
 
 All flags can also be set in `yrest.config.yml` (see below). CLI flags always take priority over the config file.
@@ -1004,41 +1004,57 @@ _routes:
 
 ### Handler functions
 
-For routes that need real logic (conditional responses, stateful mocks, request inspection), reference a JavaScript function via the `handler:` field:
+For routes that need real logic (conditional responses, stateful mocks, request inspection), point a `_routes` entry at a function with `_handler`:
 
 ```yaml
 _routes:
-  - method: POST
-    path: /login
-    handler: login
-    response: # optional fallback if handler throws
-      status: 200
-      body: { token: fake }
+  - _method: POST
+    _path: /login
+    _handler: login
 
-  - method: GET
-    path: /auth/me
-    handler: getCurrentUser
+  - _method: GET
+    _path: /auth/me
+    _handler: getCurrentUser
 ```
 
-Create a `yrest.handlers.js` file in the same directory as `db.yml`:
+Export the functions from a handlers file — JavaScript (`.js`, `.mjs`, `.cjs`) or TypeScript (`.ts`, `.mts`):
+
+```ts
+// yrest.handlers.ts
+import { defineHandler } from "@yrest/cli";
+import type { User } from "./db.types"; // generated with `yrest types`
+
+export const login = defineHandler((req, { collection }) => {
+  const { email, password } = (req.body ?? {}) as { email?: string; password?: string };
+  const user = collection<User>("users").findWhere((u) => u.email === email)[0];
+  if (!user || password !== "secret") {
+    return { status: 401, body: { error: "Invalid credentials" } };
+  }
+  return { body: { token: `tok-${user.id}` } };
+});
+
+export const getCurrentUser = defineHandler(() => ({
+  body: { id: 1, name: "Ana", role: "admin" },
+}));
+```
+
+Pass the file to the server with `--handlers` (or `handlers:` in `yrest.config.yml`):
+
+```bash
+npx @yrest/cli serve db.yml --handlers yrest.handlers.ts
+```
+
+TypeScript handler files are loaded by Node's built-in type stripping (Node ≥ 22.18). On older versions load [`tsx`](https://tsx.is) into Node (`NODE_OPTIONS="--import tsx" npx @yrest/cli serve …`) or compile the file to `.js`. With type stripping, type-only imports must use `import type`.
+
+In plain JavaScript the same functions work without `defineHandler`:
 
 ```js
 // yrest.handlers.js
-export async function login(req) {
-  const { email, password } = req.body ?? {};
-  if (password !== "secret") return { status: 401, body: { error: "Invalid credentials" } };
-  return { status: 200, body: { token: `tok-${email}` } };
+export async function login(req, ctx) {
+  const { email } = req.body ?? {};
+  const user = ctx.collection("users").findWhere((u) => u.email === email)[0];
+  return user ? { body: { token: `tok-${user.id}` } } : { status: 401 };
 }
-
-export async function getCurrentUser(req) {
-  return { status: 200, body: { id: 1, name: "Ana", role: "admin" } };
-}
-```
-
-Pass the file to the server with `--handlers`:
-
-```bash
-npx @yrest/cli serve db.yml --handlers yrest.handlers.js
 ```
 
 **Handler signature:**
@@ -1057,10 +1073,24 @@ type HandlerResponse = {
   headers?: Record<string, string>;
 };
 
-type Handler = (req: HandlerRequest) => HandlerResponse | Promise<HandlerResponse>;
+type HandlerContext = {
+  // Typed CRUD access to the live data — the same handle as server.collection()
+  collection<T>(name: string): CollectionHandle<T>;
+};
+
+type Handler = (
+  req: HandlerRequest,
+  ctx: HandlerContext
+) => HandlerResponse | Promise<HandlerResponse>;
 ```
 
-If a named handler is not found in the file, the server returns `501`. If the handler throws, it returns `500`. If a `response:` block is defined alongside `handler:`, it is used as fallback only when the handler itself throws.
+`defineHandler` (and `defineSseHandler` for [SSE streams](#sse-streams)) are identity wrappers exported by `@yrest/cli`: they only add types.
+
+**`ctx.collection(name)`** reads and writes the same data the REST routes serve: a record a handler creates is returned by `GET /users` straight away and persisted to `db.yml` like a `POST`. See [Typed collection access](#typed-collection-access) for every method. It throws if the collection does not exist.
+
+**Errors:** if a named handler is not exported by the file, the route answers `501`; if the handler throws, it answers `500` with the error message.
+
+**Scaffolding:** `yrest handler <name>` adds a stub to the handlers file (`handlers:` in `yrest.config.yml`, or `yrest.handlers.js`). For a `.ts` / `.mts` file the stub uses `defineHandler`. Add `--register --method POST --path /login` to also write the `_routes` entry to `db.yml`.
 
 ### SSE streams
 
@@ -1109,6 +1139,41 @@ _events:
       channel: "{{params.channel}}" # from URL params
       filter: "{{query.filter}}" # from query string
 ```
+
+**Handler-driven streams** — for streams that depend on state (a chat, a job queue), let a function drive the stream with `_handler` instead of `_events`:
+
+```yaml
+_routes:
+  - _method: SSE
+    _path: /events/chat
+    _sse:
+      _handler: chatStream
+  - _method: POST
+    _path: /chat/messages
+    _handler: postMessage
+```
+
+```ts
+// yrest.handlers.ts
+import { EventEmitter } from "node:events";
+import { defineHandler, defineSseHandler } from "@yrest/cli";
+
+const bus = new EventEmitter();
+
+export const chatStream = defineSseHandler((req, raw) => {
+  const send = (msg: unknown) => raw.write(`event: message\ndata: ${JSON.stringify(msg)}\n\n`);
+  bus.on("message", send);
+  raw.on("close", () => bus.off("message", send)); // client disconnected
+});
+
+export const postMessage = defineHandler((req, { collection }) => {
+  const message = collection("messages").create(req.body as { text: string });
+  bus.emit("message", message);
+  return { status: 201, body: message };
+});
+```
+
+The SSE handler receives `(req, raw, ctx)`, where `raw` is the Node.js `ServerResponse`. yRest sends the SSE headers and the keep-alive comments; the handler writes frames and calls `raw.end()` when it is done. A handler missing from the handlers file answers `501`; one that throws sends an `event: error` frame and the stream is closed.
 
 **Consuming from the browser:**
 
@@ -1308,16 +1373,47 @@ import { createYrestServer, yrest } from "@yrest/cli";
 | `delay`    | `number`          | `0`         | Fixed delay in ms added to every response              |
 | `pageable` | `boolean\|number` | `false`     | Wrap GET responses in `{ data, pagination }` envelope  |
 | `snapshot` | `boolean`         | `false`     | Enable snapshot endpoints (`/_snapshot`)               |
-| `handlers` | `string`          | —           | Path to a JS file exporting handler functions          |
+| `handlers` | `string`          | —           | Path to a JS or TS file exporting handler functions    |
 
 **Returned handle:**
 
-| Member    | Description                                              |
-| --------- | -------------------------------------------------------- |
-| `start()` | Starts the server and begins listening                   |
-| `stop()`  | Gracefully closes the server                             |
-| `port`    | The actual port after `start()` (useful when `port: 0`)  |
-| `url`     | Base URL after `start()` (e.g. `http://localhost:49821`) |
+| Member                | Description                                                      |
+| --------------------- | ---------------------------------------------------------------- |
+| `start()`             | Starts the server and begins listening                           |
+| `stop()`              | Gracefully closes the server                                     |
+| `port`                | The actual port after `start()` (useful when `port: 0`)          |
+| `url`                 | Base URL after `start()` (e.g. `http://localhost:49821`)         |
+| `collection<T>(name)` | Typed CRUD handle for a collection — see below (after `start()`) |
+
+### Typed collection access
+
+`server.collection<T>(name)` returns a typed handle over the running data. Use it to seed or inspect state in a test without going through HTTP. Combine it with [`yrest types`](#types) to get the item types:
+
+```ts
+import { createYrestServer } from "@yrest/cli";
+import type { User } from "./db.types"; // npx @yrest/cli types db.yml -o db.types.ts
+
+const server = createYrestServer({ file: "./tests/db.yml", port: 0 });
+await server.start();
+
+const users = server.collection<User>("users");
+users.create({ name: "Ana", email: "ana@test.com" }); // id assigned by the server
+
+const res = await fetch(`${server.url}/users`);
+expect(await res.json()).toHaveLength(users.count());
+```
+
+| Method              | Returns          | Description                                                     |
+| ------------------- | ---------------- | --------------------------------------------------------------- |
+| `findAll()`         | `T[]`            | Every item, in stored order                                     |
+| `findById(id)`      | `T \| undefined` | Item by id — `1` and `"1"` both match                           |
+| `findWhere(fn)`     | `T[]`            | Items for which the predicate returns `true`                    |
+| `count()`           | `number`         | Number of items                                                 |
+| `create(data)`      | `T`              | Adds an item; the id is generated with the server's id strategy |
+| `update(id, patch)` | `T \| undefined` | Merges `patch` into the item (the id cannot change)             |
+| `delete(id)`        | `T \| undefined` | Removes the item and returns it                                 |
+
+Changes are visible to HTTP clients immediately and are persisted to `db.yml` exactly like REST writes (in-memory for inline data). Returned items are copies: changing one does not change the stored data — use `update()`. `collection()` throws for an unknown collection, and before `start()`. The same handle is available to handlers as [`ctx.collection`](#handler-functions).
 
 ### `yrest` tagged template literal
 
@@ -1452,7 +1548,7 @@ const server = createYrestServer({
 | SSE stream routes (`_method: SSE`)                 | ✅     |
 | WebSocket mock channels (`_method: WS`)            | 🔜     |
 | TypeScript codegen (`yrest types db.yml`)          | ✅     |
-| TypeScript handlers + typed collections            | 🔜     |
+| TypeScript handlers + typed collections            | ✅     |
 
 ---
 

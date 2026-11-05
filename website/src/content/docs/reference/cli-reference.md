@@ -35,6 +35,7 @@ yrest serve db.yml --port 4000 --watch --delay 200
 | `--snapshot`    | `-s`  | `boolean`         | `false`     | Enable `/_snapshot` save/reset endpoints            |
 | `--pageable`    | —     | `number?`         | —           | Wrap list responses in `{ data, pagination }`       |
 | `--id-strategy` | —     | `increment\|uuid` | `increment` | Strategy for auto-assigning `id` on POST            |
+| `--handlers`    | —     | `string`          | —           | JS or TS file exporting handler functions           |
 
 ### Exit codes
 
@@ -72,6 +73,8 @@ yrest handler login --method POST --path /login --register
 | `--method`   | `string`  | HTTP method hint (adds JSDoc comment)    |
 | `--path`     | `string`  | Path hint (adds JSDoc comment)           |
 | `--register` | `boolean` | Also add the `_routes` entry to `db.yml` |
+
+The stub goes to the file set by `handlers:` in `yrest.config.yml`, or `yrest.handlers.js`. For a `.ts` / `.mts` file it uses `defineHandler`. `--register` writes the entry with `_method`, `_path` and `_handler`. See [Handler Functions](/routes/handlers/#cli-scaffold-command).
 
 ## yrest types
 
@@ -138,4 +141,5 @@ export interface Collections {
 - [Configuration](/getting-started/configuration/) — set serve options permanently in `yrest.config.yml`
 - [Quick Start](/getting-started/quick-start/) — step-by-step guide for the `serve` command
 - [Handler Functions](/routes/handlers/) — `yrest handler` command in depth
+- [TypeScript Codegen](/integrations/codegen/) — `yrest types` in depth
 - [Programmatic API](/reference/programmatic-api/) — use the generated types with `createYrestServer`

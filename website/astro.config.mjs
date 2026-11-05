@@ -403,6 +403,17 @@ export default defineConfig({
               },
               slug: "integrations/openapi",
             },
+            {
+              label: "TypeScript Codegen",
+              translations: {
+                es: "Generación de tipos TypeScript",
+                de: "TypeScript-Codegenerierung",
+                fr: "Génération de types TypeScript",
+                it: "Generazione di tipi TypeScript",
+              },
+              slug: "integrations/codegen",
+              badge: { text: "NEW", variant: "success" },
+            },
           ],
         },
         {

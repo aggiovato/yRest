@@ -9,6 +9,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+Phase 12 — TypeScript handlers, typed collections and codegen.
+
 ### Added
 
 - **`yrest types` command (Phase 12C):** generates TypeScript interfaces from a `db.yml` file — one interface per collection (singular PascalCase: `post_tags` → `PostTag`), a `CollectionName` union and a `Collections` map. Prints to stdout by default; `--output <file>` writes a file and `--watch` regenerates it on every change.
@@ -16,7 +18,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
   - `_schema` overrides the inference (`_type`, `_required`, `_enum`, `_nullable`, `_items`) and adds JSDoc for `_description`, `_format` and `_deprecated`.
   - `many2one` / `one2one` foreign keys from `_rel` are annotated with `FK → target.id`.
   - Read-only: `__uuid_gen` / `__fk` directives are not resolved and `db.yml` is never rewritten.
-- **`generateTypes()`** exported from the public API for programmatic codegen.
+  - `generateTypes()` is exported for programmatic codegen.
+- **Typed collection access (Phase 12D):** `server.collection<T>(name)` on the programmatic API returns a handle with `findAll`, `findById`, `findWhere`, `count`, `create`, `update` and `delete` over the running data. Writes are visible to HTTP clients at once and persisted like REST writes; `create` uses the server's id strategy; returned items are copies.
+- **Typed handlers (Phase 12B):** `defineHandler` and `defineSseHandler` identity wrappers type a handler without changing it at runtime.
+- **Collections in handlers (Phase 12B):** handlers receive a second argument, `ctx`, whose `ctx.collection<T>(name)` is the same handle as `server.collection()`. Existing handlers that take only `req` keep working.
+- **SSE handler streams (Phase 12B):** `_sse: { _handler: name }` hands an SSE route to a function called with `(req, raw, ctx)` instead of a scripted `_events` list. yRest sends the headers and keep-alives; a missing handler answers `501`, a throwing one sends an `event: error` frame and closes the stream. `/_about` shows the handler name.
+- **TypeScript handler files (Phase 12A):** `--handlers` / `handlers:` accept `.ts` and `.mts` files, loaded with Node's built-in type stripping (Node ≥ 22.18) or through `tsx`. `yrest handler` writes `defineHandler` stubs for a TypeScript handlers file.
+
+### Fixed
+
+- **Inline `_routes` in `createYrestServer`:** routes declared in inline data (`yrest\`...\``) were not parsed and every one answered `404`. They now behave like the routes of a `db.yml` file.
+- **`yrest handler --register`:** the `_routes` entry was written with bare keys (`method`, `path`, `handler`), which are ignored since the Phase 11A key convention, so the route never worked. It is now written with `_method`, `_path` and `_handler`.
+
+### Docs
+
+- README handler section rewritten: it still showed bare `_routes` keys, and said `response:` is a fallback when a handler throws (a throwing handler answers `500`).
 
 ---
 

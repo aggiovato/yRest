@@ -45,7 +45,7 @@ Package name: `@yrest/cli` · GitHub: https://github.com/aggiovato/yRest · npm:
 - [Static Routes](https://yrest-docs.netlify.app/routes/static/): Defining non-CRUD endpoints in `_routes` with static response bodies.
 - [Template Variables](https://yrest-docs.netlify.app/routes/templates/): Interpolating `{{params.X}}`, `{{query.X}}`, `{{body}}`, `{{now}}`, `{{uuid}}` into response bodies.
 - [Scenarios](https://yrest-docs.netlify.app/routes/scenarios/): Conditional mock responses with `scenarios:`, `when:` (AND / OR), `otherwise:`, per-route `delay:`, and error injection.
-- [Handler Functions](https://yrest-docs.netlify.app/routes/handlers/): JavaScript `yrest.handlers.js` for dynamic route logic  - full access to request params, query, body, and headers.
+- [Handler Functions](https://yrest-docs.netlify.app/routes/handlers/): JavaScript or TypeScript handlers file for dynamic route logic  - request params, query, body and headers, typed `defineHandler` / `defineSseHandler` wrappers, `ctx.collection()` access to the live data and handler-driven SSE streams.
 - [SSE Streams](https://yrest-docs.netlify.app/routes/sse/): Server-Sent Events mock streams  - scripted event sequences, configurable intervals, `_loop`, `_repeat`, and template variables in event data.
 
 ### Server & API
@@ -57,6 +57,7 @@ Package name: `@yrest/cli` · GitHub: https://github.com/aggiovato/yRest · npm:
 ### Integrations
 
 - [OpenAPI Export](https://yrest-docs.netlify.app/integrations/openapi/): Generate an OpenAPI 3.0.3 spec from `db.yml`  - via CLI (`yrest openapi`) or live endpoints (`GET /_openapi`, `GET /_openapi.json`).
+- [TypeScript Codegen](https://yrest-docs.netlify.app/integrations/codegen/): `yrest types db.yml` generates one TypeScript interface per collection (inferred from every item, refined by `_schema`), plus `CollectionName` and `Collections`.
 
 ### Playground
 
