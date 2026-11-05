@@ -3,7 +3,8 @@ import type { SseEvent, SseRoute } from "./types.js";
 /**
  * Extracts SSE stream routes from a raw `_routes` array.
  *
- * An entry is treated as an SSE route when it has a `_sse` block.
+ * An entry is treated as an SSE route when it has a `_sse` block with either a non-empty
+ * `_events` list (scripted stream) or a `_handler` name (handler-driven stream).
  * Entries without `_sse` are handled by `parseRoutes` instead.
  */
 export function parseSseRoutes(raw: unknown): SseRoute[] {
@@ -25,14 +26,19 @@ function normaliseSseRoute(raw: unknown): SseRoute | null {
   }
 
   const s = sse as Record<string, unknown>;
+  const handler =
+    typeof s["_handler"] === "string" && s["_handler"].trim() ? s["_handler"].trim() : undefined;
   const rawEvents = s["_events"];
-  if (!Array.isArray(rawEvents)) return null;
 
-  const events: SseEvent[] = rawEvents.map(normaliseEvent).filter((e): e is SseEvent => e !== null);
+  const events: SseEvent[] = Array.isArray(rawEvents)
+    ? rawEvents.map(normaliseEvent).filter((e): e is SseEvent => e !== null)
+    : [];
 
-  if (!events.length) return null;
+  // A scripted stream needs at least one event; a handler stream needs none.
+  if (!handler && !events.length) return null;
 
   return {
+    ...(handler ? { handler } : {}),
     path,
     interval: typeof s["_interval"] === "number" ? s["_interval"] : 1000,
     loop: s["_loop"] !== false,

@@ -1,4 +1,6 @@
 import { existsSync } from "node:fs";
+import type { ServerResponse } from "node:http";
+import type { CollectionAccessor } from "../api/collection.js";
 
 /** Incoming request data passed to every handler function. */
 export type HandlerRequest = {
@@ -18,11 +20,76 @@ export type HandlerResponse = {
   headers?: Record<string, string>;
 };
 
-/** A function that handles a custom route request and returns a response descriptor. */
-export type Handler = (req: HandlerRequest) => HandlerResponse | Promise<HandlerResponse>;
+/**
+ * Server context passed to every handler as its last argument.
+ *
+ * Gives handlers typed access to the live collections, so a mock can read and change the
+ * same data the REST routes serve (e.g. a login handler that looks the user up).
+ */
+export type HandlerContext = {
+  /** Returns a typed CRUD handle for a collection. Throws if the collection does not exist. */
+  collection: CollectionAccessor;
+};
 
-/** Map of exported function name → handler function. */
-export type HandlerMap = Map<string, Handler>;
+/** A function that handles a custom route request and returns a response descriptor. */
+export type Handler = (
+  req: HandlerRequest,
+  ctx: HandlerContext
+) => HandlerResponse | Promise<HandlerResponse>;
+
+/**
+ * A function that takes full control of an SSE stream (`_sse: { _handler: name }`).
+ *
+ * yrest sets the SSE headers, flushes them and sends a keep-alive comment every 15 s.
+ * The handler writes frames to `raw` and decides when to `raw.end()`. Listen to
+ * `raw.on("close", ...)` to stop work when the client disconnects.
+ */
+export type SseHandler = (
+  req: HandlerRequest,
+  raw: ServerResponse,
+  ctx: HandlerContext
+) => void | Promise<void>;
+
+/** Map of exported function name → handler function (HTTP or SSE). */
+export type HandlerMap = Map<string, Handler | SseHandler>;
+
+/**
+ * Identity wrapper that types a custom route handler. It has no runtime effect.
+ *
+ * @example
+ * ```ts
+ * import { defineHandler } from "@yrest/cli";
+ * import type { User } from "./db.types";
+ *
+ * export const login = defineHandler((req, { collection }) => {
+ *   const { email } = (req.body ?? {}) as { email?: string };
+ *   const user = collection<User>("users").findWhere((u) => u.email === email)[0];
+ *   return user ? { body: { token: `tok-${user.id}` } } : { status: 401, body: { error: "Unknown user" } };
+ * });
+ * ```
+ */
+export function defineHandler(fn: Handler): Handler {
+  return fn;
+}
+
+/**
+ * Identity wrapper that types an SSE stream handler. It has no runtime effect.
+ *
+ * @example
+ * ```ts
+ * import { defineSseHandler } from "@yrest/cli";
+ *
+ * export const clock = defineSseHandler((req, raw) => {
+ *   const timer = setInterval(() => {
+ *     raw.write(`event: tick\ndata: ${JSON.stringify({ now: Date.now() })}\n\n`);
+ *   }, 1000);
+ *   raw.on("close", () => clearInterval(timer));
+ * });
+ * ```
+ */
+export function defineSseHandler(fn: SseHandler): SseHandler {
+  return fn;
+}
 
 /**
  * Dynamically imports a JavaScript handler file and returns all exported functions as a map.
@@ -50,7 +117,7 @@ export async function loadHandlers(filePath: string): Promise<HandlerMap> {
     const mod = (await import(filePath)) as Record<string, unknown>;
     const map: HandlerMap = new Map();
     for (const [name, value] of Object.entries(mod)) {
-      if (typeof value === "function") map.set(name, value as Handler);
+      if (typeof value === "function") map.set(name, value as Handler | SseHandler);
     }
     return map;
   } catch (err) {

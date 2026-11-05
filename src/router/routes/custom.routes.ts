@@ -1,7 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import type { YrestStorage } from "../../storage/types.js";
 import type { RouteCommand } from "../types.js";
-import type { HandlerMap, HandlerRequest } from "../../utils/handlers.js";
+import type { Handler, HandlerContext, HandlerMap, HandlerRequest } from "../../utils/handlers.js";
+import { collectionAccessor } from "../../api/collection.js";
 import { interpolate, hasTemplates } from "../../utils/interpolate.js";
 import { findMatchingScenario } from "../../utils/conditions.js";
 
@@ -32,10 +33,15 @@ export class CustomRouteCommand implements RouteCommand {
   constructor(
     private readonly storage: YrestStorage,
     private readonly base: string,
-    private readonly handlers: HandlerMap = new Map()
+    private readonly handlers: HandlerMap = new Map(),
+    private readonly idStrategy: "increment" | "uuid" = "increment"
   ) {}
 
   register(server: FastifyInstance): void {
+    const handlerCtx: HandlerContext = {
+      collection: collectionAccessor(this.storage, this.idStrategy),
+    };
+
     for (const route of this.storage.getRoutes()) {
       const method = route.method?.toUpperCase();
       const path = route.path;
@@ -67,7 +73,7 @@ export class CustomRouteCommand implements RouteCommand {
           }
 
           if (handlerName) {
-            const fn = this.handlers.get(handlerName);
+            const fn = this.handlers.get(handlerName) as Handler | undefined;
             if (!fn) {
               return reply
                 .status(501)
@@ -80,7 +86,7 @@ export class CustomRouteCommand implements RouteCommand {
                 body: req.body,
                 headers: req.headers as Record<string, string | string[]>,
               };
-              const result = await fn(ctx);
+              const result = await fn(ctx, handlerCtx);
               const resStatus = result.status ?? 200;
               for (const [k, v] of Object.entries(result.headers ?? {})) {
                 reply.header(k, v);

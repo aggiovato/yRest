@@ -330,8 +330,13 @@ export type SseRoute = {
   loop: boolean;
   /** Stop after this many full cycles. Omit for infinite. */
   repeat?: number;
-  /** Ordered list of events to emit. */
+  /** Ordered list of events to emit. Empty when {@link SseRoute.handler} drives the stream. */
   events: SseEvent[];
+  /**
+   * Name of an SSE handler exported from the handlers file (`_sse: { _handler: name }`).
+   * When set, the handler takes full control of the stream and `events` is not used.
+   */
+  handler?: string;
 };
 
 /**

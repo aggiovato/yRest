@@ -64,7 +64,15 @@ export { createServer, createYrestServerFromStorage } from "./server/index.js";
 export { yrestOptionsSchema } from "./config/loadOptions.js";
 export type { YrestOptions } from "./config/loadOptions.js";
 export type { Data, Resource, Relations, CustomRoute, YrestStorage } from "./storage/types.js";
-export type { HandlerRequest, HandlerResponse, Handler, HandlerMap } from "./utils/handlers.js";
+export { defineHandler, defineSseHandler } from "./utils/handlers.js";
+export type {
+  HandlerRequest,
+  HandlerResponse,
+  HandlerContext,
+  Handler,
+  SseHandler,
+  HandlerMap,
+} from "./utils/handlers.js";
 export type { CollectionHandle, CollectionAccessor } from "./api/collection.js";
 
 // ─── Codegen ──────────────────────────────────────────────────────────────────

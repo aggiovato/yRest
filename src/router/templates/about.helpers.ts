@@ -251,6 +251,10 @@ export function sseRoutesAccordion(routes: SseRoute[], base: string): string {
   if (!routes.length) return "";
 
   const rows = routes.map((r) => {
+    if (r.handler) {
+      const desc = `SSE stream&ensp;<span style="color:#0ea5e9;font-size:11px">→ ${escapeHtml(r.handler)}()</span>`;
+      return endpointRow("SSE", `${base}${r.path}`, desc);
+    }
     const tags: string[] = [
       `<span style="color:#0ea5e9;font-size:11px">interval·${r.interval}ms</span>`,
       `<span style="color:var(--text-muted);font-size:11px">${r.events.length} event${r.events.length !== 1 ? "s" : ""}</span>`,

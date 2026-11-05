@@ -72,8 +72,8 @@ export async function createServer(
     new AboutRouteCommand(storage, options, handlers),
     new OpenApiRouteCommand(storage, options),
     ...(options.snapshot ? [new SnapshotRouteCommand(storage)] : []),
-    new SSERouteCommand(storage, options.base),
-    new CustomRouteCommand(storage, options.base, handlers),
+    new SSERouteCommand(storage, options.base, handlers, options.idStrategy),
+    new CustomRouteCommand(storage, options.base, handlers, options.idStrategy),
     ...buildResourceRouteCommands(storage, options),
   ];
 
