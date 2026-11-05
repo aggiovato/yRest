@@ -1,13 +1,15 @@
 /**
  * Security tests — handler path validation in loadHandlers()
  *
- * Verifies that dynamic import() is restricted to safe file extensions.
- * Without this guard an attacker who controls the YAML file could load
- * arbitrary server-side code (e.g. a .ts file that executes compile-time
- * code, a .py script launched via some rogue Node integration, etc.).
+ * Verifies that dynamic import() is restricted to JavaScript / TypeScript module
+ * extensions, so a misconfigured handlers path cannot hand a shell script, PHP file
+ * or extension-less file to the module loader.
+ *
+ * .ts / .mts are allowed (Phase 12A): they run code exactly like a .js file and are
+ * loaded through Node's type stripping (Node >= 22.18) or tsx.
  *
  * Guard in src/utils/handlers.ts:
- *   const ALLOWED_EXTENSIONS = [".js", ".mjs", ".cjs"];
+ *   const ALLOWED_EXTENSIONS = [".js", ".mjs", ".cjs", ".ts", ".mts"];
  *   if (!ALLOWED_EXTENSIONS.some(ext => filePath.endsWith(ext))) return new Map();
  */
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
@@ -34,6 +36,7 @@ let jsFile: string;
 let mjsFile: string;
 let cjsFile: string;
 let tsFile: string;
+let mtsFile: string;
 let pyFile: string;
 let shFile: string;
 let phpFile: string;
@@ -48,8 +51,17 @@ beforeAll(() => {
     `exports.cjsHandler = function() { return { status: 202 }; }`
   );
 
+  // Allowed — TypeScript handlers (Phase 12A)
+  tsFile = tmp(
+    "yrest-sec-test.ts",
+    `export function tsHandler(): { status: number } { return { status: 200 }; }`
+  );
+  mtsFile = tmp(
+    "yrest-sec-test.mts",
+    `export const mtsHandler = (): { status: number } => ({ status: 200 });`
+  );
+
   // Rejected — wrong extensions
-  tsFile = tmp("yrest-sec-test.ts", `export function tsHandler() { return { status: 200 }; }`);
   pyFile = tmp("yrest-sec-test.py", `print("attack")`);
   shFile = tmp("yrest-sec-test.sh", `#!/bin/bash\nrm -rf /`);
   phpFile = tmp("yrest-sec-test.php", `<?php system($_GET['cmd']); ?>`);
@@ -57,18 +69,15 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  [jsFile, mjsFile, cjsFile, tsFile, pyFile, shFile, phpFile, noExtFile].forEach(rmIfExists);
+  [jsFile, mjsFile, cjsFile, tsFile, mtsFile, pyFile, shFile, phpFile, noExtFile].forEach(
+    rmIfExists
+  );
 });
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("security — handler path extension whitelist", () => {
   describe("blocked extensions — return empty map without loading", () => {
-    it("rejects .ts files", async () => {
-      const map = await loadHandlers(tsFile);
-      expect(map.size).toBe(0);
-    });
-
     it("rejects .py files", async () => {
       const map = await loadHandlers(pyFile);
       expect(map.size).toBe(0);
@@ -90,7 +99,7 @@ describe("security — handler path extension whitelist", () => {
     });
 
     it("does not throw for any rejected extension", async () => {
-      await expect(loadHandlers(tsFile)).resolves.not.toThrow();
+      await expect(loadHandlers(phpFile)).resolves.not.toThrow();
       await expect(loadHandlers(pyFile)).resolves.not.toThrow();
       await expect(loadHandlers(shFile)).resolves.not.toThrow();
     });
@@ -115,6 +124,16 @@ describe("security — handler path extension whitelist", () => {
       expect(map.size).toBeGreaterThan(0);
       expect(map.has("cjsHandler")).toBe(true);
     });
+
+    it("loads .ts files and exposes exported functions", async () => {
+      const map = await loadHandlers(tsFile);
+      expect(map.has("tsHandler")).toBe(true);
+    });
+
+    it("loads .mts files and exposes exported functions", async () => {
+      const map = await loadHandlers(mtsFile);
+      expect(map.has("mtsHandler")).toBe(true);
+    });
   });
 
   describe("non-existent files — return empty map silently", () => {
@@ -125,7 +144,6 @@ describe("security — handler path extension whitelist", () => {
 
     it("returns empty map for a non-existent .ts path without throwing", async () => {
       const map = await loadHandlers("/tmp/does-not-exist-yrest.ts");
-      // .ts is blocked before the existsSync check — still returns empty map
       expect(map.size).toBe(0);
     });
   });

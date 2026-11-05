@@ -67,7 +67,7 @@ export function registerServe(program: Command): void {
     )
     .option(
       "--handlers <file>",
-      "Path to a JavaScript file exporting custom route handler functions"
+      "Path to a JS or TS file (.js, .mjs, .cjs, .ts, .mts) exporting handler functions"
     )
     .option(
       "--id-strategy <strategy>",

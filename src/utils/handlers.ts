@@ -92,7 +92,8 @@ export function defineSseHandler(fn: SseHandler): SseHandler {
 }
 
 /**
- * Dynamically imports a JavaScript handler file and returns all exported functions as a map.
+ * Dynamically imports a JavaScript or TypeScript handler file and returns all exported
+ * functions as a map.
  *
  * Only named exports that are functions are included. Non-function exports are silently ignored.
  * If the file does not exist, an empty map is returned without error.
@@ -101,14 +102,18 @@ export function defineSseHandler(fn: SseHandler): SseHandler {
  * @param filePath - Absolute path to the JavaScript handler file.
  * @returns A map of function name → handler for every exported function in the file.
  */
-const ALLOWED_EXTENSIONS = [".js", ".mjs", ".cjs"];
+/**
+ * Extensions `loadHandlers` will import. `.ts` / `.mts` rely on Node's built-in type stripping
+ * (Node ≥ 22.18) or on running yrest through `tsx`; elsewhere their import fails and is logged.
+ */
+const ALLOWED_EXTENSIONS = [".js", ".mjs", ".cjs", ".ts", ".mts"];
 
 export async function loadHandlers(filePath: string): Promise<HandlerMap> {
   if (!existsSync(filePath)) return new Map();
 
   if (!ALLOWED_EXTENSIONS.some((ext) => filePath.endsWith(ext))) {
     console.error(
-      `  \x1b[31m[handlers] ${filePath} — only .js, .mjs and .cjs files are allowed\x1b[0m`
+      `  \x1b[31m[handlers] ${filePath} — only .js, .mjs, .cjs, .ts and .mts files are allowed\x1b[0m`
     );
     return new Map();
   }

@@ -4,23 +4,62 @@ import { parse, stringify } from "yaml";
 import type { Command } from "commander";
 import { loadConfigFile } from "../../config/loadConfigFile.js";
 
-const HANDLERS_FILE_HEADER = `// yrest handlers — loaded via "handlers:" in yrest.config.yml
-// Handler signature: (req: HandlerRequest) => HandlerResponse | Promise<HandlerResponse>
-// See https://github.com/aggiovato/yaml-rest for full documentation
+const JS_HEADER = `// yrest handlers — loaded via "handlers:" in yrest.config.yml
+// Handler signature: (req: HandlerRequest, ctx: HandlerContext) => HandlerResponse | Promise<HandlerResponse>
+// See https://github.com/aggiovato/yRest for full documentation
 `;
 
-function buildStub(name: string, method?: string, path?: string): string {
+const TS_HEADER = `// yrest handlers — loaded via "handlers:" in yrest.config.yml
+// TypeScript handlers need Node >= 22.18 (built-in type stripping) or running yrest through tsx.
+// See https://github.com/aggiovato/yRest for full documentation
+import { defineHandler } from "@yrest/cli";
+`;
+
+/** Whether a handlers file path is TypeScript (gets `defineHandler` stubs). */
+export function isTypeScriptFile(filePath: string): boolean {
+  return filePath.endsWith(".ts") || filePath.endsWith(".mts");
+}
+
+/** Header written when the handlers file is created. */
+export function handlersFileHeader(typescript: boolean): string {
+  return typescript ? TS_HEADER : JS_HEADER;
+}
+
+/** Whether the handlers file content already defines `name` (function or const form). */
+export function hasHandler(content: string, name: string): boolean {
+  return content.includes(`function ${name}(`) || new RegExp(`\\bconst ${name}\\s*=`).test(content);
+}
+
+/** Builds a handler stub: a JSDoc-typed function for JS, a `defineHandler` const for TS. */
+export function buildStub(
+  name: string,
+  method?: string,
+  path?: string,
+  typescript = false
+): string {
   const tag =
     method && path ? `Handler for ${method.toUpperCase()} ${path}` : `yrest handler function`;
+  if (typescript) {
+    return [
+      "",
+      `/** ${tag} */`,
+      `export const ${name} = defineHandler(async (req, ctx) => {`,
+      `  // TODO: implement handler logic — ctx.collection("name") gives typed access to the data`,
+      `  return { status: 200, body: null };`,
+      `});`,
+      "",
+    ].join("\n");
+  }
   return [
     "",
     `/**`,
     ` * ${tag}`,
     ` * @param {import('@yrest/cli').HandlerRequest} req`,
+    ` * @param {import('@yrest/cli').HandlerContext} ctx`,
     ` * @returns {Promise<import('@yrest/cli').HandlerResponse>}`,
     ` */`,
-    `export async function ${name}(req) {`,
-    `  // TODO: implement handler logic`,
+    `export async function ${name}(req, ctx) {`,
+    `  // TODO: implement handler logic — ctx.collection("name") gives access to the data`,
     `  return { status: 200, body: null };`,
     `}`,
     "",
@@ -75,20 +114,18 @@ export function registerHandler(program: Command): void {
       const dbPath = resolve((fileConfig.file as string | undefined) ?? "db.yml");
 
       // ── Write stub to handlers file ─────────────────────────────────────────
+      const typescript = isTypeScriptFile(handlersPath);
+      const stub = buildStub(name, flags.method, flags.path, typescript);
       if (!existsSync(handlersPath)) {
-        writeFileSync(
-          handlersPath,
-          HANDLERS_FILE_HEADER + buildStub(name, flags.method, flags.path),
-          "utf8"
-        );
+        writeFileSync(handlersPath, handlersFileHeader(typescript) + stub, "utf8");
         console.log(`  Created ${basename(handlersPath)}`);
       } else {
         const existing = readFileSync(handlersPath, "utf8");
-        if (existing.includes(`function ${name}(`)) {
+        if (hasHandler(existing, name)) {
           console.error(`  Error: handler "${name}" already exists in ${basename(handlersPath)}`);
           process.exit(1);
         }
-        appendFileSync(handlersPath, buildStub(name, flags.method, flags.path), "utf8");
+        appendFileSync(handlersPath, stub, "utf8");
         console.log(`  Added handler "${name}" to ${basename(handlersPath)}`);
       }
 
