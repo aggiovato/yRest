@@ -14,7 +14,9 @@ function iface(out: string, name: string): string {
 /** Returns TS syntax diagnostics for the generated source (empty = valid). */
 function syntaxErrors(source: string): string[] {
   const result = ts.transpileModule(source, { reportDiagnostics: true });
-  return (result.diagnostics ?? []).map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n"));
+  return (result.diagnostics ?? []).map((d) =>
+    ts.flattenDiagnosticMessageText(d.messageText, "\n")
+  );
 }
 
 describe("singularize", () => {
@@ -37,7 +39,12 @@ describe("singularize", () => {
 describe("generateTypes — naming", () => {
   it("uses singular PascalCase interface names", () => {
     const out = generateTypes({
-      data: { users: [{ id: 1 }], post_tags: [{ id: 1 }], "order-items": [{ id: 1 }], blogPosts: [{ id: 1 }] },
+      data: {
+        users: [{ id: 1 }],
+        post_tags: [{ id: 1 }],
+        "order-items": [{ id: 1 }],
+        blogPosts: [{ id: 1 }],
+      },
     });
     expect(out).toContain("export interface User {");
     expect(out).toContain("export interface PostTag {");
@@ -66,7 +73,12 @@ describe("generateTypes — naming", () => {
 describe("generateTypes — inference", () => {
   it("marks fields present on all items as required and others optional", () => {
     const out = generateTypes({
-      data: { users: [{ id: 1, name: "Ana", email: "a@x" }, { id: 2, name: "Luis" }] },
+      data: {
+        users: [
+          { id: 1, name: "Ana", email: "a@x" },
+          { id: 2, name: "Luis" },
+        ],
+      },
     });
     const body = iface(out, "User");
     expect(body).toContain("  id: number;");
@@ -76,7 +88,12 @@ describe("generateTypes — inference", () => {
 
   it("maps primitives and builds unions across items", () => {
     const out = generateTypes({
-      data: { items: [{ a: 1, b: true, c: "x", d: 1.5 }, { a: "one", b: false, c: null, d: 2 }] },
+      data: {
+        items: [
+          { a: 1, b: true, c: "x", d: 1.5 },
+          { a: "one", b: false, c: null, d: 2 },
+        ],
+      },
     });
     const body = iface(out, "Item");
     expect(body).toContain("  a: number | string;");
@@ -107,13 +124,18 @@ describe("generateTypes — inference", () => {
 
   it("merges nested objects across items into one inline shape", () => {
     const out = generateTypes({
-      data: { users: [{ address: { city: "Madrid", zip: "28001" } }, { address: { city: "Lima" } }] },
+      data: {
+        users: [{ address: { city: "Madrid", zip: "28001" } }, { address: { city: "Lima" } }],
+      },
     });
     expect(iface(out, "User")).toContain("  address: { city: string; zip?: string };");
   });
 
   it("merges objects inside arrays", () => {
-    const body = iface(generateTypes({ data: { items: [{ meta: [{ k: "a" }, { v: 2 }] }] } }), "Item");
+    const body = iface(
+      generateTypes({ data: { items: [{ meta: [{ k: "a" }, { v: 2 }] }] } }),
+      "Item"
+    );
     expect(body).toContain("  meta: { k?: string; v?: number }[];");
   });
 
@@ -198,7 +220,11 @@ describe("generateTypes — _schema overrides", () => {
 describe("generateTypes — _rel annotations", () => {
   it("annotates many2one / one2one FK fields, including DSL @foreignKey", () => {
     const relations = parseRelations({
-      posts: { userId: "users", category: "m2o:categories@categoryId", tags: "m2m:tags@post_tags(postId,tagId)" },
+      posts: {
+        userId: "users",
+        category: "m2o:categories@categoryId",
+        tags: "m2m:tags@post_tags(postId,tagId)",
+      },
       profiles: { userId: { _type: "one2one", _target: "users" } },
     });
     const out = generateTypes({
@@ -225,7 +251,9 @@ describe("generateTypes — output", () => {
           empty: [],
           "9lives": [{ id: 1 }],
         },
-        schema: parseSchema({ users: { role: { _enum: ["a", 'q"t'] }, d: { _description: "has */ end" } } }),
+        schema: parseSchema({
+          users: { role: { _enum: ["a", 'q"t'] }, d: { _description: "has */ end" } },
+        }),
       },
       { source: "db.yml" }
     );

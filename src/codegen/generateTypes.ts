@@ -32,7 +32,10 @@ const MAX_DEPTH = 4;
  *
  * Output is deterministic: collections and fields keep their order of appearance.
  */
-export function generateTypes(input: GenerateTypesInput, options: GenerateTypesOptions = {}): string {
+export function generateTypes(
+  input: GenerateTypesInput,
+  options: GenerateTypesOptions = {}
+): string {
   const { data, schema = {}, relations = {} } = input;
 
   const collections = unique([...Object.keys(data), ...Object.keys(schema)]);
@@ -94,7 +97,8 @@ function renderInterface(
     const info = fields.get(field);
     const def = fieldDefs[field];
 
-    const inferredRequired = info !== undefined && info.count === records.length && records.length > 0;
+    const inferredRequired =
+      info !== undefined && info.count === records.length && records.length > 0;
     const required = def?.required ?? inferredRequired;
 
     let type = def ? typeFromDef(def, info) : typeOfValues(info!.values, 0);
