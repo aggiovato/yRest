@@ -1,5 +1,6 @@
 import { resolve } from "node:path";
 import type {
+  Resource,
   Data,
   Relations,
   CustomRoute,
@@ -112,6 +113,11 @@ export function createYrestServer(options: YrestServerOptions): YrestServer {
 
     get url() {
       return _inner?.url ?? "";
+    },
+
+    collection<T extends object = Resource>(name: string) {
+      if (!_inner) throw new Error("collection() is only available after start()");
+      return _inner.collection<T>(name);
     },
   };
 }

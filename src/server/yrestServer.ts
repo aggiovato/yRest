@@ -2,6 +2,9 @@ import type { YrestStorage } from "../storage/types.js";
 import type { YrestOptions } from "../config/loadOptions.js";
 import type { HandlerMap } from "../utils/handlers.js";
 import { createServer } from "./createServer.js";
+import { createCollectionHandle } from "../api/collection.js";
+import type { CollectionHandle } from "../api/collection.js";
+import type { Resource } from "../storage/types.js";
 
 // ─── Public types ─────────────────────────────────────────────────────────────
 
@@ -15,6 +18,21 @@ export interface YrestServer {
   readonly port: number;
   /** The base URL of the server (e.g. `http://localhost:3070`). Only valid after `start()`. */
   readonly url: string;
+  /**
+   * Returns a typed CRUD handle for a collection of the running data.
+   * Changes are visible to HTTP clients immediately and persisted like REST writes.
+   *
+   * @example
+   * ```ts
+   * import type { User } from "./db.types"; // from `yrest types`
+   * const users = server.collection<User>("users");
+   * users.create({ name: "Ana" });
+   * expect(users.findAll()).toHaveLength(1);
+   * ```
+   *
+   * @throws {Error} If the collection does not exist, or (for `createYrestServer`) before `start()`.
+   */
+  collection<T extends object = Resource>(name: string): CollectionHandle<T>;
 }
 
 // ─── Shared core ─────────────────────────────────────────────────────────────
@@ -66,6 +84,10 @@ export function createYrestServerFromStorage(
 
     get url() {
       return `http://${options.host}:${_port}${options.base}`;
+    },
+
+    collection<T extends object = Resource>(name: string) {
+      return createCollectionHandle<T>(storage, name, options.idStrategy);
     },
   };
 }
