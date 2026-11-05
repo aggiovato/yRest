@@ -28,6 +28,26 @@ function buildStub(name: string, method?: string, path?: string): string {
 }
 
 /**
+ * Adds a `_routes` entry linking `name` to `method` + `path` in a parsed db.yml root,
+ * using the `_`-prefixed keys that `parseRoutes` reads.
+ *
+ * @returns `false` (and leaves `raw` untouched) when a route already uses this handler.
+ */
+export function addRouteEntry(
+  raw: Record<string, unknown>,
+  name: string,
+  method: string,
+  path: string
+): boolean {
+  if (!Array.isArray(raw["_routes"])) raw["_routes"] = [];
+  const routes = raw["_routes"] as Array<Record<string, unknown>>;
+  // `handler` (bare key) is what older versions of this command wrote.
+  if (routes.some((r) => r["_handler"] === name || r["handler"] === name)) return false;
+  routes.push({ _method: method.toUpperCase(), _path: path, _handler: name });
+  return true;
+}
+
+/**
  * Registers the `handler` command with the CLI program.
  *
  * Scaffolds a named handler function stub into the configured handlers file
@@ -83,11 +103,7 @@ export function registerHandler(program: Command): void {
           process.exit(1);
         }
         const raw = (parse(readFileSync(dbPath, "utf8")) ?? {}) as Record<string, unknown>;
-        if (!Array.isArray(raw["_routes"])) raw["_routes"] = [];
-        const routes = raw["_routes"] as Array<Record<string, unknown>>;
-        const alreadyRegistered = routes.some((r) => r["handler"] === name);
-        if (!alreadyRegistered) {
-          routes.push({ method: flags.method.toUpperCase(), path: flags.path, handler: name });
+        if (addRouteEntry(raw, name, flags.method, flags.path)) {
           writeFileSync(dbPath, stringify(raw), "utf8");
           console.log(`  Added _routes entry to ${basename(dbPath)}`);
         } else {
