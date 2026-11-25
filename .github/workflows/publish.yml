@@ -59,3 +59,13 @@ jobs:
         with:
           body_path: /tmp/release-notes.md
           make_latest: true
+
+  # Once the version is on npm, the portfolio's case study shows it (portfolio.yml has the rest).
+  # Pre-release tags (v1.0.0-beta.1) are ignored by the shared workflow.
+  portfolio:
+    needs: publish-npm
+    uses: aggiovato/portfolio/.github/workflows/project-release.yml@main
+    with:
+      version: ${{ github.ref_name }}
+    secrets:
+      PORTFOLIO_TOKEN: ${{ secrets.PORTFOLIO_TOKEN }}

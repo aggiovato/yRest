@@ -1,0 +1,10 @@
+# What aggiovato/portfolio shows about yRest, sent on every stable release (publish.yml → portfolio).
+# Only facts that do not depend on the language; the version and its day are added by the workflow.
+# Contract: https://github.com/aggiovato/portfolio/blob/main/.github/workflows/project-release.yml
+slug: yrest # the case study it updates
+status: active # active | completed | prototype | paused
+links:
+  code: https://github.com/aggiovato/yRest
+  docs: https://yrest-docs.netlify.app
+  playground: https://yrest-docs.netlify.app/playground/
+  install: https://www.npmjs.com/package/@yrest/cli
